@@ -942,7 +942,7 @@ function allDataQuery(params, courseData) {
         },
         {
           "$lookup": {
-            "from": pageInfo,
+            "from": pageColl,
             "localField": "object.id",
             "foreignField": "id",
             "as": "pageInfo"
