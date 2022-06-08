@@ -119,7 +119,7 @@ function App() {
     let courses = [];
    let courseNames = [];
    let coursesWithNames = {};
-   axios('/courses')
+   axios('/analytics/api/courses')
      .then(response => {
        response.data.forEach(course => {
          courses.push(course._id)
@@ -131,7 +131,7 @@ function App() {
 
     let d = {}
     let cats = []
-    axios('/categories')
+    axios('/analytics/api/categories')
       .then(response => {
         response.data.forEach(cat => {
           var id = cat._id.replaceAll("_", " ")
@@ -145,7 +145,7 @@ function App() {
         setCategories(cats)
       })
 
-    axios('/subjects')
+    axios('/analytics/api/subjects')
       .then(response => {
         response.data.forEach(subj => {
           var temp = subj._id.replaceAll("_", " ")
@@ -174,7 +174,7 @@ function App() {
     }
     axios({
       method: 'post',
-      url: '/data',
+      url: '/analytics/api/data',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -194,7 +194,7 @@ function App() {
 
     axios({
       method: 'post',
-      url: '/data',
+      url: '/analytics/api/data',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -227,7 +227,7 @@ function App() {
     console.log(indiv)
     axios({
       method: 'post',
-      url: '/individual',
+      url: '/analytics/api/individual',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -267,7 +267,7 @@ function App() {
     }
     axios({
       method: 'post',
-      url: '/timelineData',
+      url: '/analytics/api/timelineData',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -290,7 +290,7 @@ function App() {
       })
       axios({
         method: 'post',
-        url: '/timelineData',
+        url: '/analytics/api/timelineData',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -322,7 +322,7 @@ function App() {
     setStudentChartData(null)
       axios({
         method: 'post',
-        url: '/studentchart',
+        url: '/analytics/api/studentchart',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -344,7 +344,7 @@ function App() {
     setTotalPageViews(null)
       axios({
         method: 'post',
-        url: '/pageviews',
+        url: '/analytics/api/pageviews',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -371,7 +371,7 @@ function App() {
     let tree = []
       axios({
         method: 'post',
-        url: '/chapters',
+        url: '/analytics/api/chapters',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -420,7 +420,7 @@ function App() {
   function getAdaptData() {
       axios({
         method: 'post',
-        url: '/adapt',
+        url: '/analytics/api/adapt',
         headers: {
           'Content-Type': 'application/json'
         },
