@@ -111,14 +111,23 @@ function App() {
   const [reset, setReset] = useState(false);
   const [resetPath, setResetPath] = useState(false);
   const [adaptData, setAdaptData] = useState(null);
+  const [tagData, setTagData] = useState(null);
+  const [tagTypes, setTagTypes] = useState([]);
+  const [tagType, setTagType] = useState(null);
+  const [tagTitle, setTagTitle] = useState(null);
+  const [realCourses, setRealCourses] = useState(null);
+  const [courseName, setCourseName] = useState(null);
   const myRef = useRef();
   const target = React.useRef(null)
   const size = useSize(target)
+  const [adaptCode, setAdaptCode] = useState(null)
 
   useEffect(() => {
+
     let courses = [];
    let courseNames = [];
    let coursesWithNames = {};
+
    axios('/analytics/api/courses')
      .then(response => {
        response.data.forEach(course => {
@@ -128,6 +137,17 @@ function App() {
        courseNames.map(c => c.replaceAll("_", " "))
        setAllCourseNames(coursesWithNames)
      })
+
+     let realCourses = {}
+     axios('/analytics/api/realcourses')
+       .then(response => {
+         let x = {}
+         response.data.forEach(course => {
+           x[course.course] = course._id
+         })
+         realCourses = x
+         setRealCourses(realCourses)
+       })
 
     let d = {}
     let cats = []
@@ -184,7 +204,9 @@ function App() {
         course: course,
         courseId: courseId,
         path: dataPath,
-        groupBy: "$actor.id"
+        groupBy: "$actor.id",
+        tagType: tagType,
+        tagTitle: tagTitle
       }
     }).then(response => {
       d['student'] = JSON.parse(response.data)['documents']
@@ -204,7 +226,9 @@ function App() {
         course: course,
         courseId: courseId,
         path: dataPath,
-        groupBy: "$object.id"
+        groupBy: "$object.id",
+        tagType: tagType,
+        tagTitle: tagTitle
       }
     }).then(response => {
       d['page'] = JSON.parse(response.data)['documents']
@@ -425,6 +449,29 @@ function App() {
           'Content-Type': 'application/json'
         },
         data: {
+          course: adaptCode,
+          start: start,
+          end: end,
+          path: dataPath
+        }
+      })
+        .then(response => {
+          // console.log("ADAPT DATA")
+          // console.log(response.data)
+          allData['adapt'] = JSON.parse(response.data)['documents']
+          //mergeLTAdaptData(allData['student'], JSON.parse(response.data)['documents'])
+          //setAdaptData(JSON.parse(response.data)['documents'])
+        })
+  }
+
+  function getTagInfo() {
+      axios({
+        method: 'post',
+        url: '/analytics/api/tags',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: {
           course: course,
           courseId: courseId,
           start: start,
@@ -433,7 +480,24 @@ function App() {
         }
       })
         .then(response => {
-          setAdaptData(JSON.parse(response.data))
+          var data = JSON.parse(response.data)['documents']
+          setTagData(data)
+          var types = []
+          var linkedData = {}
+          data.forEach(d => {
+            linkedData[d['_id']] = d['title']
+          })
+          if (data.length > 1) {
+            data.forEach(d => {
+              types.push(d['_id'])
+            })
+            //setTagTypes(types)
+          } else {
+            //setTagTypes(data[0]['_id'])
+            types.push(data[0]['_id'])
+          }
+          setTagTypes(linkedData)
+          console.log(linkedData)
         })
   }
 
@@ -456,13 +520,16 @@ function App() {
       setDataPath(null);
 
       getAggregateData();
+      //getTagInfo();
       // if (course) {
       //   getAdaptData()
       // }
+      //getAdaptData();
       getObjectList();
       getStudentChartData();
       getPageViewData();
       getChapters();
+      // mergeLTAdaptData(allData['student'], allData['adapt'])
     } else if (course && courseId) {
       alert("Please choose either a course or a course Id.")
       setSubject(null)
@@ -642,6 +709,9 @@ function App() {
       setCourse(temp);
       setDisableCourse(false);
       //setState functions acting late -> need to change them before handleClick
+      setTagType(null);
+      setTagTitle(null);
+      setTagTypes(null);
       setAllChapters(null);
       setChosenPath(null);
       setDataPath(null);
@@ -657,7 +727,8 @@ function App() {
       setStudent(null);
       setDisableStudent(false);
       setDisablePage(false);
-      setCourseId(value)
+      setCourseName(value);
+      setCourseId(realCourses[value]);
       setCategory(null)
       setSubject(null)
       setCourse(null)
@@ -1207,12 +1278,12 @@ function App() {
           <Box direction="row">
             <Box gridArea="courses" alignContent="center" align="center" alignSelf="center" fill>
               <Box direction="column">
-              {allCourses &&
+              {realCourses &&
                 <Box width="375px" margin={{top: "medium", right: "xlarge", left: "large", bottom: "small"}}>
                   <Select
-                    options={allCourses}
+                    options={Object.keys(realCourses)}
                     margin={{top: "medium", right: "xlarge", left: "large", bottom: "small"}}
-                    value={courseId}
+                    value={courseName}
                     dropHeight="medium"
                     onChange={({ option }) => handleChange("courseId", option)}
                   />
