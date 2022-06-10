@@ -42,7 +42,7 @@ export default function DataTable({
       //console.log(d.toString())
       return d.toString()
     }
-    
+
     //console.log(this.props.data)
     var headers = [
       {label: 'Name', key: idAccessor},
