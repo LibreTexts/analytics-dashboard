@@ -1202,6 +1202,7 @@ app.post('/data', (req,res,next) => {
         newData = JSON.stringify(newData)
         res.json(newData);
       })
+    })
       .catch(function (error) {
           console.log(error);
       });
