@@ -124,20 +124,6 @@ function App() {
 
   useEffect(() => {
 
-    let courses = [];
-   let courseNames = [];
-   let coursesWithNames = {};
-
-   axios('/analytics/api/courses')
-     .then(response => {
-       response.data.forEach(course => {
-         courses.push(course._id)
-       })
-       setAllCourses(courses)
-       courseNames.map(c => c.replaceAll("_", " "))
-       setAllCourseNames(coursesWithNames)
-     })
-
      let realCourses = {}
      axios('/analytics/api/realcourses')
        .then(response => {
@@ -149,38 +135,6 @@ function App() {
          setRealCourses(realCourses)
        })
 
-    let d = {}
-    let cats = []
-    axios('/analytics/api/categories')
-      .then(response => {
-        response.data.forEach(cat => {
-          var id = cat._id.replaceAll("_", " ")
-          cats.push(id)
-          if (id in d) {
-            d[id].push(cat.subjectName)
-          } else {
-            d[id] = cat.subjectName
-          }
-        })
-        setCategories(cats)
-      })
-
-    axios('/analytics/api/subjects')
-      .then(response => {
-        response.data.forEach(subj => {
-          var temp = subj._id.replaceAll("_", " ")
-          if (temp in d) {
-            d[temp].push(subj.courseName)
-          } else {
-            d[temp] = subj.courseName
-          }
-        })
-        Object.keys(d).forEach(key => {
-          d[key] = d[key].flat().map(a => a.replaceAll("_", " "))
-        })
-        d['categories'] = true
-        setAllData(d)
-      })
     }, []);
 
   function getAggregateData() {
@@ -703,24 +657,6 @@ function App() {
     if (type === "subject") {
       setCourse(null)
       setSubject(value)
-    }
-    if (type === "course") {
-      var temp = value.replaceAll(" ", "_")
-      setCourse(temp);
-      setDisableCourse(false);
-      //setState functions acting late -> need to change them before handleClick
-      setTagType(null);
-      setTagTitle(null);
-      setTagTypes(null);
-      setAllChapters(null);
-      setChosenPath(null);
-      setDataPath(null);
-      setStart(null);
-      setEnd(null);
-      setPage(null);
-      setStudent(null);
-      setDisableStudent(false);
-      setDisablePage(false);
     }
     if (type === "courseId") {
       setPage(null);
@@ -1270,55 +1206,25 @@ function App() {
       <Box gridArea="header" background="#022851" fill={true} contentAlign="center" margin={{top: "small"}}>
         <Heading level='3' alignSelf="start" responsive={true} gridArea="header" margin="small">LibreTexts Activity Dashboard</Heading>
       </Box>
-        {categories && allData['categories'] &&
+        {realCourses &&
           <Box fill>
           <Box width="100%" responsive={true}>
-            <InfoBox infoText="Please choose a course using one of the following options." color="#b0e0e6" main={true}/>
+            <InfoBox infoText="Please choose a course." color="#b0e0e6" main={true}/>
           </Box>
           <Box direction="row">
             <Box gridArea="courses" alignContent="center" align="center" alignSelf="center" fill>
-              <Box direction="column">
-              {realCourses &&
-                <Box width="375px" margin={{top: "medium", right: "xlarge", left: "large", bottom: "small"}}>
+              <Box >
+                <Box direction="row">
+                <Box width="500px" margin={{top: "medium", right: "medium", left: "large", bottom: "small"}}>
                   <Select
                     options={Object.keys(realCourses)}
-                    margin={{top: "medium", right: "xlarge", left: "large", bottom: "small"}}
+                    margin={{top: "medium", right: "large", left: "large", bottom: "small"}}
                     value={courseName}
                     dropHeight="medium"
                     onChange={({ option }) => handleChange("courseId", option)}
                   />
                 </Box>
-              }
-                <Box direction="row">
-                <Select
-                  options={categories}
-                  margin={{top: "medium", horizontal: "small", bottom: "small"}}
-                  value={category}
-                  dropHeight="medium"
-                  onChange={({ option }) => handleChange("category", option)}
-                />
-                {category && allData[category] &&
-                  <Box>
-                  <Select
-                    options={allData[category]}
-                    margin={{top: "medium", horizontal: "small", bottom: "small"}}
-                    value={subject}
-                    dropHeight="medium"
-                    onChange={({ option }) => handleChange("subject", option)}
-                  />
-                  </Box>
-                }
-                {allData && subject &&
-                  <Box>
-                  <Select
-                    options={allData[subject]}
-                    margin={{top: "medium", horizontal: "small", bottom: "small"}}
-                    dropHeight="medium"
-                    onChange={({ option }) => handleChange("course", option)}
-                  />
-                  </Box>
-                }
-                <Button label="Apply" margin={{top: "medium"}} style={{height: 45}} primary color="#0047BA" disabled={disableCourse} onClick={handleClick}/>
+                <Button label="Apply" margin={{top: "large"}} style={{height: 45}} primary color="#0047BA" disabled={disableCourse} onClick={handleClick}/>
                 </Box>
                   {disableCourse && !allData['student'] && !allData['page'] &&
                     <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />

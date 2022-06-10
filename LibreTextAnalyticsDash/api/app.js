@@ -53,127 +53,90 @@ function decryptStudent(student) {
   return decrypted
 }
 
-var courseQuery = {
+var enrollmentQuery = {
+  "collection": "enrollments",
+  "database": db,
+  "dataSource": dataSource,
+  "pipeline": [
+    {
+      '$group': {
+        '_id': '$email',
+        'courses': {'$addToSet': '$class'}
+      }
+    }
+  ]
+}
+
+var realCourseQuery = {
   "collection": coll,
   "database": db,
   "dataSource": dataSource,
   "pipeline": [
     {
-      '$group': {
-        '_id': '$actor.courseName'
-      }
-    }
-  ]
-}
-
-var categoryQuery = {
-  "collection": pageColl,
-  "database": db,
-  "dataSource": dataSource,
-  "pipeline": [
-    {
-      '$group': {
-        '_id': {'$first': '$path'},
-        'subjectName': {'$addToSet': {'$arrayElemAt': ['$path', 1]}},
-        'courseName': {'$addToSet': {'$arrayElemAt': ['$path', 2]}}
-      }
-    }
-  ]
-}
-
-var subjectQuery = {
-  "collection": pageColl,
-  "database": db,
-  "dataSource": dataSource,
-  "pipeline": [
-    {
-      '$group': {
-        '_id': {'$arrayElemAt': ['$path', 1]},
-        'courseName': {'$addToSet': {'$arrayElemAt': ['$path', 2]}}
-      }
-    }
-  ]
-}
-
-var courseNameQuery = {
-  "collection": coll,
-  "database": db,
-  "dataSource": dataSource,
-  "pipeline": [
-    {
-      '$group': {
-        '_id': '$object.id',
-        'course': {'$addToSet': '$actor.courseName'}
+      '$addFields': {
+        'pageObject': {'$concat': ['$object.subdomain', '-', '$object.id']}
       }
     },
     {
-      '$lookup': {
-        "from": pageColl,
-        "localField": "_id",
-        "foreignField": "id",
-        "as": "pageInfo"
-      }
-    },
-    {
-      '$unwind': {
-        'path': '$pageInfo'
-      }
-    },
-    {
-      '$group': {
-        '_id': '$pageInfo.courseName',
-        'courses': {'$push': '$course'}
+      '$match': {
+        '$expr': {
+          '$eq':["$actor.courseName", "$pageObject"]
+        }
       }
     },
     {
       '$project': {
-          "items": {
-            "$reduce": {
-              "input": "$courses",
-              "initialValue": [],
-              "in": { "$concatArrays": ["$$this", "$$value"] }
+        'actor': '$actor',
+        'course':
+          {'$cond': {
+            'if': {
+              '$eq': [{'$arrayElemAt': [{'$split': ['$object.url', '/']}, -1]}, "Text"]
+            },
+            'then': {
+              '$concat': [
+                {'$replaceAll': {'input': {'$arrayElemAt': [{'$split': ['$object.url', '/']}, -2]}, 'find': '%3A', 'replacement': ":"}}, '/',
+                {'$arrayElemAt': [{'$split': ['$object.url', '/']}, -1]}
+              ]
+            },
+            'else': {
+              '$arrayElemAt': [{'$split': ['$object.url', '/']}, -1]
             }
           }
         }
+      }
+    },
+    {
+      '$group': {
+        '_id': '$actor.courseName',
+        'courseId': {'$addToSet': '$course'}
+      }
     },
     {
       '$project': {
-          "courses": {
-            "$reduce": {
-              "input": "$items",
-              "initialValue": [],
-              "in": {
-                      '$cond':{
-                          'if': {'$in': [ "$$this", "$$value"]},
-                          'then': "$$value",
-                          'else': {'$concatArrays':["$$value",["$$this"]]}
-                      }
-                   }
+        'courses': {
+            '$filter': {
+                'input': '$courseId',
+                'cond': {
+                  '$not': {
+                    '$or': [
+                      {'$regexFind': {'input': '$$this', 'regex': "#"}},
+                      {'$regexFind': {'input': '$$this', 'regex': "3A"}}
+                    ]
+                  }
+                }
             }
-          }
         }
     }
+  },
+  {
+    '$addFields': {
+      'course': {'$replaceAll': {'input': {'$first': '$courses'}, 'find': '_', 'replacement': " "}}
+    }
+  }
   ]
 }
 
 function unitsQuery(params, courseData) {
-  var alias = courseData.find(o => o._id === params.course)
-  var initMatch = {
-    "$match": {
-      '$expr': {
-
-      }
-    }
-  }
-  if (alias['courses'].length > 1) {
-    initMatch['$match']['$expr'] = {'$or': []}
-    alias['courses'].forEach(a => {
-      initMatch['$match']['$expr']['$or'].push({'$eq': ['$actor.courseName', a]})
-    })
-  } else {
-    initMatch['$match']['$expr'] = {'$and': []}
-    initMatch['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', alias['courses'][0]]})
-  }
 
   var data = {
     "collection": coll,
@@ -182,7 +145,12 @@ function unitsQuery(params, courseData) {
     "pipeline": [
       {
         '$match': {
-          'verb': 'read'
+          '$expr': {
+            '$and': [
+              {'$eq': ['$verb', 'read']},
+              {'$eq': ['$actor.courseName', params.courseId]}
+            ]
+          }
         }
       },
       {
@@ -226,52 +194,11 @@ function unitsQuery(params, courseData) {
       }
     ]
   }
-  var courseMatch = {
-    "$match": {
-      '$expr': {
-        '$and': [
-          {'$eq': ['$course', params.course]}
-        ]
-      }
-    }
-  }
-  var match = {
-    '$match': {
-      '$expr': {
-        '$and': []
-      }
-    }
-  }
-  if (!params.courseId) {
-    data['pipeline'].splice(1, 0, initMatch)
-    data['pipeline'].splice(5, 0, courseMatch)
-  }
-  if (params.courseId) {
-    match['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', params.courseId]})
-    data['pipeline'].splice(0, 0, match)
-  }
+
   return data
 }
 
 function timelineQuery(params, courseData) {
-
-    var alias = courseData.find(o => o._id === params.course)
-    var initMatch = {
-      "$match": {
-        '$expr': {
-
-        }
-      }
-    }
-    if (alias['courses'].length > 1) {
-      initMatch['$match']['$expr'] = {'$or': []}
-      alias['courses'].forEach(a => {
-        initMatch['$match']['$expr']['$or'].push({'$eq': ['$actor.courseName', a]})
-      })
-    } else {
-      initMatch['$match']['$expr'] = {'$and': []}
-      initMatch['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', alias['courses'][0]]})
-    }
 
     var data = {
       "collection": coll,
@@ -282,7 +209,8 @@ function timelineQuery(params, courseData) {
           '$match': {
             '$expr': {
               '$and': [
-                {'$eq': ['$verb', 'read']}
+                {'$eq': ['$verb', 'read']},
+                {'$eq': ['$actor.courseName', params.courseId]}
               ]
             }
           }
@@ -326,19 +254,6 @@ function timelineQuery(params, courseData) {
           '$sort': {'_id': 1}
         }
       ]
-    }
-    var courseMatch = {
-      "$match": {
-        '$expr': {
-          '$and': [
-            {'$eq': ['$course', params.course]}
-          ]
-        }
-      }
-    }
-    if (!params.courseId) {
-      data['pipeline'].splice(1, 0, initMatch)
-      data['pipeline'].splice(5, 0, courseMatch)
     }
     var match = {
       '$match': {
@@ -401,10 +316,6 @@ function timelineQuery(params, courseData) {
         }
       }
     }
-    if (params.courseId) {
-      match['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', params.courseId]})
-      data['pipeline'].splice(0, 0, match)
-    }
     if (params.path) {
       data['pipeline'].splice(6, 0, unitLookup)
     }
@@ -426,29 +337,22 @@ function getRequest(queryString) {
 }
 
 function getIndividual(params, courseData) {
-    var alias = courseData.find(o => o._id === params.course)
-    var initMatch = {
-      "$match": {
-        '$expr': {
-
-        }
-      }
-    }
-    if (alias['courses'].length > 1) {
-      initMatch['$match']['$expr'] = {'$or': []}
-      alias['courses'].forEach(a => {
-        initMatch['$match']['$expr']['$or'].push({'$eq': ['$actor.courseName', a]})
-      })
-    } else {
-      initMatch['$match']['$expr'] = {'$and': []}
-      initMatch['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', alias['courses'][0]]})
-    }
 
     var data = {
         "collection": coll,
         "database": db,
         "dataSource": dataSource,
         "pipeline": [
+          {
+            "$match": {
+              '$expr': {
+                '$and': [
+                  {'$eq': ['$verb', 'read']},
+                  {'$eq': ['$actor.courseName', params.courseId]}
+                ]
+              }
+            }
+          },
           {
             '$lookup': {
               "from": pageColl,
@@ -507,30 +411,6 @@ function getIndividual(params, courseData) {
           }
         ]
     }
-    var courseMatch = {
-      "$match": {
-        '$expr': {
-          '$and': [
-            {'$eq': ['$course', params.course]}
-          ]
-        }
-      }
-    }
-    if (!params.courseId) {
-      data['pipeline'].splice(1, 0, initMatch)
-      data['pipeline'].splice(5, 0, courseMatch)
-    }
-
-    var match =
-    {
-      "$match": {
-        '$expr': {
-          '$and': [
-            {'$eq': ['$verb', 'read']}
-          ]
-        }
-      }
-    }
 
     var pathMatch = {
       "$match": {
@@ -558,9 +438,6 @@ function getIndividual(params, courseData) {
       '$unset': ["pageTitle", "pageURL"]
     }
 
-    if (params.courseId) {
-      match['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', params.courseId]})
-    }
     if (params.path) {
       data['pipeline'].splice(4, 0, pathMatch)
     }
@@ -586,26 +463,6 @@ function getIndividual(params, courseData) {
 
 function allDataQuery(params, courseData) {
 
-  var alias = courseData.find(o => o._id === params.course)
-
-  var initMatch = {
-    "$match": {
-      '$expr': {
-
-      }
-    }
-  }
-
-  if (alias['courses'].length > 1) {
-    initMatch['$match']['$expr'] = {'$or': []}
-    alias['courses'].forEach(a => {
-      initMatch['$match']['$expr']['$or'].push({'$eq': ['$actor.courseName', a]})
-    })
-  } else {
-    initMatch['$match']['$expr'] = {'$and': []}
-    initMatch['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', alias['courses'][0]]})
-  }
-
   if (params.groupBy === '$actor.id') {
     var aggregationAttr = "$object.id"
     var isPage = false
@@ -622,26 +479,11 @@ function allDataQuery(params, courseData) {
       {
         "$match": {
           '$expr': {
-            '$and': [{'$eq': ["$verb", "read"]}]
+            '$and': [
+              {'$eq': ["$verb", "read"]},
+              {'$eq': ["$actor.courseName", params.courseId]}
+            ]
           }
-        }
-      },
-      {
-        "$lookup": {
-          "from": pageColl,
-          "localField": "object.id",
-          "foreignField": "id",
-          "as": "pageInfo"
-        }
-      },
-      {
-        "$unwind": {
-          'path': '$pageInfo'
-        }
-      },
-      {
-        '$addFields': {
-          'course': '$pageInfo.courseName'
         }
       },
         {
@@ -681,18 +523,14 @@ function allDataQuery(params, courseData) {
           }
         }
     ]}
-    var courseMatch = {
-      "$match": {
-        '$expr': {
-          '$and': [
-            {'$eq': ['$course', params.course]}
-          ]
-        }
+
+    var lookup = {
+      "$lookup": {
+        "from": pageColl,
+        "localField": "object.id",
+        "foreignField": "id",
+        "as": "pageInfo"
       }
-    }
-    if (!params.courseId) {
-      data['pipeline'].splice(1, 0, initMatch)
-      data['pipeline'].splice(5, 0, courseMatch)
     }
 
     var match = {
@@ -737,17 +575,33 @@ function allDataQuery(params, courseData) {
       }
     }
 
+    var tagLookup = {
+      '$lookup': {
+        "from": "metatags",
+        "localField": "id",
+        "foreignField": "pageInfo.id",
+        "as": "tags"
+      }
+    }
+    var adaptLookup = {
+      "$lookup": {
+        "from": "adapt",
+        "localField": "_id",
+        "foreignField": "anon_student_id",
+        "as": "adapt"
+      }
+    }
+
     if (isPage) {
+      data['pipeline'].splice(1, 0, lookup)
+      data['pipeline'].splice(2, 0, unwind)
       data['pipeline'].splice(8, 0, pageTitle)
     } else {
+      //data['pipeline'].splice(3, 0, adaptLookup)
       data['pipeline'].splice(8, 0, unset)
     }
 
     var matchesUsed = false
-    if (params.courseId) {
-      match['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', params.courseId]})
-      data['pipeline'].splice(0, 0, match)
-    }
     if (params.startDate) {
       filterMatch['$match']['$expr']['$and'].push({'$gte': ['$newDate', {'$dateFromString': {'dateString': params.startDate}}]})
       matchesUsed = true
@@ -756,6 +610,7 @@ function allDataQuery(params, courseData) {
       filterMatch['$match']['$expr']['$and'].push({'$lte': ['$newDate', {'$dateFromString': {'dateString': params.endDate}}]})
       matchesUsed = true
     }
+
     if (matchesUsed && params.courseId) {
       data['pipeline'].splice(6, 0, filterMatch)
     } else if (matchesUsed && !params.courseId) {
@@ -764,30 +619,43 @@ function allDataQuery(params, courseData) {
     if (params.path) {
       data['pipeline'].splice(6, 0, unitLookup)
     }
+    var tagMatch = {
+      '$project': {
+          'tags': {
+             '$filter': {
+              'input': "$tags",
+              'as': "item",
+              'cond': {
+                  '$and': []
+              }
+             }
+          },
+          'actor': '$actor',
+          'object': '$object',
+          'verb': '$verb',
+          'course': '$course',
+          'result': '$result',
+          'pageInfo': '$pageInfo'
+      }
+    }
+    var hasTags = false
+    if (params.tagType) {
+      data['pipeline'].splice(6, 0, tagLookup)
+      tagMatch['$project']['tags']['$filter']['cond']['$and'].push({'$eq': ['$tags.type', params.tagType]})
+      hasTags = true
+    }
+    if (params.tagTitle) {
+      tagMatch['$project']['tags']['$filter']['cond']['$and'].push({'$eq': ['$tags.title', params.tagTitle]})
+      hasTags = true
+    }
+    // if (hasTags) {
+    //   data['pipeline'].splice(7, 0, tagMatch)
+    // }
     return data;
 }
 
-  function studentChartQuery(params, courseData) {
+  function studentChartQuery(params) {
     var group = '$'+params.groupBy
-    var alias = courseData.find(o => o._id === params.course)
-
-    var initMatch = {
-      "$match": {
-        '$expr': {
-
-        }
-      }
-    }
-
-    if (alias['courses'].length > 1) {
-      initMatch['$match']['$expr'] = {'$or': []}
-      alias['courses'].forEach(a => {
-        initMatch['$match']['$expr']['$or'].push({'$eq': ['$actor.courseName', a]})
-      })
-    } else {
-      initMatch['$match']['$expr'] = {'$and': []}
-      initMatch['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', alias['courses'][0]]})
-    }
 
     var data = {
       "collection": coll,
@@ -854,16 +722,6 @@ function allDataQuery(params, courseData) {
           }
         }
       ]
-    }
-
-    var courseMatch = {
-      "$match": {
-        '$expr': {
-          '$and': [
-            {'$eq': ['$course', params.course]}
-          ]
-        }
-      }
     }
 
     var match = {
@@ -947,26 +805,6 @@ function allDataQuery(params, courseData) {
   }
 
   function pageViewChartQuery(params, courseData) {
-
-    var alias = courseData.find(o => o._id === params.course)
-
-    var initMatch = {
-      "$match": {
-        '$expr': {
-
-        }
-      }
-    }
-
-    if (alias['courses'].length > 1) {
-      initMatch['$match']['$expr'] = {'$or': []}
-      alias['courses'].forEach(a => {
-        initMatch['$match']['$expr']['$or'].push({'$eq': ['$actor.courseName', a]})
-      })
-    } else {
-      initMatch['$match']['$expr'] = {'$and': []}
-      initMatch['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', alias['courses'][0]]})
-    }
 
     var data = {
       "collection": coll,
@@ -1088,11 +926,49 @@ function allDataQuery(params, courseData) {
     return data;
   }
 
+  function getTagQuery(params) {
+
+    var data = {
+      "collection": "metatags",
+      "database": db,
+      "dataSource": dataSource,
+      "pipeline": [
+        {
+          "$lookup": {
+            'from': 'pageinfo',
+            'localField': 'id',
+            'foreignField': 'id',
+            'as': 'pageInfo'
+          }
+        },
+        {
+          "$unwind": {
+            'path': '$pageInfo'
+          }
+        },
+        {
+          "$match": {
+            '$expr': {
+              '$gt': [{ '$indexOfCP': [ "$pageInfo.courseName", params.course ] }, -1]
+            }
+          }
+        },
+        {
+          "$group": {
+            '_id': '$type',
+            'title': {'$addToSet': '$title'}
+          }
+        }
+      ]
+    }
+    return data
+  }
+
   function getAdaptQuery(params) {
 
-    var arr = params.course.split("_")
-    var index = arr.findIndex(value => /\d/.test(value))
-    var course = arr[index-1]+" "+arr[index]
+    // var arr = params.course.split("_")
+    // var index = arr.findIndex(value => /\d/.test(value))
+    // var course = arr[index-1]+" "+arr[index]
 
     var data = {
       "collection": adaptColl,
@@ -1102,15 +978,15 @@ function allDataQuery(params, courseData) {
         {
           "$match": {
             '$expr': {
-              '$gt': [{ '$indexOfCP': [ "$class_name", course ] }, -1]
+              '$eq': ['$class', params.course]
             }
           }
         },
         {
           "$group": {
             '_id': '$anon_student_id',
-            'lastDate': {'$max': '$time'},
-            'objects': {'$addToSet': '$problem_name'}
+            'adaptLastDate': {'$max': '$time'},
+            'adaptObjects': {'$addToSet': '$problem_name'}
           }
         },
         {
@@ -1123,59 +999,48 @@ function allDataQuery(params, courseData) {
     return data
   }
 
-  let courseAliasConfig = getRequest(courseNameQuery)
-  var courseNameData = {}
-  axios(courseAliasConfig).then(function (response) {
-    courseNameData = (response.data['documents'])
-  }).catch(function (error) {
-    console.log(error)
+
+  function mergeLTAdaptData(lt, adapt) {
+    console.log(lt)
+    console.log(adapt)
+    const result = {
+      ...lt,
+      ...adapt,
+    };
+    console.log("MERGED")
+    console.log(result)
+  }
+
+  let realCourseConfig = getRequest(realCourseQuery);
+  let realCourseNames = {}
+  axios(realCourseConfig)
+    .then(function (response) {
+      realCourseNames = response.data['documents']
+    })
+    .catch(function (error) {
+      console.log(error)
+    });
+
+  app.get('/realcourses', (req, res) => {
+    res.json(realCourseNames)
   })
 
-let courseConfig = getRequest(courseQuery);
-let courseNames = {}
-axios(courseConfig)
-  .then(function (response) {
-    courseNames = response.data['documents']
+  let enrollmentConfig = getRequest(enrollmentQuery);
+  let studentEnrollment = {}
+  axios(enrollmentConfig)
+    .then(function (response) {
+      studentEnrollment = response.data['documents']
+    })
+    .catch(function (error) {
+      console.log(error)
+    });
+
+  app.get('/enrollment', (req, res) => {
+    res.json(studentEnrollment)
   })
-  .catch(function (error) {
-    console.log(error)
-  });
-
-app.get('/courses', (req, res) => {
-  res.json(courseNames)
-})
-
-let catConfig = getRequest(categoryQuery);
-let categories = {}
-axios(catConfig)
-  .then(function (response) {
-    categories = response.data['documents']
-  })
-  .catch(function (error) {
-    console.log(error)
-  });
-
-app.get('/categories', (req, res) => {
-  res.json(categories)
-})
-
-let subjConfig = getRequest(subjectQuery);
-let subjects = {}
-axios(subjConfig)
-  .then(function (response) {
-    subjects = response.data['documents']
-  })
-  .catch(function (error) {
-    console.log(error)
-  });
-
-app.get('/subjects', (req, res) => {
-  res.json(subjects)
-})
-
 
 app.post('/timelineData', (req,res,next) => {
-  let queryString = timelineQuery(req.body, courseNameData);
+  let queryString = timelineQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -1189,20 +1054,20 @@ app.post('/timelineData', (req,res,next) => {
 
 });
 
-app.post('/data', (req,res,next) => {
-  let queryString = allDataQuery(req.body, courseNameData);
+app.post('/data', async (req,res,next) => {
+  let queryString = allDataQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
-      .then(function (response) {
+      .then(function async (response) {
         let newData = (response.data)
         newData['documents'].forEach((student, index) => {
           if (student._id.length >= 20) {
             newData['documents'][index]._id = decryptStudent(student._id)
         }
+        })
         newData = JSON.stringify(newData)
         res.json(newData);
       })
-    })
       .catch(function (error) {
           console.log(error);
       });
@@ -1210,7 +1075,7 @@ app.post('/data', (req,res,next) => {
 });
 
 app.post('/individual', (req,res,next) => {
-  let queryString = getIndividual(req.body, courseNameData);
+  let queryString = getIndividual(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -1225,7 +1090,7 @@ app.post('/individual', (req,res,next) => {
 });
 
 app.post('/studentchart', (req,res,next) => {
-  let queryString = studentChartQuery(req.body, courseNameData);
+  let queryString = studentChartQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -1248,7 +1113,7 @@ app.post('/studentchart', (req,res,next) => {
 });
 
 app.post('/pageviews', (req,res,next) => {
-  let queryString = pageViewChartQuery(req.body, courseNameData);
+  let queryString = pageViewChartQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -1263,7 +1128,22 @@ app.post('/pageviews', (req,res,next) => {
 });
 
 app.post('/adapt', (req,res,next) => {
-  let queryString = getAdaptQuery(req.body, courseNameData);
+  let queryString = getAdaptQuery(req.body);
+  let config = getRequest(queryString);
+  axios(config)
+      .then(function (response) {
+        let newData = (response.data)
+        newData = JSON.stringify(newData)
+        res.json(newData);
+      })
+      .catch(function (error) {
+          console.log(error);
+      });
+
+});
+
+app.post('/tags', (req,res,next) => {
+  let queryString = getTagQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -1278,7 +1158,7 @@ app.post('/adapt', (req,res,next) => {
 });
 
 app.post('/chapters', (req,res,next) => {
-  let queryString = unitsQuery(req.body, courseNameData)
+  let queryString = unitsQuery(req.body)
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {

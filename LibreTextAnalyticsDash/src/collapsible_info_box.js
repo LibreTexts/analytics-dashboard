@@ -14,12 +14,7 @@ export default function InfoBox({
 }) {
   let [open, setOpen] = useState(initShow);
   let message = []
-  if (main === true) {
-    let arr = infoText.split("one")
-    message.push(<Text alignSelf="center" margin={{top: "small"}} className="underline">{arr[0]}<strong>one</strong>{arr[1]}</Text>)
-  } else {
-    message.push(<Text alignSelf="center" margin={{top: "small"}}>{infoText}</Text>)
-  }
+  message.push(<Text alignSelf="center" margin={{top: "small"}}>{infoText}</Text>)
 
   return (
     <>
