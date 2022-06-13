@@ -3,3 +3,9 @@
 /LibreTextAnalyticsDash/api/node_modules
 
 .DS_Store
+
+*.csv
+
+.env
+
+*.json

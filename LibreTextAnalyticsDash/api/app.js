@@ -412,6 +412,15 @@ function getIndividual(params, courseData) {
         ]
     }
 
+    var match = {
+      "$match": {
+        '$expr': {
+          '$and': [
+          ]
+        }
+      }
+    }
+
     var pathMatch = {
       "$match": {
         '$expr': {
@@ -457,7 +466,7 @@ function getIndividual(params, courseData) {
     if (params.endDate) {
       match['$match']['$expr']['$and'].push({'$lte': ['$newDate', {'$dateFromString': {'dateString': params.endDate}}]})
     }
-    data['pipeline'].splice(0, 0, match)
+    data['pipeline'].splice(1, 0, match)
     return data;
 }
 
