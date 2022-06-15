@@ -9,7 +9,8 @@ export default function StudentChart({
     xaxisLabel,
     data,
     width,
-    allData
+    allData,
+    hasAdapt
   }) {
     const [studentData, setStudentData] = React.useState(null);
     const [newWidth, setNewWidth] = React.useState(width);
@@ -92,7 +93,7 @@ export default function StudentChart({
     {studentData &&
       <Box fill={true} flex={true} responsive={true}>
         <Button alignSelf="end" onClick={clearChart} icon={<FormClose />}/>
-        <StudentTable data={studentData}/>
+        <StudentTable data={studentData} hasAdapt={hasAdapt}/>
       </Box>
     }
     </>

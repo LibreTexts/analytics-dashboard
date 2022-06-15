@@ -6,6 +6,19 @@
     padding: 10px;
 }
 
+th {
+  background-color: red;
+}
+
+.lt-data {
+  background-color: rgb(255, 255, 158, .5)
+  /* rgb(179, 229, 252, .5); */
+}
+
+.adapt-data {
+  background-color: rgb(171, 247, 177, .5);
+}
+
 .new-line {
   white-space: pre-line;
 }

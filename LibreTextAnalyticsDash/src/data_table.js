@@ -2,13 +2,16 @@ import React from 'react';
 import ReactTable from 'react-table-6';
 import {matchSorter} from 'match-sorter';
 import { CSVLink, CSVDownload } from "react-csv";
-import {Button} from "grommet";
+import {Button, Tip} from "grommet";
 import {Download} from "grommet-icons"
+import "./index.css"
 
 export default function DataTable({
   tab,
-  data
+  data,
+  hasAdapt
   }) {
+    //console.log("TAB", tab)
     const [pageSize, setPageSize] = React.useState(20);
     let reactTable = React.useRef(null);
     const [exportData, setExportData] = React.useState(data)
@@ -24,11 +27,11 @@ export default function DataTable({
       var idAccessor = "pageTitle";
       var filename = "page-data.csv"
     }
-    function createLink(pageInfo) {
+    function createLink(pageInfo, idAccessor) {
       var title = pageInfo.original.pageTitle
       var url = pageInfo.original.pageURL
       var tab = "page"
-      if (url === undefined) {
+      if (url.length === 0) {
         tab = "student"
       }
       if (tab === "page") {
@@ -37,55 +40,95 @@ export default function DataTable({
         return pageInfo.original._id
       }
     }
-    function formatDate(val) {
-      var d = new Date(val.original.max)
+
+    function formatDate(val, type) {
+      if (type === "lt" && val.original.max) {
+        var d = new Date(val.original.max)
+      } else if (type === "adapt" && val.original.mostRecentAdaptLoad) {
+        var d = new Date(val.original.mostRecentAdaptLoad)
+      } else {
+        return ""
+      }
+      var arr = (d.toString().split(" "))
       //console.log(d.toString())
-      return d.toString()
+      return arr[1]+" "+arr[2]+" "+arr[3]
     }
 
-    //console.log(this.props.data)
+    //console.log(data)
     var headers = [
       {label: 'Name', key: idAccessor},
-      {label: column2Label, key: 'objectCount'}
+      {label: 'LT '+column2Label, key: 'objectCount'}
     ]
-    if (tab === "page") {
-      headers.push(
-        {label: 'Average Page Duration', key: 'durationInMinutes'},
-        {label: 'Average Percent', key: 'percentAvg'}
-      )
-    } else if (tab === "student") {
-      headers.push(
-        {label: 'Most Recent Page Load', key: 'max'},
-        {label: 'Unique Interaction Days', key: 'dateCount'}
-      )
-    }
 
     var columns = [
-      {Header: "Name", width: 250, accessor: idAccessor, Cell: val => (createLink(val)),
+      {Header: <Tip content="Name">Name</Tip>, width: 250, accessor: idAccessor, Cell: val => (createLink(val, idAccessor)),
             filterMethod: (filter, rows) =>
               matchSorter(rows, filter.value, { keys: [idAccessor] }),
-            filterAll: true},
-      {Header: column2Label, accessor: "objectCount",
-            filterMethod: (filter, rows) =>
-              matchSorter(rows, filter.value, { keys: ["objectCount"] }),
-            filterAll: true},
-      {Header: column3Label, accessor: "viewCount",
-            filterMethod: (filter, rows) =>
-              matchSorter(rows, filter.value, { keys: ["viewCount"] }),
             filterAll: true}
     ]
 
     if (tab === "student") {
-      columns.push({Header: "Most Recent Page Load", accessor: "max", Cell: val => formatDate(val),
+      headers.push(
+        {label: 'LT '+column3Label, key: 'viewCount'},
+        {label: 'LT Most Recent Page Load', key: 'max'},
+        {label: 'LT Unique Interaction Days', key: 'dateCount'}
+      )
+      columns.push(
+    {Header: <Tip content={column2Label}>{column2Label}</Tip>, headerClassName: "lt-data", accessor: "objectCount",
+      getProps: (state, rowInfo, column) => {
+              return {
+                  style: {
+                      background: 'rgb(255, 255, 158, .5)',
+                  },
+              };
+          },
+          filterMethod: (filter, rows) =>
+            matchSorter(rows, filter.value, { keys: ["objectCount"] }),
+          filterAll: true},
+      {Header: <Tip content={column3Label}>{column3Label}</Tip>, headerClassName: "lt-data", accessor: "viewCount",
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(255, 255, 158, .5)',
+                    },
+                };
+            },
+      filterMethod: (filter, rows) =>
+        matchSorter(rows, filter.value, { keys: ["viewCount"] }),
+      filterAll: true},
+      {Header: <Tip style={{opacity: 1}} content="Most Recent Page Load">Most Recent Page Load</Tip>, headerClassName: "lt-data", accessor: "max", Cell: val => formatDate(val, "lt"),
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(255, 255, 158, .5)',
+                    },
+                };
+            },
             filterMethod: (filter, rows) =>
               matchSorter(rows, filter.value, { keys: ["max"] }),
             filterAll: true},
-      {Header: "Unique Interaction Days", accessor: "dateCount",
+      {Header: <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>, headerClassName: "lt-data", accessor: "dateCount",
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(255, 255, 158, .5)',
+                    },
+                };
+            },
             filterMethod: (filter, rows) =>
               matchSorter(rows, filter.value, { keys: ["dateCount"] }),
             filterAll: true})
     } else if (tab === "page") {
-      columns.push({Header: "Average Page Duration", accessor: "durationInMinutes",
+      headers.push(
+        {label: 'Average Page Duration', key: 'durationInMinutes'},
+        {label: 'Average Percent', key: 'percentAvg'}
+      )
+      columns.push(
+      {Header: column2Label, accessor: "objectCount",
+            filterMethod: (filter, rows) =>
+              matchSorter(rows, filter.value, { keys: ["objectCount"] }),
+            filterAll: true},
+      {Header: "Average Page Duration", accessor: "durationInMinutes",
                   filterMethod: (filter, rows) =>
                     matchSorter(rows, filter.value, { keys: ["durationInMinutes"] }),
                   filterAll: true},
@@ -93,6 +136,46 @@ export default function DataTable({
                   filterMethod: (filter, rows) =>
                     matchSorter(rows, filter.value, { keys: ["percentAvg"] }),
                   filterAll: true})
+    }
+    if (tab === "student" && hasAdapt) {
+      headers.push(
+        {label: 'Adapt Unique Interaction Days', key: 'adaptUniqueInteractionDays'},
+        {label: 'Adapt Unique Assignments', key: 'adaptUniqueAssignments'},
+        {label: 'Adapt Most Recent Page Load', key: 'mostRecentAdaptLoad'}
+      )
+      columns.push({Header: <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>, headerClassName: "adapt-data", accessor: "adaptUniqueInteractionDays",
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)',
+                    },
+                };
+            },
+      filterMethod: (filter, rows) =>
+        matchSorter(rows, filter.value, { keys: ["adaptUniqueInteractionDays"] }),
+      filterAll: true},
+      {Header: <Tip content="Unique Assignments">Unique Assignments</Tip>, headerClassName: "adapt-data", accessor: "adaptUniqueAssignments",
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)',
+                    },
+                };
+            },
+            filterMethod: (filter, rows) =>
+              matchSorter(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
+            filterAll: true},
+      {Header: <Tip content="Most Recent Page Load">Most Recent Page Load</Tip>, headerClassName: "adapt-data", accessor: "mostRecentAdaptLoad", Cell: val => formatDate(val, "adapt"),
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)'
+                    },
+                };
+            },
+            filterMethod: (filter, rows) =>
+              matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
+            filterAll: true})
     }
 
     return (

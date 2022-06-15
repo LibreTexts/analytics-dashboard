@@ -31,48 +31,126 @@ export default class StudentTable extends React.Component {
         return pageInfo.original._id
       }
     }
-    function formatDate(val) {
-      var d = new Date(val.original.max)
+    function formatDate(val, type) {
+      if (type === "lt" && val.original.max) {
+        var d = new Date(val.original.max)
+      } else if (type === "adapt" && val.original.mostRecentAdaptLoad) {
+        var d = new Date(val.original.mostRecentAdaptLoad)
+      } else {
+        return ""
+      }
+      var arr = (d.toString().split(" "))
       //console.log(d.toString())
-      return d.toString()
+      return arr[1]+" "+arr[2]+" "+arr[3]
     }
     //console.log(this.props.data)
     var headers = [
       {label: 'Name', key: "_id"},
-      {label: "Unique Pages Accessed", key: 'objectCount'},
-      {label: 'Total Page Views', key: 'viewCount'},
-      {label: 'Most Recent Page Load', key: 'max'},
-      {label: 'Unique Interaction Days', key: 'dateCount'}
+      {label: "LT Unique Pages Accessed", key: 'objectCount'},
+      {label: 'LT Total Page Views', key: 'viewCount'},
+      {label: 'LT Most Recent Page Load', key: 'max'},
+      {label: 'LT Unique Interaction Days', key: 'dateCount'}
     ]
-    
+
+    var columns = [
+      {Header: "Name", width: 250, accessor: "_id",
+            filterMethod: (filter, rows) =>
+              matchSorter(rows, filter.value, { keys: ["_id"] }),
+            filterAll: true},
+            {Header: "Unique Pages Accessed", headerClassName: "lt-data", accessor: "objectCount",
+              getProps: (state, rowInfo, column) => {
+                      return {
+                          style: {
+                              background: 'rgb(255, 255, 158, .5)',
+                          },
+                      };
+                  },
+                  filterMethod: (filter, rows) =>
+                    matchSorter(rows, filter.value, { keys: ["objectCount"] }),
+                  filterAll: true},
+              {Header: "Total Page Views", headerClassName: "lt-data", accessor: "viewCount",
+                getProps: (state, rowInfo, column) => {
+                        return {
+                            style: {
+                                background: 'rgb(255, 255, 158, .5)',
+                            },
+                        };
+                    },
+              filterMethod: (filter, rows) =>
+                matchSorter(rows, filter.value, { keys: ["viewCount"] }),
+              filterAll: true},
+              {Header: "Most Recent Page Load", headerClassName: "lt-data", accessor: "max", Cell: val => formatDate(val, "lt"),
+                getProps: (state, rowInfo, column) => {
+                        return {
+                            style: {
+                                background: 'rgb(255, 255, 158, .5)',
+                            },
+                        };
+                    },
+                    filterMethod: (filter, rows) =>
+                      matchSorter(rows, filter.value, { keys: ["max"] }),
+                    filterAll: true},
+              {Header: "Unique Interaction Days", headerClassName: "lt-data", accessor: "dateCount",
+                getProps: (state, rowInfo, column) => {
+                        return {
+                            style: {
+                                background: 'rgb(255, 255, 158, .5)',
+                            },
+                        };
+                    },
+                    filterMethod: (filter, rows) =>
+                      matchSorter(rows, filter.value, { keys: ["dateCount"] }),
+                    filterAll: true}
+    ]
+
+    if (this.props.hasAdapt) {
+      headers.push(
+        {label: 'Adapt Unique Interaction Days', key: 'adaptUniqueInteractionDays'},
+        {label: 'Adapt Unique Assignments', key: 'adaptUniqueAssignments'},
+        {label: 'Adapt Most Recent Page Load', key: 'mostRecentAdaptLoad'}
+      )
+      columns.push({Header: "Unique Interaction Days", headerClassName: "adapt-data", accessor: "adaptUniqueInteractionDays",
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)',
+                    },
+                };
+            },
+      filterMethod: (filter, rows) =>
+        matchSorter(rows, filter.value, { keys: ["adaptUniqueInteractionDays"] }),
+      filterAll: true},
+      {Header: "Unique Assignments", headerClassName: "adapt-data", accessor: "adaptUniqueAssignments",
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)',
+                    },
+                };
+            },
+            filterMethod: (filter, rows) =>
+              matchSorter(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
+            filterAll: true},
+      {Header: "Most Recent Page Load", headerClassName: "adapt-data", accessor: "mostRecentAdaptLoad", Cell: val => formatDate(val, "adapt"),
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)'
+                    },
+                };
+            },
+            filterMethod: (filter, rows) =>
+              matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
+            filterAll: true})
+    }
+    console.log(this.props.hasAdapt)
+    console.log(columns)
+
     return (
       <>
       <ReactTable
         data={this.props.data}
-        columns={
-          [
-            {Header: "Name", width: 250, accessor: "_id",
-                  filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, { keys: ["_id"] }),
-                  filterAll: true},
-            {Header: "Unique Pages Accessed", accessor: "objectCount",
-                  filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, { keys: ["objectCount"] }),
-                  filterAll: true},
-            {Header: "Total Page Views", accessor: "viewCount",
-                  filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, { keys: ["viewCount"] }),
-                  filterAll: true},
-            {Header: "Most Recent Page Load", accessor: "max", Cell: val => formatDate(val),
-                  filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, { keys: ["max"] }),
-                  filterAll: true},
-            {Header: "Unique Interaction Days", accessor: "dateCount",
-                  filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, { keys: ["dateCount"] }),
-                  filterAll: true}
-          ]
-        }
+        columns={columns}
         style={{textAlign: 'center', overflow: 'hidden'}}
         defaultPageSize={5}
         gridArea="table"

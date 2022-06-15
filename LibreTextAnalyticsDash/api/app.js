@@ -67,6 +67,70 @@ var enrollmentQuery = {
   ]
 }
 
+var adaptCodeQuery = {
+  "collection": "adaptCodes",
+  "database": db,
+  "dataSource": dataSource,
+  "pipeline": [
+    {
+      '$group': {
+        '_id': '$url',
+        'code': {'$first': '$adaptCode'}
+      }
+    },
+    {
+      '$lookup': {
+        'from': coll,
+        'localField': "_id",
+        'foreignField': "object.url",
+        'as': "lt"
+      }
+    },
+    {
+      '$addFields': {
+        'course': {'$first': '$lt.actor.courseName'}
+      }
+    },
+    {
+      '$unset': [
+        'lt'
+      ]
+    },
+    {
+      '$lookup': {
+        'from': "adapt",
+        'localField': "code",
+        'foreignField': "class",
+        'as': "adapt",
+        'pipeline': [
+          {
+            '$group': {
+              '_id': '$class'
+            }
+          }
+        ]
+      }
+    },
+    {
+      '$project': {
+        '_id': '$_id',
+        'url': '$url',
+        'course': '$course',
+        'code': '$code',
+        'isInAdapt':
+          {'$cond': {
+            'if': {
+              '$gt': [{'$size': '$adapt'}, 0]
+            },
+            'then': true,
+            'else': false
+          }
+        }
+      }
+    }
+  ]
+}
+
 var realCourseQuery = {
   "collection": coll,
   "database": db,
@@ -470,8 +534,68 @@ function getIndividual(params, courseData) {
     return data;
 }
 
-function allDataQuery(params, courseData) {
+function allDataQuery(params, adaptCodes) {
 
+  var codeFound = adaptCodes.find(o => o.course === params.courseId)
+  if (codeFound) {
+    var adaptLookup = {
+      "$lookup": {
+        "from": adaptColl,
+        "localField": "_id",
+        "foreignField": "anon_student_id",
+        "as": "adapt",
+        "pipeline": [
+          {
+            '$match': {
+              '$expr': {
+                '$and': [
+                  {'$eq': ["$class", codeFound.code]}
+                ]
+              }
+            }
+          },
+          {
+            '$addFields': {
+              'day': {'$replaceAll': {
+                'input': '$time', 'find': '"', 'replacement': ''
+              }}
+            }
+          },
+          {
+            '$addFields': {
+              'date': {'$dateTrunc': {
+                  'date': { '$toDate': '$day'},
+                  'unit': 'day'
+                }
+              }
+            }
+          },
+          {
+            '$group': {
+              '_id': '$anon_student_id',
+              'mostRecentAdaptLoad': {'$max': '$day'},
+              'dates': {'$addToSet': '$date'},
+              'assignments': {'$addToSet': '$page_id'}
+            }
+          },
+          {
+            '$addFields': {
+              'adaptUniqueInteractionDays': {'$size': '$dates'},
+              'adaptUniqueAssignments': {'$size': '$assignments'}
+            }
+          }
+        ]
+      }
+    }
+    var adaptUnwind = {
+      "$unwind": {
+        'path': '$adapt',
+        'preserveNullAndEmptyArrays': true
+      }
+    }
+  }
+  // console.log(params.courseId)
+  // console.log(codeFound)
   if (params.groupBy === '$actor.id') {
     var aggregationAttr = "$object.id"
     var isPage = false
@@ -528,10 +652,18 @@ function allDataQuery(params, courseData) {
             "viewCount": {'$size': "$timestamp"},
             "percentAvg": {'$trunc': [{'$avg': "$percent"}, 1]},
             "totalViews": {'$size': "$timestamp"},
-            "dateCount": {'$size': '$uniqueDates'}
+            "dateCount": {'$size': '$uniqueDates'},
+            "adaptUniqueInteractionDays": '$adapt.adaptUniqueInteractionDays',
+            "adaptUniqueAssignments": '$adapt.adaptUniqueAssignments',
+            "mostRecentAdaptLoad": '$adapt.mostRecentAdaptLoad'
           }
         }
     ]}
+
+    if (codeFound && codeFound.isInAdapt && !isPage) {
+      data['pipeline'].splice(3, 0, adaptLookup)
+      data['pipeline'].splice(4, 0, adaptUnwind)
+    }
 
     var lookup = {
       "$lookup": {
@@ -606,8 +738,8 @@ function allDataQuery(params, courseData) {
       data['pipeline'].splice(2, 0, unwind)
       data['pipeline'].splice(8, 0, pageTitle)
     } else {
-      //data['pipeline'].splice(3, 0, adaptLookup)
-      data['pipeline'].splice(8, 0, unset)
+      // data['pipeline'].splice(3, 0, adaptLookup)
+      // data['pipeline'].splice(8, 0, unset)
     }
 
     var matchesUsed = false
@@ -657,9 +789,11 @@ function allDataQuery(params, courseData) {
       tagMatch['$project']['tags']['$filter']['cond']['$and'].push({'$eq': ['$tags.title', params.tagTitle]})
       hasTags = true
     }
+    //console.log(tagMatch['$project']['tags']['$filter'])
     // if (hasTags) {
     //   data['pipeline'].splice(7, 0, tagMatch)
     // }
+    // console.log(data['pipeline'])
     return data;
 }
 
@@ -1020,6 +1154,15 @@ function allDataQuery(params, courseData) {
     console.log(result)
   }
 
+  let libretextToAdaptConfig = getRequest(adaptCodeQuery)
+  var adaptCodes = {}
+  axios(libretextToAdaptConfig).then(function (response) {
+    adaptCodes = (response.data['documents'])
+    //console.log(adaptCodes)
+  }).catch(function (error) {
+    console.log(error)
+  })
+
   let realCourseConfig = getRequest(realCourseQuery);
   let realCourseNames = {}
   axios(realCourseConfig)
@@ -1045,6 +1188,9 @@ function allDataQuery(params, courseData) {
     });
 
   app.get('/enrollment', (req, res) => {
+    studentEnrollment.forEach((r, index) => {
+      studentEnrollment[index]._id = decryptStudent(r._id)
+    })
     res.json(studentEnrollment)
   })
 
@@ -1064,7 +1210,7 @@ app.post('/timelineData', (req,res,next) => {
 });
 
 app.post('/data', async (req,res,next) => {
-  let queryString = allDataQuery(req.body);
+  let queryString = allDataQuery(req.body, adaptCodes);
   let config = getRequest(queryString);
   axios(config)
       .then(function async (response) {

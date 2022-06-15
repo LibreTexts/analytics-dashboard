@@ -121,6 +121,7 @@ function App() {
   const target = React.useRef(null)
   const size = useSize(target)
   const [adaptCode, setAdaptCode] = useState(null)
+  const [hasAdapt, setHasAdapt] = useState(false)
 
   useEffect(() => {
 
@@ -140,7 +141,7 @@ function App() {
   function getAggregateData() {
     var d = JSON.parse(JSON.stringify(allData)) // deep copy
 
-    console.log(tab) //opposite of expected
+    console.log(tab)
     if (tab === "student") {
       var group = "$actor.id"
     } else if (tab === "page") {
@@ -166,6 +167,9 @@ function App() {
       d['student'] = JSON.parse(response.data)['documents']
       setStudentResult(JSON.parse(response.data)['documents'])
       setDisplay(true);
+      if ((Object.keys(d['student'][0])).includes("adapt")) {
+        setHasAdapt(true)
+      }
     })
 
     axios({
@@ -458,6 +462,7 @@ function App() {
   function handleClick(event) {
     event.preventDefault();
     if ((course || courseId) && !(course && courseId)) {
+      setHasAdapt(false)
       setDisableCourse(true);
       setResult(null);
       setStudentResult(null);
@@ -911,7 +916,7 @@ function App() {
                 }
                 {studentResult && click && display &&
                   <Box gridArea="table" border={true} overflow="hidden" responsive={true}>
-                    <DataTable tab={tab} data={allData["student"]}/>
+                    <DataTable tab={tab} data={allData["student"]} hasAdapt={hasAdapt}/>
                   </Box>
                 }
                 {studentResult && click && display &&
@@ -958,7 +963,7 @@ function App() {
                         <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
                       }
                       {studentChartData &&
-                        <StudentChart allData={allData['student']} tab={tab} data={studentChartData['documents']} xaxis="_id" xaxisLabel={barXAxisLabel} yaxis={barYAxis} yaxisLabel={barYAxisLabel} width={1000}/>
+                        <StudentChart hasAdapt={hasAdapt} allData={allData['student']} tab={tab} data={studentChartData['documents']} xaxis="_id" xaxisLabel={barXAxisLabel} yaxis={barYAxis} yaxisLabel={barYAxisLabel} width={1000}/>
                       }
                     </Box>
                   </Grid>
@@ -1212,6 +1217,18 @@ function App() {
             <InfoBox infoText="Please choose a course." color="#b0e0e6" main={true}/>
           </Box>
           <Box direction="row">
+          {allData['student'] &&
+          <Box direction="column" alignSelf="start" border={true} margin={{top: "small", left: "medium"}} width="300px" height="100px">
+            <Box direction="row">
+              <Box margin={{left: "small", bottom: "small", top: "small"}} border={true} height="30px" width="40px" background='rgb(255, 255, 158, .5)'/>
+              <Text margin={{left: "small", bottom: "small", top: "small"}}>LibreText Data</Text>
+            </Box>
+            <Box direction="row">
+              <Box margin={{left: "small", bottom: "small"}} border={true} height="30px" width="40px" background='rgb(171, 247, 177, .5)'/>
+              <Text margin={{left: "small", bottom: "small"}}>Adapt Data</Text>
+            </Box>
+          </Box>
+          }
             <Box gridArea="courses" alignContent="center" align="center" alignSelf="center" fill>
               <Box >
                 <Box direction="row">
