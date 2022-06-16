@@ -75,59 +75,61 @@ var adaptCodeQuery = {
     {
       '$group': {
         '_id': '$url',
-        'code': {'$first': '$adaptCode'}
+        'code': {'$first': '$adaptCode'},
+        'course': {'$first': '$courseId'},
+        'isInAdapt': {'$first': '$isInAdapt'}
       }
-    },
-    {
-      '$lookup': {
-        'from': coll,
-        'localField': "_id",
-        'foreignField': "object.url",
-        'as': "lt"
-      }
-    },
-    {
-      '$addFields': {
-        'course': {'$first': '$lt.actor.courseName'}
-      }
-    },
-    {
-      '$unset': [
-        'lt'
-      ]
-    },
-    {
-      '$lookup': {
-        'from': "adapt",
-        'localField': "code",
-        'foreignField': "class",
-        'as': "adapt",
-        'pipeline': [
-          {
-            '$group': {
-              '_id': '$class'
-            }
-          }
-        ]
-      }
-    },
-    {
-      '$project': {
-        '_id': '$_id',
-        'url': '$url',
-        'course': '$course',
-        'code': '$code',
-        'isInAdapt':
-          {'$cond': {
-            'if': {
-              '$gt': [{'$size': '$adapt'}, 0]
-            },
-            'then': true,
-            'else': false
-          }
-        }
-      }
-    }
+    } //,
+    // {
+    //   '$lookup': {
+    //     'from': 'ltanalytics',
+    //     'localField': "_id",
+    //     'foreignField': "object.url",
+    //     'as': "lt"
+    //   }
+    // },
+    // {
+    //   '$addFields': {
+    //     'course': {'$first': '$lt.actor.courseName'}
+    //   }
+    // },
+    // {
+    //   '$unset': [
+    //     'lt'
+    //   ]
+    // } //,
+    // {
+    //   '$lookup': {
+    //     'from': "adapt",
+    //     'localField': "code",
+    //     'foreignField': "class",
+    //     'as': "adapt",
+    //     'pipeline': [
+    //       {
+    //         '$group': {
+    //           '_id': '$class'
+    //         }
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   '$project': {
+    //     '_id': '$_id',
+    //     'url': '$url',
+    //     'course': '$course',
+    //     'code': '$code',
+    //     'isInAdapt':
+    //       {'$cond': {
+    //         'if': {
+    //           '$gt': [{'$size': '$adapt'}, 0]
+    //         },
+    //         'then': true,
+    //         'else': false
+    //       }
+    //     }
+    //   }
+    // }
   ]
 }
 
@@ -535,7 +537,6 @@ function getIndividual(params, courseData) {
 }
 
 function allDataQuery(params, adaptCodes) {
-
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   if (codeFound) {
     var adaptLookup = {
@@ -603,7 +604,7 @@ function allDataQuery(params, adaptCodes) {
     var aggregationAttr = "$actor.id"
     var isPage = true
   }
-
+  
   var data = {
       "collection": coll,
       "database": db,
@@ -752,14 +753,21 @@ function allDataQuery(params, adaptCodes) {
       matchesUsed = true
     }
 
-    if (matchesUsed && params.courseId) {
-      data['pipeline'].splice(6, 0, filterMatch)
-    } else if (matchesUsed && !params.courseId) {
-      data['pipeline'].splice(7, 0, filterMatch)
+    if (params.path && !isPage) {
+      data['pipeline'].splice(2, 0, lookup)
+      data['pipeline'].splice(3, 0, unwind)
+      data['pipeline'].splice(4, 0, unitLookup)
+      data['pipeline'].splice(6, 0, unset)
+    } else if (params.path) {
+      data['pipeline'].splice(3, 0, unitLookup)
     }
-    if (params.path) {
-      data['pipeline'].splice(6, 0, unitLookup)
+
+    if (matchesUsed && !isPage) {
+      data['pipeline'].splice(2, 0, filterMatch)
+    } else if (matchesUsed && isPage) {
+      data['pipeline'].splice(5, 0, filterMatch)
     }
+
     var tagMatch = {
       '$project': {
           'tags': {
@@ -1210,7 +1218,7 @@ app.post('/timelineData', (req,res,next) => {
 });
 
 app.post('/data', async (req,res,next) => {
-  let queryString = allDataQuery(req.body, adaptCodes);
+  let queryString = allDataQuery(req.body, await adaptCodes);
   let config = getRequest(queryString);
   axios(config)
       .then(function async (response) {
