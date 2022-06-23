@@ -10,11 +10,18 @@ export default function InfoBox({
   showIcon = false,
   icon,
   color,
+  count,
+  setCount,
   main = false
 }) {
   let [open, setOpen] = useState(initShow);
   let message = []
   message.push(<Text alignSelf="center" margin={{top: "small"}}>{infoText}</Text>)
+
+  function handleClick() {
+    setOpen(!open)
+    setCount(count+1)
+  }
 
   return (
     <>
@@ -28,7 +35,7 @@ export default function InfoBox({
             justify="center"
             height="xsmall"
             width="75%"
-            margin={{top: "small"}}
+            margin={{vertical: "small"}}
           >
           <Box height="xsmall" width="100%" direction="row">
           { showIcon &&
@@ -38,7 +45,7 @@ export default function InfoBox({
             {message}
           </Box>
           <Box alignSelf="end" width="10%" justify="end">
-            <Button margin={{bottom: "medium"}} alignSelf="end" onClick={() => setOpen(!open)} icon={<FormClose />}/>
+            <Button margin={{bottom: "medium"}} alignSelf="end" onClick={handleClick} icon={<FormClose />}/>
           </Box>
           </Box>
           </Box>

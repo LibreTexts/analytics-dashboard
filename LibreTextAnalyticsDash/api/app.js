@@ -604,7 +604,7 @@ function allDataQuery(params, adaptCodes) {
     var aggregationAttr = "$actor.id"
     var isPage = true
   }
-  
+
   var data = {
       "collection": coll,
       "database": db,
@@ -1243,6 +1243,9 @@ app.post('/individual', (req,res,next) => {
   axios(config)
       .then(function (response) {
         let newData = (response.data)
+        newData['documents'].forEach((s, index) => {
+          newData['documents'][index]._id = decryptStudent(s._id)
+        })
         newData = JSON.stringify(newData)
         res.json(newData);
       })

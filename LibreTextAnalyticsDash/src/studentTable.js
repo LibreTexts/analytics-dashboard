@@ -53,54 +53,79 @@ export default class StudentTable extends React.Component {
     ]
 
     var columns = [
-      {Header: "Name", width: 250, accessor: "_id",
-            filterMethod: (filter, rows) =>
-              matchSorter(rows, filter.value, { keys: ["_id"] }),
-            filterAll: true},
-            {Header: "Unique Pages Accessed", headerClassName: "lt-data", accessor: "objectCount",
-              getProps: (state, rowInfo, column) => {
+      {
+        Header: "Name",
+        width: 250,
+        accessor: "_id",
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["_id"] }),
+        filterAll: true
+      },
+      {
+        Header: "Unique Pages Accessed",
+        headerClassName: "lt-data",
+        accessor: "objectCount",
+        show: this.props.showColumns['LT Unique Pages Accessed'],
+        getProps: (state, rowInfo, column) => {
                       return {
                           style: {
                               background: 'rgb(255, 255, 158, .5)',
                           },
                       };
                   },
-                  filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, { keys: ["objectCount"] }),
-                  filterAll: true},
-              {Header: "Total Page Views", headerClassName: "lt-data", accessor: "viewCount",
-                getProps: (state, rowInfo, column) => {
-                        return {
-                            style: {
-                                background: 'rgb(255, 255, 158, .5)',
-                            },
-                        };
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["objectCount"] }),
+        filterAll: true
+      },
+      {
+        Header: "Total Page Views",
+        headerClassName: "lt-data",
+        accessor: "viewCount",
+        show: this.props.showColumns['LT Total Page Views'],
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(255, 255, 158, .5)',
                     },
-              filterMethod: (filter, rows) =>
-                matchSorter(rows, filter.value, { keys: ["viewCount"] }),
-              filterAll: true},
-              {Header: "Most Recent Page Load", headerClassName: "lt-data", accessor: "max", Cell: val => formatDate(val, "lt"),
-                getProps: (state, rowInfo, column) => {
-                        return {
-                            style: {
-                                background: 'rgb(255, 255, 158, .5)',
-                            },
-                        };
+                };
+            },
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["viewCount"] }),
+        filterAll: true
+      },
+      {
+        Header: "Most Recent Page Load",
+        headerClassName: "lt-data",
+        accessor: "max",
+        show: this.props.showColumns['LT Most Recent Page Load'],
+        Cell: val => formatDate(val, "lt"),
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(255, 255, 158, .5)',
                     },
-                    filterMethod: (filter, rows) =>
-                      matchSorter(rows, filter.value, { keys: ["max"] }),
-                    filterAll: true},
-              {Header: "Unique Interaction Days", headerClassName: "lt-data", accessor: "dateCount",
-                getProps: (state, rowInfo, column) => {
-                        return {
-                            style: {
-                                background: 'rgb(255, 255, 158, .5)',
-                            },
-                        };
+                };
+            },
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["max"] }),
+        filterAll: true
+      },
+      {
+        Header: "Unique Interaction Days",
+        headerClassName: "lt-data",
+        accessor: "dateCount",
+        show: this.props.showColumns['LT Unique Interaction Days'],
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(255, 255, 158, .5)',
                     },
-                    filterMethod: (filter, rows) =>
-                      matchSorter(rows, filter.value, { keys: ["dateCount"] }),
-                    filterAll: true}
+                };
+            },
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["dateCount"] }),
+        filterAll: true
+      }
     ]
 
     if (this.props.hasAdapt) {
@@ -109,42 +134,57 @@ export default class StudentTable extends React.Component {
         {label: 'Adapt Unique Assignments', key: 'adaptUniqueAssignments'},
         {label: 'Adapt Most Recent Page Load', key: 'mostRecentAdaptLoad'}
       )
-      columns.push({Header: "Unique Interaction Days", headerClassName: "adapt-data", accessor: "adaptUniqueInteractionDays",
-        getProps: (state, rowInfo, column) => {
-                return {
-                    style: {
-                        background: 'rgb(171, 247, 177, .5)',
-                    },
-                };
-            },
-      filterMethod: (filter, rows) =>
-        matchSorter(rows, filter.value, { keys: ["adaptUniqueInteractionDays"] }),
-      filterAll: true},
-      {Header: "Unique Assignments", headerClassName: "adapt-data", accessor: "adaptUniqueAssignments",
-        getProps: (state, rowInfo, column) => {
-                return {
-                    style: {
-                        background: 'rgb(171, 247, 177, .5)',
-                    },
-                };
-            },
-            filterMethod: (filter, rows) =>
-              matchSorter(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
-            filterAll: true},
-      {Header: "Most Recent Page Load", headerClassName: "adapt-data", accessor: "mostRecentAdaptLoad", Cell: val => formatDate(val, "adapt"),
-        getProps: (state, rowInfo, column) => {
-                return {
-                    style: {
-                        background: 'rgb(171, 247, 177, .5)'
-                    },
-                };
-            },
-            filterMethod: (filter, rows) =>
-              matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
-            filterAll: true})
+      columns.push(
+        {
+          Header: "Unique Interaction Days",
+          headerClassName: "adapt-data",
+          accessor: "adaptUniqueInteractionDays",
+          show: this.props.showColumns['Adapt Unique Interaction Days'],
+          getProps: (state, rowInfo, column) => {
+                  return {
+                      style: {
+                          background: 'rgb(171, 247, 177, .5)',
+                      },
+                  };
+              },
+          filterMethod: (filter, rows) =>
+            matchSorter(rows, filter.value, { keys: ["adaptUniqueInteractionDays"] }),
+          filterAll: true
+        },
+        {
+          Header: "Unique Assignments",
+          headerClassName: "adapt-data",
+          accessor: "adaptUniqueAssignments",
+          show: this.props.showColumns['Adapt Unique Assignments'],
+          getProps: (state, rowInfo, column) => {
+                  return {
+                      style: {
+                          background: 'rgb(171, 247, 177, .5)',
+                      },
+                  };
+              },
+          filterMethod: (filter, rows) =>
+            matchSorter(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
+          filterAll: true},
+        {
+          Header: "Most Recent Page Load",
+          headerClassName: "adapt-data",
+          accessor: "mostRecentAdaptLoad",
+          show: this.props.showColumns['Adapt Most Recent Page Load'],
+          Cell: val => formatDate(val, "adapt"),
+          getProps: (state, rowInfo, column) => {
+                  return {
+                      style: {
+                          background: 'rgb(171, 247, 177, .5)'
+                      },
+                  };
+              },
+          filterMethod: (filter, rows) =>
+            matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
+          filterAll: true
+        }
+      )
     }
-    console.log(this.props.hasAdapt)
-    console.log(columns)
 
     return (
       <>

@@ -2,7 +2,7 @@
 import React from 'react';
 import {useEffect, useState, useRef} from 'react';
 import "react-table-6/react-table.css";
-import { Grommet, Heading, Box, Button, Collapsible, DateInput, Grid, Layer, Notification, Select, Spinner, Tabs, Tab, Text } from 'grommet';
+import { Grommet, Heading, Box, Button, CheckBox, CheckBoxGroup, Collapsible, DateInput, Grid, Layer, Notification, Select, Spinner, Tabs, Tab, Text } from 'grommet';
 import { Close, Filter, Menu} from "grommet-icons";
 import ScatterPlot from "./scatterplot.js";
 import './index.css';
@@ -122,6 +122,19 @@ function App() {
   const size = useSize(target)
   const [adaptCode, setAdaptCode] = useState(null)
   const [hasAdapt, setHasAdapt] = useState(false)
+  const [showInfoBox, setShowInfoBox] = useState(true)
+  const [showTableFilters, setShowTableFilters] = useState(false)
+  const [showCheckboxes, setShowCheckboxes] = useState(false)
+  const [filterInfoBox, setFilterInfoBox] = useState(true)
+  const [count, setCount] = useState(0)
+  const [tableColumns, setTableColumns] = useState({
+    "All": true,
+    "LT Unique Pages Accessed": true,
+    "LT Total Page Views": true,
+    "LT Most Recent Page Load": true,
+    "LT Unique Interaction Days": true
+  })
+  const [checkedValues, setCheckedValues] = useState(Object.keys(tableColumns))
 
   useEffect(() => {
 
@@ -169,6 +182,30 @@ function App() {
       setDisplay(true);
       if ((Object.keys(d['student'][0])).includes("adapt")) {
         setHasAdapt(true)
+        var columns = {
+          "All": true,
+          "LT Unique Pages Accessed": true,
+          "LT Total Page Views": true,
+          "LT Most Recent Page Load": true,
+          "LT Unique Interaction Days": true,
+          "Adapt Unique Interaction Days": true,
+          "Adapt Unique Assignments": true,
+          "Adapt Most Recent Page Load": true
+        }
+        var checks = Object.keys(columns)
+        setTableColumns(columns)
+        setCheckedValues(checks)
+      } else {
+        var columns = {
+          "All": true,
+          "LT Unique Pages Accessed": true,
+          "LT Total Page Views": true,
+          "LT Most Recent Page Load": true,
+          "LT Unique Interaction Days": true
+        }
+        var checks = Object.keys(columns)
+        setTableColumns(columns)
+        setCheckedValues(checks)
       }
     })
 
@@ -462,6 +499,8 @@ function App() {
   function handleClick(event) {
     event.preventDefault();
     if ((course || courseId) && !(course && courseId)) {
+      setShowTableFilters(false)
+      setShowInfoBox(false)
       setHasAdapt(false)
       setDisableCourse(true);
       setResult(null);
@@ -510,6 +549,7 @@ function App() {
     if (path) {
       setChosenPath(path)
     }
+    setShowTableFilters(false)
     setResetPath(false)
     setDisable(true);
     setDisplay(false);
@@ -575,7 +615,7 @@ function App() {
       setScatterXAxis('durationInMinutes')
     } else if (option === 'Unique Pages Accessed') {
       setScatterXAxis('objectCount')
-    } else if (option === 'Average Percent') {
+    } else if (option === 'Average Percent Scrolled') {
       setScatterXAxis('percentAvg')
     }
   }
@@ -586,7 +626,7 @@ function App() {
       setScatterYAxis('durationInMinutes')
     } else if (option === 'Unique Pages Accessed') {
       setScatterYAxis('objectCount')
-    } else if (option === 'Average Percent') {
+    } else if (option === 'Average Percent Scrolled') {
       setScatterYAxis('percentAvg')
     }
   }
@@ -834,6 +874,50 @@ function App() {
       setReset(false)
     }
 
+    function changeColumns(option, value) {
+      // console.log(value)
+      // console.log(option['label'])
+      var val = option['label']
+      var columns = JSON.parse(JSON.stringify(tableColumns))
+      var checked = JSON.parse(JSON.stringify(checkedValues))
+      if (val === "All" && columns[val]) {
+        columns[val] = false
+        checked.find((v, index) => {
+          if (v === val) {
+            checked.splice(index, 1)
+          }
+        })
+      } else if (val === "All" && !columns[val]) {
+        Object.keys(columns).forEach(v => {
+          columns[v] = true
+        })
+        checked = Object.keys(columns)
+      } else {
+        if (columns[val]) {
+          columns[val] = false
+          columns['All'] = false
+        } else {
+          columns[val] = true
+        }
+        if (checked.includes(val)) {
+          checked.find((v, index) => {
+            if (v === val) {
+              checked.splice(index, 1)
+            }
+          })
+            checked.find((v, index) => {
+              if (v === 'All') {
+                checked.splice(index, 1)
+              }
+            })
+        } else {
+          checked.push(val)
+        }
+      }
+      setCheckedValues(checked)
+      setTableColumns(columns)
+    }
+
   return (
     <>
     <Tabs justify="start" margin="medium" activeIndex={index} onActive={value => handleTabs(value)} style={{overflow: "hidden"}}>
@@ -848,20 +932,14 @@ function App() {
             <Grommet theme={theme} full fill={true} overflow="hidden">
               <Box fill={true}>
               <Box direction="row">
-              {allChapters && courseLevel &&
-                <Box margin={{bottom: "medium"}} >
-                  <Button icon={<Menu/>} onClick={menuCollapsible} />
-                  <Collapsible open={openFilter}>
-                      <Box width="350px" border={resetPath}>
-                      {!resetPath &&
-                        <TitleText title="Unit Dropdown" text="Choose units"/>
-                      }
-                      {resetPath &&
-                        <Text margin="medium">Please hit apply for the changes to take effect.</Text>
-                      }
-                      <MultiSelect resetPath={resetPath} pathLength={pathLength} data={allChapters} levels={courseLevel} handleChange={handleChange} filterClick={handleFilterClick} init={dataPath} clearPath={clearPath}/>
-                    </Box>
-                  </Collapsible>
+              {studentResult &&
+                <Box>
+                  <Box width="100px" margin={{top: "medium", left: "xsmall"}}>
+                    <Button label="Choose Columns" secondary color="#0047BA" size="small" onClick={() => setShowCheckboxes(!showCheckboxes)}/>
+                  </Box>
+                  {showCheckboxes &&
+                    <CheckBoxGroup margin={{top: "medium", left: "xsmall"}} options={Object.keys(tableColumns)} value={checkedValues} onChange={({ option, value }) => changeColumns(option, value)}/>
+                  }
                 </Box>
               }
               <Grid
@@ -870,8 +948,7 @@ function App() {
                 columns={['15%', '79%']}
                 gap="small"
                 areas={[
-                { name: 'filters', start: [0, 0], end: [1, 0] },
-                { name: 'table', start: [1, 0], end: [1, 0] },
+                { name: 'table', start: [0, 0], end: [1, 0] },
                 { name: 'plots', start: [0, 1], end: [1, 1] },
                 { name: 'timeline-filters', start: [0,2], end: [1,2] },
                 { name: 'timeline', start: [0,3], end: [1,3] },
@@ -882,31 +959,6 @@ function App() {
                 margin="medium"
                 overflow="hidden"
                 >
-                {studentResult && allData["student"] &&
-                  <Box gridArea="filters" border={true} responsive={true}>
-                    <Box margin={{vertical: "medium"}} responsive={true}>
-                      <Text size="large" weight="bold" textAlign="center" margin={{top: "xsmall"}}> Table Filters </Text>
-                      <Box direction="column" pad="small">
-                        <Text margin={{vertical: "small", right: "xsmall"}}>Start:</Text>
-                        <DateInput
-                          format="mm/dd/yyyy"
-                          value={start}
-                          onChange={({ value }) => {handleChange("start", value)}}
-                        />
-                        <Text margin={{vertical: "small", right: "xsmall", left: "xsmall"}}>End:</Text>
-                        <DateInput
-                          format="mm/dd/yyyy"
-                          value={end}
-                          onChange={({ value }) => {handleChange("end", value)}}
-                        />
-                        <Button size="small" margin={{vertical: "small", horizontal: "medium"}} label="Clear" onClick={clearDates} />
-                      </Box>
-                      <Box direction="row" alignSelf="center" pad="small">
-                        <Button label="Apply" margin={{top: "small"}} style={{height: 45}} primary color="#0047BA" disabled={disable} onClick={handleFilterClick}/>
-                      </Box>
-                    </Box>
-                  </Box>
-                }
                 {studentResult && allData["student"].length > 0 &&
                 <>
                 {disable && (!studentResult || !display) &&
@@ -916,7 +968,7 @@ function App() {
                 }
                 {studentResult && click && display &&
                   <Box gridArea="table" border={true} overflow="hidden" responsive={true}>
-                    <DataTable tab={tab} data={allData["student"]} hasAdapt={hasAdapt}/>
+                    <DataTable tab={tab} data={allData["student"]} hasAdapt={hasAdapt} showColumns={tableColumns}/>
                   </Box>
                 }
                 {studentResult && click && display &&
@@ -933,11 +985,11 @@ function App() {
                       overflow="hidden"
                       responsive={true}
                       >
-                      <Box align="center" direction="column" gridArea='title' margin={{top: "small"}}>
-                        <TitleText title="Student Metrics Bar Chart" text="This graph shows data for each student. Switch the axis values using the filters to the left." topMargin="medium"/>
+                      <Box align="center" direction="column" gridArea='title'>
+                        <TitleText title="Student Metrics Bar Chart" text="This graph shows data for all students. Switch the axis values using the filters to the left. Click on a bar to populate a table with the chosen data." topMargin="small"/>
                       </Box>
                       <Box gridArea='scatter-plot' justify="center" direction="row" margin={{bottom: "xlarge"}} responsive={true}>
-                        <Button alignSelf="start" secondary onClick={() => setShowFilter(true)} icon={<Filter/>} margin={{top: "small"}}/>
+                        <Button secondary size="small" alignSelf="start" label="Filters" onClick={() => setShowFilter(true)} margin={{top: "small"}}/>
                         {showFilter && (
                           <Layer
                             onEsc={() => setShowFilter(false)}
@@ -963,7 +1015,7 @@ function App() {
                         <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
                       }
                       {studentChartData &&
-                        <StudentChart hasAdapt={hasAdapt} allData={allData['student']} tab={tab} data={studentChartData['documents']} xaxis="_id" xaxisLabel={barXAxisLabel} yaxis={barYAxis} yaxisLabel={barYAxisLabel} width={1000}/>
+                        <StudentChart hasAdapt={hasAdapt} showColumns={tableColumns} allData={allData['student']} tab={tab} data={studentChartData['documents']} xaxis="_id" xaxisLabel={barXAxisLabel} yaxis={barYAxis} yaxisLabel={barYAxisLabel} width={1000}/>
                       }
                     </Box>
                   </Grid>
@@ -988,66 +1040,22 @@ function App() {
               <Grommet theme={theme} full fill="true" overflow="hidden">
                 <Box fill={true}>
               <Box direction="row">
-              {allChapters && courseLevel &&
-                <Box margin={{bottom: "medium"}}>
-                <Button icon={<Menu/>} onClick={menuCollapsible} />
-                <Collapsible open={openFilter}>
-                  <Box width={{min: "350px"}} border={resetPath}>
-                    {!resetPath &&
-                      <TitleText title="Unit Dropdown" text="Choose units"/>
-                    }
-                    {resetPath &&
-                      <Text margin="medium">Please hit apply for the changes to take effect.</Text>
-                    }
-                    <MultiSelect resetPath={resetPath} pathLength={pathLength} data={allChapters} levels={courseLevel} handleChange={handleChange} filterClick={handleFilterClick} init={dataPath} clearPath={clearPath}/>
-                  </Box>
-                </Collapsible>
-                </Box>
-              }
                 <Grid
                   fill={true}
-                  rows={['2/3', '2/3', '2/3', 'medium', 'large']}
+                  rows={['2/3', '2/3', 'medium', 'large']}
                   columns={['15%', '79%']}
                   gap="small"
                   areas={[
-                  { name: 'header', start: [0, 0], end: [1, 0] },
-                  { name: 'filters', start: [0, 0], end: [1, 0] },
-                  { name: 'table', start: [1, 0], end: [1, 0] },
-                  { name: 'scatter-plot', start: [0, 1], end: [1, 1] },
-                  { name: 'horizontal-chart', start: [0, 2], end: [1, 2] },
-                  { name: 'timeline-filters', start: [0,3], end: [1,3] },
-                  { name: 'timeline', start: [0,4], end: [1,4] }
+                  { name: 'table', start: [0, 0], end: [1, 0] },
+                  { name: 'horizontal-chart', start: [0, 1], end: [1, 1] },
+                  { name: 'timeline-filters', start: [0,2], end: [1,2] },
+                  { name: 'timeline', start: [0,3], end: [1,3] }
                   ]}
                   flex={true}
                   responsive={true}
                   margin="medium"
                   overflow="hidden"
                   >
-                  {pageResult &&
-                    <Box gridArea="filters" border={true} >
-                      <Box margin={{vertical: "medium"}}>
-                        <Text size="large" weight="bold" textAlign="center" margin={{top: "xsmall"}}> Table Filters </Text>
-                        <Box direction="column" pad="small">
-                          <Text margin={{vertical: "small", right: "xsmall"}}>Start:</Text>
-                          <DateInput
-                            format="mm/dd/yyyy"
-                            value={start}
-                            onChange={({ value }) => {handleChange("start", value)}}
-                          />
-                          <Text margin={{vertical: "small", right: "xsmall", left: "xsmall"}}>End:</Text>
-                          <DateInput
-                            format="mm/dd/yyyy"
-                            value={end}
-                            onChange={({ value }) => {handleChange("end", value)}}
-                          />
-                          <Button size="small" margin={{vertical: "small", horizontal: "medium"}} label="Clear" onClick={clearDates} />
-                        </Box>
-                        <Box direction="row" alignSelf="center" pad="small">
-                          <Button label="Apply" margin={{top: "small"}} style={{height: 45}} primary color="#0047BA" disabled={disable} onClick={handleFilterClick}/>
-                        </Box>
-                      </Box>
-                    </Box>
-                  }
 
                 {pageResult && allData["page"].length > 0 &&
                 <>
@@ -1061,57 +1069,6 @@ function App() {
                       <DataTable tab={tab} data={allData["page"]} />
                     </Box>
                   }
-                  {pageResult && click && display &&
-                    <Box gridArea="scatter-plot" border={true} fill={true} direction="row" justifyContent="center" justify="center" align="center" overflow="hidden">
-                      <Grid
-                        fill={true}
-                        rows={['1/4', 'large']}
-                        columns={['100%']}
-                        gap="none"
-                        areas={[
-                          { name: 'title', start: [0, 0], end: [0, 0]},
-                          { name: 'plot', start: [0, 1], end: [0, 1]}
-                        ]}
-                        >
-                        <Box align="center" direction="column" gridArea='title' margin={{top: "medium"}}>
-                          <Box direction="row" align="center">
-                            <TitleText title="Page Metrics Scatterplot" text="This graph shows data for each page." topMargin="medium"/>
-                          </Box>
-                        </Box>
-                        <Box gridArea='plot' justify="center" direction="row" margin={{bottom: "xlarge", right: "xlarge"}}>
-                          <Button alignSelf="start" secondary onClick={() => setShow(true)} icon={<Filter/>} margin={{top: "small", left: "small"}}/>
-                          {show && (
-                            <Layer
-                              onEsc={() => setShow(false)}
-                              onClickOutside={() => setShow(false)}
-                              position="left"
-                              margin={{left: "large"}}
-                            >
-                            <Button icon={<Close/>} onClick={() => setShow(false)} />
-                            <Box direction="column" alignSelf="center"  margin="large">
-                              <Text size="medium" weight="bold" textAlign="center">Scatter Plot Display Filters</Text>
-                              <Text>X Axis:</Text>
-                              <Select
-                                options={['Average Duration', 'Unique Pages Accessed', 'Average Percent']}
-                                margin={{right: "medium", left: "medium"}}
-                                value={scatterXAxisLabel}
-                                onChange={({ option }) => changeScatterXAxis(option)}
-                              />
-                              <Text>Y Axis:</Text>
-                              <Select
-                                options={['Average Duration', 'Unique Pages Accessed', 'Average Percent']}
-                                margin={{right: "medium", left: "medium"}}
-                                value={scatterYAxisLabel}
-                                onChange={({ option }) => changeScatterYAxis(option)}
-                              />
-                            </Box>
-                          </Layer>
-                        )}
-                        <ScatterPlot tab={tab} data={allData["page"]} xaxis={scatterXAxis} xaxisLabel={scatterXAxisLabel} yaxis={scatterYAxis} yaxisLabel={scatterYAxisLabel} id="_id" width={1000}/>
-                      </Box>
-                    </Grid>
-                  </Box>
-                }
                 {pageResult && click && display &&
                   <Box gridArea="horizontal-chart" border={true} align="center" direction="row" overflow="hidden">
                     <Grid
@@ -1208,17 +1165,35 @@ function App() {
 
         </Tab>
       }
-      <Box gridArea="header" background="#022851" fill={true} contentAlign="center" margin={{top: "small"}}>
-        <Heading level='3' alignSelf="start" responsive={true} gridArea="header" margin="small">LibreTexts Activity Dashboard</Heading>
-      </Box>
-        {realCourses &&
-          <Box fill>
-          <Box width="100%" responsive={true}>
-            <InfoBox infoText="Please choose a course." color="#b0e0e6" main={true}/>
+      {realCourses &&
+        <Box fill>
+        <Box width="100%" responsive={true} margin={{bottom: "small"}}>
+        {showInfoBox &&
+          <InfoBox show={showInfoBox} infoText="Please choose a course." color="#b0e0e6" main={true}/>
+        }
+        </Box>
+        <Box direction="row">
+          <Box gridArea="courses" alignContent="center" align="center" alignSelf="center" fill>
+            <Box >
+              <Box direction="row">
+              <Box width="500px" margin={{right: "medium", left: "large", bottom: "small"}}>
+                <Select
+                  options={Object.keys(realCourses)}
+                  margin={{right: "large", left: "large", bottom: "small"}}
+                  value={courseName}
+                  dropHeight="medium"
+                  onChange={({ option }) => handleChange("courseId", option)}
+                />
+              </Box>
+              <Button label="Apply" style={{height: 45}} primary color="#0047BA" disabled={disableCourse} onClick={handleClick}/>
+              </Box>
+                {disableCourse && !allData['student'] && !allData['page'] &&
+                  <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
+                }
+            </Box>
           </Box>
-          <Box direction="row">
           {allData['student'] &&
-          <Box direction="column" alignSelf="start" border={true} margin={{top: "small", left: "medium"}} width="300px" height="100px">
+          <Box direction="column" alignSelf="start" border={true} width="300px" height="100px">
             <Box direction="row">
               <Box margin={{left: "small", bottom: "small", top: "small"}} border={true} height="30px" width="40px" background='rgb(255, 255, 158, .5)'/>
               <Text margin={{left: "small", bottom: "small", top: "small"}}>LibreText Data</Text>
@@ -1229,50 +1204,92 @@ function App() {
             </Box>
           </Box>
           }
-            <Box gridArea="courses" alignContent="center" align="center" alignSelf="center" fill>
-              <Box >
-                <Box direction="row">
-                <Box width="500px" margin={{top: "medium", right: "medium", left: "large", bottom: "small"}}>
-                  <Select
-                    options={Object.keys(realCourses)}
-                    margin={{top: "medium", right: "large", left: "large", bottom: "small"}}
-                    value={courseName}
-                    dropHeight="medium"
-                    onChange={({ option }) => handleChange("courseId", option)}
-                  />
+          </Box>
+        </Box>
+      }
+
+      <Box gridArea="header" background="#022851" fill={true} contentAlign="center" margin={{top: "small"}}>
+        <Heading level='3' alignSelf="start" responsive={true} gridArea="header" margin="small">LibreTexts Activity Dashboard</Heading>
+      </Box>
+
+      {allData['student'] && allData['page'] &&
+        <Box>
+          <Button margin="medium" color="#022851" label="Data Filters" onClick={() => setShowTableFilters(!showTableFilters)} />
+        </Box>
+      }
+      {!showTableFilters && allData['student'] && allData['page'] && count === 0 &&
+        <InfoBox count={count} setCount={setCount} infoText="Click on the button to the left to filter the data by date and course unit." color='#b0e0e6'/>
+      }
+      {showTableFilters &&
+        <>
+        <Box direction="row">
+        <Box gridArea="filters" border={true} direction="row" height="125px" margin={{bottom: "medium"}}>
+          <Box margin={{bottom: "medium", top: 'xsmall'}} direction="row" height="100px">
+          <Box>
+            <Text size="large" weight="bold" textAlign="center" margin={{left: "small"}}> Data Filters </Text>
                 </Box>
-                <Button label="Apply" margin={{top: "large"}} style={{height: 45}} primary color="#0047BA" disabled={disableCourse} onClick={handleClick}/>
-                </Box>
-                  {disableCourse && !allData['student'] && !allData['page'] &&
-                    <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
-                  }
-              </Box>
+            <Box direction="column" pad="small" direction="row" margin={{top: "medium"}}>
+              <Text margin={{vertical: "small", right: "xsmall"}}>Start:</Text>
+              <DateInput
+                format="mm/dd/yyyy"
+                value={start}
+                onChange={({ value }) => {handleChange("start", value)}}
+              />
+              <Text margin={{vertical: "small", right: "xsmall", left: "xsmall"}}>End:</Text>
+              <DateInput
+                format="mm/dd/yyyy"
+                value={end}
+                onChange={({ value }) => {handleChange("end", value)}}
+              />
             </Box>
-            {(chosenPath || start || end || reset) &&
-              <Box direction="column" border={true} margin={{top: "small", right: "medium"}} width={{min: "600px"}}>
-              {chosenPath &&
-                <Text margin="small">Current chosen path: {chosenPath.split("/").map(a => <li>{a.replaceAll("_", " ")}</li>)}</Text>
-              }
-              {start &&
-                <Text margin="small">Start Date: {(new Date(start.split("T")[0])).toString()}</Text>
-              }
-              {end &&
-                <Text margin="small">End Date: {(new Date(end.split("T")[0])).toString()}</Text>
-              }
-                {!reset &&
-                  <Button secondary size="small" label="Clear All Filters" alignSelf="center" color="#022851" margin={{vertical: "small"}} onClick={filterReset} type="reset"/>
-                }
-                {reset &&
-                  <Box direction="column">
-                    <Text margin="medium">Please hit apply for the changes to take effect.</Text>
-                    <Button primary label="Apply" onClick={applyReset} color="#022851" margin={{bottom: "small", top: "small", horizontal: "large"}}/>
-                  </Box>
-                }
-              </Box>
-            }
+            <Box direction="row" alignSelf="center" pad="small">
+            <Button size="small" margin={{bottom: "small", top: "medium", horizontal: "medium"}} label="Clear Dates" onClick={clearDates} color='#022851'/>
+              <Button label="Apply" margin={{top: "small"}} style={{height: 45}} primary color="#0047BA" disabled={disable} onClick={handleFilterClick}/>
             </Box>
           </Box>
+        </Box>
+            {allChapters && courseLevel &&
+              <Box margin={{bottom: "medium"}} >
+                <Button alignSelf="start" margin={{horizontal: "xlarge"}} label="Course Structure Menu" onClick={menuCollapsible} color='#022851'/>
+                <Collapsible open={openFilter}>
+                    <Box width="350px" border={resetPath} margin="large">
+                    {!resetPath &&
+                      <TitleText title="Course Structure Dropdown" text="Choose a unit from the course to focus on."/>
+                    }
+                    {resetPath &&
+                      <Text margin="medium">Please hit apply for the changes to take effect.</Text>
+                    }
+                    <MultiSelect resetPath={resetPath} pathLength={pathLength} data={allChapters} levels={courseLevel} handleChange={handleChange} filterClick={handleFilterClick} init={dataPath} clearPath={clearPath}/>
+                  </Box>
+                </Collapsible>
+              </Box>
+            }
+          </Box>
+              </>
+      }
+      {(chosenPath || start || end || reset) && !showTableFilters &&
+        <Box direction="column" border={true} margin={{top: "small", right: "medium"}} width={{min: "500px"}}>
+        {chosenPath &&
+          <Text margin="small">Current chosen path: {chosenPath.split("/").map(a => <li>{a.replaceAll("_", " ")}</li>)}</Text>
         }
+        {start &&
+          <Text margin="small">Start Date: {(new Date(start.split("T")[0])).toString()}</Text>
+        }
+        {end &&
+          <Text margin="small">End Date: {(new Date(end.split("T")[0])).toString()}</Text>
+        }
+          {!reset &&
+            <Button secondary size="small" label="Clear All Filters" alignSelf="center" color="#022851" margin={{vertical: "small"}} onClick={filterReset} type="reset"/>
+          }
+          {reset &&
+            <Box direction="column">
+              <Text margin="medium">Please hit apply for the changes to take effect.</Text>
+              <Button primary label="Apply" onClick={applyReset} color="#022851" margin={{bottom: "small", top: "small", horizontal: "large"}}/>
+            </Box>
+          }
+        </Box>
+
+  }
     </Tabs>
     </>
   );
