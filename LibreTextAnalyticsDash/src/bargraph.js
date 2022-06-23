@@ -35,7 +35,7 @@ export default class BarGraph extends React.Component {
             value: props.payload[0].payload.objectCount,
           },
           {
-            name: 'Average Percent',
+            name: 'Average Percent Scrolled',
             value: props.payload[0].payload.percentAvg,
           }
         ];

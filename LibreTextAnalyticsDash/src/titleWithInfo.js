@@ -7,14 +7,14 @@ export default function TitleText({
   text,
   topMargin
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
   return (
     <Box align="center" direction="column" gridArea='title' margin={{top: topMargin}}>
       <Box direction="row" align="center">
         <Text size="xlarge" weight="bold" textAlign="center">{title}</Text>
         <Button alignSelf="end" onClick={() => setOpen(!open)} icon={<CircleInformation />} />
       </Box>
-      <Collapsible open={open} direction="vertical" alignSelf="start">
+      <Collapsible open={open} direction="vertical" alignSelf="start" margin={{top: topMargin}}>
         <Box
           background={{color: "#6FCFEB", opacity: "medium"}}
           round="medium"
