@@ -2,7 +2,7 @@ import React from 'react';
 import ReactTable from 'react-table-6';
 import {matchSorter} from 'match-sorter';
 import { CSVLink, CSVDownload } from "react-csv";
-import {Button} from "grommet";
+import {Button, Text, Tip} from "grommet";
 import {Download} from "grommet-icons"
 
 export default class StudentTable extends React.Component {
@@ -21,6 +21,7 @@ export default class StudentTable extends React.Component {
     function createLink(pageInfo) {
       var title = pageInfo.original.pageTitle
       var url = pageInfo.original.pageURL
+      var isEnrolled = pageInfo.original.isEnrolled
       var tab = "page"
       if (url === undefined) {
         tab = "student"
@@ -29,6 +30,8 @@ export default class StudentTable extends React.Component {
         return <a href={url} target="_blank">{title}</a>
       } else if (tab === "student") {
         return pageInfo.original._id
+      } else if (tab === "student" && !isEnrolled) {
+        return <Text size="small">{pageInfo.original._id}</Text>
       }
     }
     function formatDate(val, type) {
@@ -62,7 +65,7 @@ export default class StudentTable extends React.Component {
         filterAll: true
       },
       {
-        Header: "Unique Pages Accessed",
+        Header: <Tip content="Unique Pages Accessed">Unique Pages Accessed</Tip>,
         headerClassName: "lt-data",
         accessor: "objectCount",
         show: this.props.showColumns['LT Unique Pages Accessed'],
@@ -78,7 +81,7 @@ export default class StudentTable extends React.Component {
         filterAll: true
       },
       {
-        Header: "Total Page Views",
+        Header: <Tip content="Total Page Views">Total Page Views</Tip>,
         headerClassName: "lt-data",
         accessor: "viewCount",
         show: this.props.showColumns['LT Total Page Views'],
@@ -94,7 +97,7 @@ export default class StudentTable extends React.Component {
         filterAll: true
       },
       {
-        Header: "Most Recent Page Load",
+        Header: <Tip content="Most Recent Page Load">Most Recent Page Load</Tip>,
         headerClassName: "lt-data",
         accessor: "max",
         show: this.props.showColumns['LT Most Recent Page Load'],
@@ -111,7 +114,7 @@ export default class StudentTable extends React.Component {
         filterAll: true
       },
       {
-        Header: "Unique Interaction Days",
+        Header: <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>,
         headerClassName: "lt-data",
         accessor: "dateCount",
         show: this.props.showColumns['LT Unique Interaction Days'],
@@ -136,7 +139,7 @@ export default class StudentTable extends React.Component {
       )
       columns.push(
         {
-          Header: "Unique Interaction Days",
+          Header: <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>,
           headerClassName: "adapt-data",
           accessor: "adaptUniqueInteractionDays",
           show: this.props.showColumns['Adapt Unique Interaction Days'],
@@ -152,7 +155,7 @@ export default class StudentTable extends React.Component {
           filterAll: true
         },
         {
-          Header: "Unique Assignments",
+          Header: <Tip content="Unique Assignments">Unique Assignments</Tip>,
           headerClassName: "adapt-data",
           accessor: "adaptUniqueAssignments",
           show: this.props.showColumns['Adapt Unique Assignments'],
@@ -167,7 +170,7 @@ export default class StudentTable extends React.Component {
             matchSorter(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
           filterAll: true},
         {
-          Header: "Most Recent Page Load",
+          Header: <Tip content="Most Recent Page Load">Most Recent Page Load</Tip>,
           headerClassName: "adapt-data",
           accessor: "mostRecentAdaptLoad",
           show: this.props.showColumns['Adapt Most Recent Page Load'],

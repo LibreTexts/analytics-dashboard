@@ -2,7 +2,7 @@ import React from 'react';
 import ReactTable from 'react-table-6';
 import {matchSorter} from 'match-sorter';
 import { CSVLink, CSVDownload } from "react-csv";
-import {Button, Tip} from "grommet";
+import {Button, Text, Tip} from "grommet";
 import {Download} from "grommet-icons"
 import "./index.css"
 
@@ -30,15 +30,74 @@ export default function DataTable({
       var filename = "page-data.csv"
     }
 
+    if (tab === "student") {
+      var getTrProps = (state, rowInfo, instance) => {
+      if (rowInfo) {
+        //console.log(rowInfo)
+        return {
+          style: {
+            background: rowInfo.original.isEnrolled ? 'white' : 'Gainsboro',
+            opacity: rowInfo.original.isEnrolled ? 1 : .4
+          }
+        }
+      }
+      return {};
+    }
+  }
+
     data.forEach((val, index) => {
-      data[index]['max'] = formatDate(val['max'])
+      if (Object.keys(val).includes('max')) {
+        data[index]['max'] = formatDate(val['max'])
+      } else if (!Object.keys(val).includes('max')) {
+        data[index]['max'] = ""
+      }
       if (val['mostRecentAdaptLoad']) {
         data[index]['mostRecentAdaptLoad'] = formatDate(val['mostRecentAdaptLoad'])
       }
     })
 
+    function numMatch(rows, filter, val) {
+      var key = val.keys[0]
+
+      var match = filter.substring(0, 2).replace(/[0-9]/g, '')
+
+      if (match === "<=") {
+        var f = filter.replaceAll("<=", "").trim()
+        f = parseInt(f)
+        return rows.filter(row => row[key] <= f)
+      } else if (match.trim() === "<") {
+        var f = filter.replaceAll("<", "").trim()
+        f = parseInt(f)
+        return rows.filter(row => row[key] < f)
+      } else if (match.trim() === ">") {
+        var f = filter.replaceAll(">", "").trim()
+        f = parseInt(f)
+        return rows.filter(row => row[key] > f)
+      } else if (match === ">=") {
+        var f = filter.replaceAll(">=", "").trim()
+        f = parseInt(f)
+        return rows.filter(row => row[key] >= f)
+      } else if (parseInt(filter) || match.trim() === "="){
+        var f = filter.replaceAll("=", "").trim()
+        f = parseInt(f)
+        return rows.filter(row => row[key] === f)
+      } else {
+        return []
+      }
+    }
+
+    function dateMatch(rows, filter, val) {
+      var key = val.keys[0]
+
+      var date = new Date(filter)
+
+      return rows.filter(row => new Date(row[key]) >= date)
+    }
+
     function createLink(pageInfo, idAccessor) {
       var title = pageInfo.original.pageTitle
+      var hasData = pageInfo.original.hasData
+      var isEnrolled = pageInfo.original.isEnrolled
       var url = pageInfo.original.pageURL
       var tab = "page"
       if (!url || url.length === 0) {
@@ -46,15 +105,22 @@ export default function DataTable({
       }
       if (tab === "page") {
         return <a href={url} target="_blank">{title}</a>
-      } else if (tab === "student") {
+      } else if (tab === "student" && hasData) {
         return pageInfo.original._id
+      } else if (tab === "student" && !hasData) {
+        return <Text weight="bold">{pageInfo.original._id}</Text>
       }
     }
 
     function formatDate(val, type) {
-      var d = new Date(val)
-      var arr = (d.toString().split(" "))
-      return arr[1]+" "+arr[2]+" "+arr[3]
+      if (val) {
+        var d = new Date(val)
+        var arr = (d.toString().split(" "))
+
+        return arr[1]+" "+arr[2]+" "+arr[3]
+      } else {
+        return ""
+      }
     }
 
     //console.log(data)
@@ -91,7 +157,7 @@ export default function DataTable({
                 };
             },
         filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["objectCount"] }),
+          numMatch(rows, filter.value, { keys: ["objectCount"] }),
         filterAll: true
         },
         {
@@ -107,7 +173,7 @@ export default function DataTable({
                   };
               },
           filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, { keys: ["viewCount"] }),
+            numMatch(rows, filter.value, { keys: ["viewCount"] }),
           filterAll: true
         },
         {
@@ -140,7 +206,7 @@ export default function DataTable({
                   };
               },
           filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, { keys: ["dateCount"] }),
+            numMatch(rows, filter.value, { keys: ["dateCount"] }),
           filterAll: true
         })
     } else if (tab === "page") {
@@ -153,20 +219,20 @@ export default function DataTable({
         Header: column2Label,
         accessor: "objectCount",
         filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["objectCount"] }),
+          numMatch(rows, filter.value, { keys: ["objectCount"] }),
         filterAll: true
       },
       {
-        Header: "Average Page Duration",
+        Header: "Average Page Duration (minutes)",
         accessor: "durationInMinutes",
         filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["durationInMinutes"] }),
+          numMatch(rows, filter.value, { keys: ["durationInMinutes"] }),
         filterAll: true
       },
       {
         Header: "Average Percent Scrolled", accessor: "percentAvg",
         filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["percentAvg"] }),
+          numMatch(rows, filter.value, { keys: ["percentAvg"] }),
         filterAll: true
       })
     }
@@ -191,7 +257,7 @@ export default function DataTable({
                 };
             },
         filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["adaptUniqueInteractionDays"] }),
+          numMatch(rows, filter.value, { keys: ["adaptUniqueInteractionDays"] }),
         filterAll: true
       },
       {
@@ -207,7 +273,7 @@ export default function DataTable({
                 };
             },
         filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
+          numMatch(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
         filterAll: true
       },
       {
@@ -244,6 +310,7 @@ export default function DataTable({
         minRows={1}
         gridArea="table"
         filterable={true}
+        getTrProps={getTrProps}
       >
       </ReactTable>
       <div>

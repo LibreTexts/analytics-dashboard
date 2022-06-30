@@ -60,8 +60,10 @@ var enrollmentQuery = {
   "pipeline": [
     {
       '$group': {
-        '_id': '$email',
-        'courses': {'$addToSet': '$class'}
+        // '_id': '$email',
+        // 'courses': {'$addToSet': '$class'}
+        '_id': '$class',
+        'students': {'$addToSet': '$email'}
       }
     }
   ]
@@ -131,6 +133,43 @@ var adaptCodeQuery = {
     //   }
     // }
   ]
+}
+
+function adaptLevelQuery(params, adaptCodes) {
+  //console.log(params.courseId)
+    var codeFound = adaptCodes.find(o => o.course === params.courseId)
+    //console.log(codeFound)
+    var data = {
+      "collection": adaptColl,
+      "database": db,
+      "dataSource": dataSource,
+      "pipeline": [
+        {
+          '$match': {
+            '$expr': {
+              '$and': [
+                {'$eq': ["$class", codeFound.code]}
+              ]
+            }
+          }
+        },
+        {
+          '$group': {
+            '_id': {
+              'level_group': '$level_group',
+              'level_name': '$level_name'
+            }
+          }
+        },
+        {
+          '$group': {
+            '_id': '$_id.level_group',
+            'level_name': {'$addToSet': '$_id.level_name'}
+          }
+        }
+      ]
+    }
+    return data;
 }
 
 var realCourseQuery = {
@@ -537,11 +576,111 @@ function getIndividual(params, courseData) {
 }
 
 function allDataQuery(params, adaptCodes) {
+//console.log(adaptCodes)
+  // console.log(params)
+  // console.log(adaptCodes)
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
+  //console.log(codeFound)
   if (codeFound) {
+    // var adaptLookup = {
+    //   "$lookup": {
+    //     "from": "adapt",
+    //     "localField": "_id",
+    //     "foreignField": "anon_student_id",
+    //     "as": "adapt",
+    //     "pipeline": [
+    //       {
+    //         '$match': {
+    //           '$expr': {
+    //             '$and': [
+    //               {'$eq': ["$class", codeFound.code]}
+    //             ]
+    //           }
+    //         }
+    //       },
+    //       {
+    //         '$addFields': {
+    //           'day': {'$replaceAll': {
+    //             'input': '$time', 'find': '"', 'replacement': ''
+    //           }},
+    //           'points': {
+    //             '$cond': {
+    //             'if': {'$eq': ['$outcome', "CORRECT"]},
+    //             'then': {
+    //               '$convert': {
+    //                 'input': '$problem_points',
+    //                 'to': 'double'
+    //               }
+    //             },
+    //             'else': 0
+    //             }
+    //           },
+    //           'total_points': {
+    //             '$convert': {
+    //               'input': '$problem_points',
+    //               'to': 'double'
+    //             }
+    //           }
+    //         }
+    //       },
+    //       {
+    //         '$addFields': {
+    //           'date': {'$dateTrunc': {
+    //               'date': { '$toDate': '$day'},
+    //               'unit': 'day'
+    //             }
+    //           }
+    //         }
+    //       },
+    //       {
+    //         '$group': {
+    //           '_id': {
+    //            'anon_student_id': '$anon_student_id',
+    //            'problem_name': '$problem_name'
+    //             },
+    //           'mostRecentAdaptLoad': {'$max': '$day'},
+    //           'date': {'$max': '$date'},
+    //           'assignments': {'$addToSet': '$problem_name'},
+    //           'total': {'$first': '$total_points'},
+    //           'earned': {'$sum': '$points'},
+    //           'problem': {
+    //             '$addToSet': {
+    //               'outcome': '$outcome',
+    //               'points': '$points'
+    //             }
+    //           }
+    //         }
+    //       },
+    //       {
+    //         '$addFields': {
+    //           'percent': {'$multiply': [{'$divide': ['$earned', '$total']}, 100]},
+    //           'attempts': {'$size': '$problem'}
+    //         }
+    //       },
+    //       {
+    //         '$group': {
+    //           '_id': '$_id.anon_student_id',
+    //           'mostRecentAdaptLoad': {'$max': '$mostRecentAdaptLoad'},
+    //           'averagePercent': {'$avg': '$percent'},
+    //           'dates': {'$addToSet': '$date'},
+    //           'assignments': {'$addToSet': '$_id.problem_name'},
+    //           'attempts': {'$sum': '$attempts'}
+    //         }
+    //       },
+    //       {
+    //         '$addFields': {
+    //           'adaptUniqueInteractionDays': {'$size': '$dates'},
+    //           'adaptUniqueAssignments': {'$size': '$assignments'},
+    //           'adaptPercent': {'$trunc': ['$averagePercent', 1]},
+    //           'adaptAttempts': {'$round': [{'$divide': ['$attempts', {'$size': '$assignments'}]}, 1]}
+    //         }
+    //       }
+    //     ]
+    //   }
+    // }
     var adaptLookup = {
       "$lookup": {
-        "from": adaptColl,
+        "from": "adapt",
         "localField": "_id",
         "foreignField": "anon_student_id",
         "as": "adapt",
@@ -595,6 +734,12 @@ function allDataQuery(params, adaptCodes) {
       }
     }
   }
+  if (params.adaptLevelGroup) {
+    adaptLookup['$lookup']['pipeline'][0]['$match']['$expr']['$and'].push({'$eq': ['$level_group', params.adaptLevelGroup]})
+  }
+  if (params.adaptLevelName) {
+    adaptLookup['$lookup']['pipeline'][0]['$match']['$expr']['$and'].push({'$eq': ['$level_name', params.adaptLevelName]})
+  }
   // console.log(params.courseId)
   // console.log(codeFound)
   if (params.groupBy === '$actor.id') {
@@ -604,7 +749,7 @@ function allDataQuery(params, adaptCodes) {
     var aggregationAttr = "$actor.id"
     var isPage = true
   }
-
+  //console.log(isPage)
   var data = {
       "collection": coll,
       "database": db,
@@ -660,12 +805,12 @@ function allDataQuery(params, adaptCodes) {
           }
         }
     ]}
-
     if (codeFound && codeFound.isInAdapt && !isPage) {
+      //console.log("splicing data")
       data['pipeline'].splice(3, 0, adaptLookup)
       data['pipeline'].splice(4, 0, adaptUnwind)
     }
-
+    //console.log(data['pipeline'])
     var lookup = {
       "$lookup": {
         "from": pageColl,
@@ -725,14 +870,14 @@ function allDataQuery(params, adaptCodes) {
         "as": "tags"
       }
     }
-    var adaptLookup = {
-      "$lookup": {
-        "from": "adapt",
-        "localField": "_id",
-        "foreignField": "anon_student_id",
-        "as": "adapt"
-      }
-    }
+    // var adaptLookup = {
+    //   "$lookup": {
+    //     "from": "adapt",
+    //     "localField": "_id",
+    //     "foreignField": "anon_student_id",
+    //     "as": "adapt"
+    //   }
+    // }
 
     if (isPage) {
       data['pipeline'].splice(1, 0, lookup)
@@ -801,7 +946,7 @@ function allDataQuery(params, adaptCodes) {
     // if (hasTags) {
     //   data['pipeline'].splice(7, 0, tagMatch)
     // }
-    // console.log(data['pipeline'])
+    //console.log(data['pipeline'])
     return data;
 }
 
@@ -1077,6 +1222,160 @@ function allDataQuery(params, adaptCodes) {
     return data;
   }
 
+  function individualPageViewChartQuery(params, adaptCodes) {
+    var codeFound = adaptCodes.find(o => o.course === params.courseId)
+
+    if (params.individual) {
+      var data = {
+        "collection": coll,
+        "database": db,
+        "dataSource": dataSource,
+        "pipeline": [
+          {
+            "$match": {
+              '$expr': {
+                '$and': [
+                  {'$eq': ["$verb", "read"]},
+                  {'$eq': ["$actor.courseName", params.courseId]}
+                ]
+              }
+            }
+          },
+          {
+            "$lookup": {
+              "from": pageColl,
+              "localField": "object.id",
+              "foreignField": "id",
+              "as": "pageInfo"
+            }
+          },
+          {
+            "$unwind": {
+              'path': '$pageInfo'
+            }
+          },
+          {
+            '$match': {
+              'pageInfo.title': params.individual
+            }
+          },
+          {
+            "$addFields": {
+              'date': {'$dateTrunc': {
+                  'date': { '$toDate': '$object.timestamp'},
+                  'unit': params.unit,
+                  'binSize': params.bin
+                }
+              }
+            }
+          },
+          {
+            "$group": {
+              '_id': '$date',
+              'students': {'$push': '$actor.id' }
+            }
+          },
+          {
+            "$addFields": {
+              'count': {'$size': '$students'},
+              'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]}
+            }
+          },
+          {
+            "$sort": {"_id": 1}
+          }
+        ]
+      }
+    } else if (params.levelName) {
+        var data = {
+          "collection": adaptColl,
+          "database": db,
+          "dataSource": dataSource,
+          "pipeline": [
+            {
+              '$match': {
+                '$expr': {
+                  '$and': [
+                    {'$eq': ['$class', codeFound.code]},
+                    {'$eq': ['$level_group', params.levelGroup]},
+                    {'$eq': ['$level_name', params.levelName]}
+                  ]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                'date': {'$dateTrunc': {
+                    'date': { '$toDate': '$time'},
+                    'unit': params.unit,
+                    'binSize': params.bin
+                  }
+                }
+              }
+            },
+            {
+              "$group": {
+                '_id': '$date',
+                'students': {'$push': '$anon_student_id' }
+              }
+            },
+            {
+              "$addFields": {
+                'count': {'$size': '$students'},
+                'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]}
+              }
+            },
+            {
+              "$sort": {"_id": 1}
+            }
+          ]
+        }
+    }
+    //console.log(data)
+    var match = {
+      "$match": {
+        '$expr': {
+          '$and': []
+        }
+      }
+    }
+
+    var filterMatch = {
+      "$match": {
+        '$expr': {
+          '$and': []
+        }
+      }
+    }
+
+    var pathMatch = {
+      "$match": {
+        '$expr': {
+          '$and': []
+        }
+      }
+    }
+
+    var matchesUsed = false
+    if (params.start) {
+      filterMatch['$match']['$expr']['$and'].push({'$gte': ['$date', {'$dateFromString': {'dateString': params.start}}]})
+      matchesUsed = true
+    }
+    if (params.end) {
+      filterMatch['$match']['$expr']['$and'].push({'$lte': ['$date', {'$dateFromString': {'dateString': params.end}}]})
+      matchesUsed = true
+    }
+    if (params.path) {
+      pathMatch['$match']['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]})
+      data['pipeline'].splice(5, 0, pathMatch)
+    }
+    if (matchesUsed && params.courseId) {
+      data['pipeline'].splice(6, 0, filterMatch)
+    }
+
+    return data;
+  }
+
   function getTagQuery(params) {
 
     var data = {
@@ -1150,6 +1449,21 @@ function allDataQuery(params, adaptCodes) {
     return data
   }
 
+  function findEnrollmentData(adaptCodes, enrollmentData, course) {
+    //console.log(enrollmentData)
+    var codeFound = adaptCodes.find(o => o.course === course)
+    //console.log(codeFound)
+    var courseCode = codeFound ? parseInt(codeFound.code) : null
+    //console.log(courseCode)
+    var studentEnrollment = []
+    if (codeFound) {
+      var studentEnrollment = enrollmentData.find(o => o._id === courseCode)
+      return studentEnrollment['students']
+    } else {
+      return []
+    }
+    //console.log(studentEnrollment)
+  }
 
   function mergeLTAdaptData(lt, adapt) {
     console.log(lt)
@@ -1171,6 +1485,15 @@ function allDataQuery(params, adaptCodes) {
     console.log(error)
   })
 
+  let enrollmentConfig = getRequest(enrollmentQuery)
+  var enrollmentData = {}
+  axios(enrollmentConfig).then(function (response) {
+    enrollmentData = (response.data['documents'])
+    //console.log(enrollmentData)
+  }).catch(function (error) {
+    console.log(error)
+  })
+
   let realCourseConfig = getRequest(realCourseQuery);
   let realCourseNames = {}
   axios(realCourseConfig)
@@ -1185,22 +1508,22 @@ function allDataQuery(params, adaptCodes) {
     res.json(realCourseNames)
   })
 
-  let enrollmentConfig = getRequest(enrollmentQuery);
-  let studentEnrollment = {}
-  axios(enrollmentConfig)
-    .then(function (response) {
-      studentEnrollment = response.data['documents']
-    })
-    .catch(function (error) {
-      console.log(error)
-    });
-
-  app.get('/enrollment', (req, res) => {
-    studentEnrollment.forEach((r, index) => {
-      studentEnrollment[index]._id = decryptStudent(r._id)
-    })
-    res.json(studentEnrollment)
-  })
+  // let enrollmentConfig = getRequest(enrollmentQuery);
+  // let studentEnrollment = {}
+  // axios(enrollmentConfig)
+  //   .then(function (response) {
+  //     studentEnrollment = response.data['documents']
+  //   })
+  //   .catch(function (error) {
+  //     console.log(error)
+  //   });
+  //
+  // app.get('/enrollment', (req, res) => {
+  //   studentEnrollment.forEach((r, index) => {
+  //     studentEnrollment[index]._id = decryptStudent(r._id)
+  //   })
+  //   res.json(studentEnrollment)
+  // })
 
 app.post('/timelineData', (req,res,next) => {
   let queryString = timelineQuery(req.body);
@@ -1220,14 +1543,47 @@ app.post('/timelineData', (req,res,next) => {
 app.post('/data', async (req,res,next) => {
   let queryString = allDataQuery(req.body, await adaptCodes);
   let config = getRequest(queryString);
+  //console.log(enrollmentData)
+  var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
+  // console.log("STUDENT ENROLLMENT")
+  // console.log(studentEnrollment)
   axios(config)
       .then(function async (response) {
         let newData = (response.data)
         newData['documents'].forEach((student, index) => {
           if (student._id.length >= 20) {
+            //console.log(student)
+            if (studentEnrollment.length > 0) {
+              if (studentEnrollment.includes(student._id)) {
+                newData['documents'][index]['isEnrolled'] = true
+              //console.log(true)
+                studentEnrollment.find((s, index) => {
+                  if (s === student._id) {
+                    studentEnrollment.splice(index, 1)
+                  }
+                })
+              } else {
+                newData['documents'][index]['isEnrolled'] = false
+              }
+            } else if (studentEnrollment.length === 0) {
+              newData['documents'][index]['isEnrolled'] = true
+            }
+            newData['documents'][index]['hasData'] = true
             newData['documents'][index]._id = decryptStudent(student._id)
         }
         })
+        if (studentEnrollment.length > 0 && newData['documents'][0]._id.length >= 20) {
+          //console.log(studentEnrollment)
+          studentEnrollment.forEach(s => {
+            console.log(s)
+            newData['documents'].splice(0, 0, {
+              _id: decryptStudent(s),
+              isEnrolled: true,
+              hasData: false,
+              adapt: newData['documents'][1].adapt ? true : false
+            })
+          })
+        }
         newData = JSON.stringify(newData)
         res.json(newData);
       })
@@ -1258,16 +1614,31 @@ app.post('/individual', (req,res,next) => {
 app.post('/studentchart', (req,res,next) => {
   let queryString = studentChartQuery(req.body);
   let config = getRequest(queryString);
+  var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
   axios(config)
       .then(function (response) {
         let newData = (response.data)
         newData['documents'].forEach((student, index) => {
+          var allStudents = JSON.parse(JSON.stringify(student.students))
           student.students.forEach((s, i) => {
             if (s.length >= 20) {
-              newData['documents'][index].students[i] = decryptStudent(s)
+              if (!studentEnrollment.includes(s)) {
+                allStudents.find((st, n) => {
+                  if (st === s) {
+                    allStudents.splice(n, 1)
+                  }
+                })
+                newData['documents'][index].count = newData['documents'][index].count - 1
+              }
+              // else {
+              //   newData['documents'][index].students[i] = decryptStudent(s)
+              // }
             }
           })
-
+          allStudents.forEach((s, i) => {
+            allStudents[i] = decryptStudent(s)
+          })
+          newData['documents'][index].students = allStudents
         })
         newData = JSON.stringify(newData)
         res.json(newData);
@@ -1293,12 +1664,42 @@ app.post('/pageviews', (req,res,next) => {
 
 });
 
+app.post('/individualpageviews', (req,res,next) => {
+  let queryString = individualPageViewChartQuery(req.body, adaptCodes);
+  let config = getRequest(queryString);
+  axios(config)
+      .then(function (response) {
+        let newData = (response.data)
+        newData = JSON.stringify(newData)
+        res.json(newData);
+      })
+      .catch(function (error) {
+          console.log(error);
+      });
+
+});
+
 app.post('/adapt', (req,res,next) => {
   let queryString = getAdaptQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
         let newData = (response.data)
+        newData = JSON.stringify(newData)
+        res.json(newData);
+      })
+      .catch(function (error) {
+          console.log(error);
+      });
+
+});
+
+app.post('/adaptlevels', (req,res,next) => {
+  let queryString = adaptLevelQuery(req.body, adaptCodes);
+  let config = getRequest(queryString);
+  axios(config)
+      .then(function (response) {
+        let newData = (response.data)['documents']
         newData = JSON.stringify(newData)
         res.json(newData);
       })

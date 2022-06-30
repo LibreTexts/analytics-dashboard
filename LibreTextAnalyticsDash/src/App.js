@@ -55,6 +55,7 @@ function App() {
   const [disableCourse, setDisableCourse] = useState(false);
   const [disableStudent, setDisableStudent] = useState(false);
   const [disablePage, setDisablePage] = useState(false);
+  const [disableAssignment, setDisableAssignment] = useState(false);
   const [allCourses, setAllCourses] = useState(null);
   const [allCourseNames, setAllCourseNames] = useState(null);
   const [course, setCourse] = useState(null);
@@ -62,6 +63,8 @@ function App() {
   const [click, setClick] = useState(false);
   const [allPages, setAllPages] = useState(null);
   const [totalPageViews, setTotalPageViews] = useState(null);
+  const [individualPageViews, setIndividualPageViews] = useState(null);
+  const [individualAssignmentViews, setIndividualAssignmentViews] = useState(null);
   const [oneStudent, setOneStudent] = useState(null);
   const [onePage, setOnePage] = useState(null);
   const [studentDates, setStudentDates] = useState(null);
@@ -121,12 +124,16 @@ function App() {
   const target = React.useRef(null)
   const size = useSize(target)
   const [adaptCode, setAdaptCode] = useState(null)
+  const [adaptLevels, setAdaptLevels] = useState({});
+  const [levelGroup, setLevelGroup] = useState(null);
+  const [levelName, setLevelName] = useState(null);
   const [hasAdapt, setHasAdapt] = useState(false)
   const [showInfoBox, setShowInfoBox] = useState(true)
   const [showTableFilters, setShowTableFilters] = useState(false)
   const [showCheckboxes, setShowCheckboxes] = useState(false)
   const [filterInfoBox, setFilterInfoBox] = useState(true)
   const [count, setCount] = useState(0)
+  const [activityFilter, setActivityFilter] = useState("")
   const [tableColumns, setTableColumns] = useState({
     "All": true,
     "LT Unique Pages Accessed": true,
@@ -135,11 +142,12 @@ function App() {
     "LT Unique Interaction Days": true
   })
   const [checkedValues, setCheckedValues] = useState(Object.keys(tableColumns))
+  var homepage = '/analytics/api'
 
   useEffect(() => {
 
      let realCourses = {}
-     axios('/analytics/api/realcourses')
+     axios(homepage+'/realcourses')
        .then(response => {
          let x = {}
          response.data.forEach(course => {
@@ -162,7 +170,7 @@ function App() {
     }
     axios({
       method: 'post',
-      url: '/analytics/api/data',
+      url: homepage+'/data',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -180,7 +188,7 @@ function App() {
       d['student'] = JSON.parse(response.data)['documents']
       setStudentResult(JSON.parse(response.data)['documents'])
       setDisplay(true);
-      if ((Object.keys(d['student'][0])).includes("adapt")) {
+      if ((Object.keys(d['student'][0])).includes("adapt") && d['student'][0]['adapt'] !== false) {
         setHasAdapt(true)
         var columns = {
           "All": true,
@@ -211,7 +219,7 @@ function App() {
 
     axios({
       method: 'post',
-      url: '/analytics/api/data',
+      url: homepage+'/data',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -246,7 +254,7 @@ function App() {
     console.log(indiv)
     axios({
       method: 'post',
-      url: '/analytics/api/individual',
+      url: homepage+'/individual',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -286,7 +294,7 @@ function App() {
     }
     axios({
       method: 'post',
-      url: '/analytics/api/timelineData',
+      url: homepage+'/timelineData',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -309,7 +317,7 @@ function App() {
       })
       axios({
         method: 'post',
-        url: '/analytics/api/timelineData',
+        url: homepage+'/timelineData',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -341,7 +349,7 @@ function App() {
     setStudentChartData(null)
       axios({
         method: 'post',
-        url: '/analytics/api/studentchart',
+        url: homepage+'/studentchart',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -359,11 +367,34 @@ function App() {
         })
   }
 
+  function getAdaptLevels() {
+    var levels = {}
+    axios({
+      method: 'post',
+      url: homepage+'/adaptlevels',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        courseId: courseId
+      }
+    })
+      .then(response => {
+        JSON.parse(response.data).forEach(a => {
+          var names = []
+          a.level_name.forEach(o => names.push(o.replaceAll("\"", "")))
+          levels[a._id.replaceAll("\"", "")] = names
+        })
+        //console.log(levels)
+        setAdaptLevels(levels)
+      })
+  }
+
   function getPageViewData() {
     setTotalPageViews(null)
       axios({
         method: 'post',
-        url: '/analytics/api/pageviews',
+        url: homepage+'/pageviews',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -383,6 +414,44 @@ function App() {
         })
   }
 
+  function getIndividualPageViewData() {
+    setIndividualPageViews(null)
+    if (tab == "page") {
+      var p = page
+      var lgroup = null
+      var lname = null
+    } else if (tab === "assignment") {
+      var lgroup = levelGroup
+      var lname = levelName
+      var p = null
+    }
+      axios({
+        method: 'post',
+        url: homepage+'/individualpageviews',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: {
+          bin: bin,
+          unit: unit,
+          courseId: courseId,
+          start: start,
+          end: end,
+          path: dataPath,
+          individual: p,
+          levelGroup: lgroup,
+          levelName: lname
+        }
+      })
+        .then(response => {
+          if (tab === "page") {
+            setIndividualPageViews(response.data)
+          } else if (tab === "assignment") {
+            setIndividualAssignmentViews(response.data)
+          }
+        })
+  }
+
   function getChapters() {
     setChapters(null)
     let allChapters = []
@@ -390,7 +459,7 @@ function App() {
     let tree = []
       axios({
         method: 'post',
-        url: '/analytics/api/chapters',
+        url: homepage+'/chapters',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -439,7 +508,7 @@ function App() {
   function getAdaptData() {
       axios({
         method: 'post',
-        url: '/analytics/api/adapt',
+        url: homepage+'/adapt',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -462,7 +531,7 @@ function App() {
   function getTagInfo() {
       axios({
         method: 'post',
-        url: '/analytics/api/tags',
+        url: homepage+'/tags',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -513,11 +582,14 @@ function App() {
       //setTab("student");
       setStudent(null);
       setPage(null);
+      setIndividualPageViews(null);
+      setAdaptLevels(null);
       setAllChapters(null);
       setChosenPath(null);
       setDataPath(null);
 
       getAggregateData();
+      getAdaptLevels();
       //getTagInfo();
       // if (course) {
       //   getAdaptData()
@@ -593,20 +665,24 @@ function App() {
         }
       })
     } else if (tab === "page") {
-      if (!pageId) {
-        alert("Please choose a page.")
-      } else {
-        setDisablePage(true);
-        setPageData(null);
-        console.log(pageId)
-        pageDates.forEach(s => {
-          if (s['_id'] === pageId) {
-            setOnePage(s);
-          }
-        })
-      }
+      // if (!pageId) {
+      //   alert("Please choose a page.")
+      // } else {
+      //   setDisablePage(true);
+      //   setPageData(null);
+      //   console.log(pageId)
+      //   pageDates.forEach(s => {
+      //     if (s['_id'] === pageId) {
+      //       setOnePage(s);
+      //     }
+      //   })
+      // }
+      setDisablePage(true)
+    } else if (tab === "assignment") {
+      setDisableAssignment(true)
     }
-    getIndividualData();
+    //getIndividualData();
+    getIndividualPageViewData()
   }
 
   function changeScatterXAxis(option) {
@@ -734,16 +810,27 @@ function App() {
       //   }
       // })
       setPage(value);
+      // setLevelGroup(null);
+      // setLevelName(null);
       console.log(value)
-      allData['page'].map(obj => console.log(obj.pageTitle))
+      //allData['page'].map(obj => console.log(obj.pageTitle))
       var temp = (allData['page']).find(id => (id.pageTitle === value))
       console.log(temp)
       var pageId = temp._id
       setPageId(pageId)
       setPageData(null);
-      setIndividualStart(null);
-      setIndividualEnd(null);
+      // setIndividualStart(null);
+      // setIndividualEnd(null);
       setDisablePage(false);
+    } else if (type === "pageLevelGroup") {
+      setLevelGroup(value);
+      setLevelName(null);
+      // setPage(null);
+      // setPageId(null);
+    } else if (type === "pageLevelName") {
+      setIndividualAssignmentViews(null)
+      setLevelName(value);
+      setDisableAssignment(false);
     }
     if (type === "individual start") {
       setStudentData(null); //to avoid changing the date before pressing apply
@@ -799,16 +886,22 @@ function App() {
           console.log("page")
           setTab("page");
           setIndex(1)
+        } else if (value === 2) {
+          setTab("assignment")
+          setIndex(2)
         }
       } else if (!course || !click) {
         if (value === 0) {
-          console.log("student")
+          //console.log("student")
           setTab("student");
           setIndex(0)
         } else if (value === 1) {
-          console.log("page")
+          //console.log("page")
           setTab("page");
           setIndex(1)
+        } else if (value === 2) {
+          setTab("assignment")
+          setIndex(2)
         }
       } else {
         alert("Please choose a course and hit Apply.")
@@ -916,20 +1009,41 @@ function App() {
       }
       setCheckedValues(checked)
       setTableColumns(columns)
+      //console.log(checked)
+    }
+
+    function changeActivityFilter(option, data) {
+      setActivityFilter(option)
+      // if (option === "No Recent LibreText Activity") {
+      //   setActivityFilter(option)
+      //   // data.sort((a, b) => {
+      //   //   return a - b
+      //   // })
+      // } else if (option === "No Recent Adapt Activity") {
+      //
+      // } else if (option === "Low Adapt Performance") {
+      //
+      // }
+    }
+
+    function pageViewCharts() {
+      getPageViewData();
+      getIndividualPageViewData();
     }
 
   return (
     <>
-    <Tabs justify="start" margin="medium" activeIndex={index} onActive={value => handleTabs(value)} style={{overflow: "hidden"}}>
+    <Tabs justify="start" margin="medium" activeIndex={index} onActive={value => handleTabs(value)} style={{overflowY: "scroll"}}>
+
       {click &&
-        <Tab title="By Student" overflow="hidden">
+        <Tab title="By Student" overflowY="scroll">
         {disableCourse && !studentResult &&
           <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
         }
           {studentResult && allData["student"] && allData["student"].length < 1 &&
             <Notification title="No data to display." onClose={() => {}}/>
           }
-            <Grommet theme={theme} full fill={true} overflow="hidden">
+            <Grommet theme={theme} full fill={true} overflowY="scroll">
               <Box fill={true}>
               <Box direction="row">
               {studentResult &&
@@ -938,7 +1052,12 @@ function App() {
                     <Button label="Choose Columns" secondary color="#0047BA" size="small" onClick={() => setShowCheckboxes(!showCheckboxes)}/>
                   </Box>
                   {showCheckboxes &&
-                    <CheckBoxGroup margin={{top: "medium", left: "xsmall"}} options={Object.keys(tableColumns)} value={checkedValues} onChange={({ option, value }) => changeColumns(option, value)}/>
+                    <CheckBoxGroup
+                      margin={{top: "medium", left: "xsmall"}}
+                      options={Object.keys(tableColumns)}
+                      value={checkedValues}
+                      onChange={({ option, value }) => changeColumns(option, value)}
+                    />
                   }
                 </Box>
               }
@@ -957,7 +1076,7 @@ function App() {
                 flex={true}
                 responsive={true}
                 margin="medium"
-                overflow="hidden"
+                overflowY="scroll"
                 >
                 {studentResult && allData["student"].length > 0 &&
                 <>
@@ -967,12 +1086,25 @@ function App() {
                   </Box>
                 }
                 {studentResult && click && display &&
-                  <Box gridArea="table" border={true} overflow="hidden" responsive={true}>
-                    <DataTable tab={tab} data={allData["student"]} hasAdapt={hasAdapt} showColumns={tableColumns}/>
+                  <Box gridArea="table" border={true} overflowY="scroll" responsive={true}>
+                  {
+                    // <Box direction="row">
+                    //   <Box width="250px" height="85px">
+                    //     <Select
+                    //       options={['No Recent LibreText Activity', 'No Recent Adapt Activity', 'Low Adapt Performance']}
+                    //       margin={{right: "medium", left: "medium"}}
+                    //       value={activityFilter}
+                    //       onChange={({ option }) => changeActivityFilter(option, allData["student"])}
+                    //     />
+                    //   </Box>
+                    //   <Button primary label="Apply" onClick={() => {}}/>
+                    // </Box>
+                  }
+                    <DataTable tab={tab} data={allData["student"]} hasAdapt={hasAdapt} showColumns={tableColumns} activityFilter={activityFilter}/>
                   </Box>
                 }
                 {studentResult && click && display &&
-                  <Box ref={target} gridArea="plots" border={true} responsive={true} fill={true} direction="row" justifyContent="center" justify="center" align="center" overflow="hidden" responsive={true}>
+                  <Box ref={target} gridArea="plots" border={true} responsive={true} fill={true} direction="row" justifyContent="center" justify="center" align="center" overflowY="scroll" responsive={true}>
                     <Grid
                       fill={true}
                       rows={['xsmall', 'full']}
@@ -982,13 +1114,15 @@ function App() {
                         { name: 'title', start: [0, 0], end: [0, 0]},
                         { name: 'scatter-plot', start: [0, 1], end: [0, 1]}
                       ]}
-                      overflow="hidden"
+                      overflowY="scroll"
                       responsive={true}
                       >
                       <Box align="center" direction="column" gridArea='title'>
                         <TitleText title="Student Metrics Bar Chart" text="This graph shows data for all students. Switch the axis values using the filters to the left. Click on a bar to populate a table with the chosen data." topMargin="small"/>
                       </Box>
                       <Box gridArea='scatter-plot' justify="center" direction="row" margin={{bottom: "xlarge"}} responsive={true}>
+                        {//<Button alignSelf="start" secondary onClick={() => setShowFilter(true)} icon={<Filter/>} margin={{top: "small"}}/>
+                        }
                         <Button secondary size="small" alignSelf="start" label="Filters" onClick={() => setShowFilter(true)} margin={{top: "small"}}/>
                         {showFilter && (
                           <Layer
@@ -1015,7 +1149,7 @@ function App() {
                         <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
                       }
                       {studentChartData &&
-                        <StudentChart hasAdapt={hasAdapt} showColumns={tableColumns} allData={allData['student']} tab={tab} data={studentChartData['documents']} xaxis="_id" xaxisLabel={barXAxisLabel} yaxis={barYAxis} yaxisLabel={barYAxisLabel} width={1000}/>
+                        <StudentChart hasAdapt={hasAdapt} showColumns={tableColumns} allData={allData['student'].filter(o => o.isEnrolled === true)} tab={tab} data={studentChartData['documents']} xaxis="_id" xaxisLabel={barXAxisLabel} yaxis={barYAxis} yaxisLabel={barYAxisLabel} width={1000}/>
                       }
                     </Box>
                   </Grid>
@@ -1030,19 +1164,19 @@ function App() {
           </Tab>
         }
         {click &&
-          <Tab title="By Page" overflow="hidden">
+          <Tab title="By Page" overflowY="scroll">
             {disableCourse && !pageResult &&
               <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
             }
             {pageResult && allData["page"].length < 1 &&
               <Notification title="No data to display." onClose={() => {}}/>
             }
-              <Grommet theme={theme} full fill="true" overflow="hidden">
+              <Grommet theme={theme} full fill="true" overflowY="scroll">
                 <Box fill={true}>
               <Box direction="row">
                 <Grid
                   fill={true}
-                  rows={['2/3', '2/3', 'medium', 'large']}
+                  rows={['2/3', '2/3', '1/3', '2/3']}
                   columns={['15%', '79%']}
                   gap="small"
                   areas={[
@@ -1054,7 +1188,7 @@ function App() {
                   flex={true}
                   responsive={true}
                   margin="medium"
-                  overflow="hidden"
+                  overflowY="scroll"
                   >
 
                 {pageResult && allData["page"].length > 0 &&
@@ -1070,7 +1204,7 @@ function App() {
                     </Box>
                   }
                 {pageResult && click && display &&
-                  <Box gridArea="horizontal-chart" border={true} align="center" direction="row" overflow="hidden">
+                  <Box gridArea="horizontal-chart" border={true} align="center" direction="row" overflowY="scroll">
                     <Grid
                       fill={true}
                       rows={['1/5', '4/5']}
@@ -1082,7 +1216,7 @@ function App() {
                       ]}
                       >
                       <Box align="center" direction="column" gridArea='title'>
-                        <TitleText title="Page Metrics Bar Chart" text="This graph shows data for each page. Switch the axis values using the filters to the left." topMargin="small"/>
+                        <TitleText title="Aggregate Page Views Bar Chart" text={"This graph shows the number of page views for all pages in "+courseName+". Switch the unit of time using the filters to the left."} topMargin="small"/>
                       </Box>
                       <Box gridArea='plot' justify="center" direction="row">
                         <Button alignSelf="start" secondary onClick={() => setShowFilter(true)} icon={<Filter/>} margin={{top: "small", left: "small"}}/>
@@ -1103,57 +1237,71 @@ function App() {
                                 value={binLabel}
                                 onChange={({ option }) => changeBinVal(option)}
                               />
-                              <Button primary label="Apply" onClick={() => getPageViewData()} margin="large"/>
+                              <Button primary label="Apply" onClick={() => pageViewCharts()} margin="large"/>
                             </Box>
                           </Layer>
                         )}
                         {totalPageViews &&
-                          <PageViews data={totalPageViews} xaxis="_id" yaxis="count" binLabel={binLabel} width={980}/>
+                          <PageViews data={totalPageViews} type="aggregate" xaxis="_id" yaxis="count" binLabel={binLabel} width={980}/>
                         }
                       </Box>
                     </Grid>
                   </Box>
                 }
                 {pageResult && click && display && allPages &&
-                  <Box gridArea="timeline-filters" border={true} align="center" pad="small" overflow="auto">
-                    <TitleText title="Individual Page Timeline" text="This graph shows data for individual pages." topMargin="medium"/>
-                    <Select
-                      options={allPages}
-                      margin={{top: "small", bottom: "small", right: "large"}}
-                      dropAlign={{top: "bottom", left: "left", right: "right"}}
-                      dropHeight="small"
-                      value={page}
-                      onChange={({ option }) => handleChange("page", option)}
-                    />
-                    <Box direction="row" pad="small" margin={{right: "small"}}>
-                      <Text margin={{vertical: "small", right: "xsmall", bottom: "small", top: "small"}}>Start:</Text>
-                      <DateInput
-                        format="mm/dd/yyyy"
-                        value={individualStart}
-                        dropProps={{align: {bottom: "top"}}}
-                        onChange={({ value }) => handleChange("individual start", value)}
+                  <Box gridArea="timeline-filters" border={true} align="center" pad="small" overflowY="auto">
+                    <TitleText title="Individual Page Metrics Bar Chart" text="This graph shows data for an individual page. Switch the unit of time using the filters to the left." topMargin="small"/>
+                    <Box direction="row">
+                      <Select
+                        options={allPages}
+                        margin={{vertical: "xsmall", right: "large"}}
+                        dropAlign={{top: "bottom", left: "left", right: "right"}}
+                        dropHeight="small"
+                        value={page}
+                        onChange={({ option }) => handleChange("page", option)}
                       />
-                      <Text margin={{vertical: "small", right: "xsmall", left: "xsmall", bottom: "small", top: "small"}}>End:</Text>
-                      <DateInput
-                        format="mm/dd/yyyy"
-                        value={individualEnd}
-                        dropProps={{align: {bottom: "top"}}}
-                        onChange={({ value }) => handleChange("individual end", value)}
-                      />
-                      <Button primary label="Apply" disabled={disablePage} onClick={handleIndividual} margin={{bottom: "small", top: "small", left: "small"}}/>
                     </Box>
+                      <Button primary label="Apply" disabled={disablePage} onClick={handleIndividual} margin={{bottom: "small", top: "small", right: "medium"}}/>
+
                   </Box>
                 }
-                {disablePage && !pageData &&
+                {disablePage && !individualPageViews &&
                   <Box gridArea="timeline" background="light-2" >
                     <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
                   </Box>
                 }
-                {(pageData != null) &&
-                  <Box gridArea="timeline" align="center" pad="small" overflow="auto">
-                    <div style={{width: "100%"}} >
-                      <IndividualTimeline tab={tab} data={pageData['documents']} earliest={filterDates(onePage['allStartDates'], individualStart, "start")} latest={filterDates(onePage['allEndDates'], individualEnd, "end")}/>
-                    </div>
+                {(individualPageViews != null) &&
+                  <Box gridArea="timeline" align="center" pad="small" overflowY="auto">
+
+                    <Box  justify="center" direction="row">
+                      <Button alignSelf="start" secondary onClick={() => setShowFilter(true)} icon={<Filter/>} margin={{top: "small", left: "small"}}/>
+                        {showFilter && (
+                          <Layer
+                            onEsc={() => setShowFilter(false)}
+                            onClickOutside={() => setShowFilter(false)}
+                            position="left"
+                            margin={{left: "large"}}
+                          >
+                          <Button icon={<Close/>} onClick={() => setShowFilter(false)} />
+                          <Box direction="column" alignSelf="center"  margin="large">
+                            <Text size="medium" weight="bold" textAlign="center">Bar Chart Display Filters</Text>
+                            <Text>Unit of Time:</Text>
+                            <Select
+                              options={['Day', 'Week', '2 Weeks', 'Month']}
+                              margin={{right: "medium", left: "medium"}}
+                              value={binLabel}
+                              onChange={({ option }) => changeBinVal(option)}
+                            />
+                            <Button primary label="Apply" onClick={() => pageViewCharts()} margin="large"/>
+                          </Box>
+                        </Layer>
+                      )}
+                      {individualPageViews &&
+                        <Box width="980px" height="100%">
+                        <PageViews data={individualPageViews} type="individual" xaxis="_id" yaxis="count" binLabel={binLabel} width={980} height={500}/>
+                        </Box>
+                      }
+                    </Box>
                   </Box>
                 }
                 </>
@@ -1163,6 +1311,93 @@ function App() {
               </Box>
             </Grommet>
 
+        </Tab>
+      }
+      {hasAdapt &&
+        <Tab title="By Assignment">
+          <Grommet theme={theme}>
+            <Grid
+              fill={true}
+              rows={[ 'auto', 'auto']}
+              columns={['15%', '79%']}
+              gap="small"
+              areas={[
+              { name: 'timeline-filters', start: [0, 0], end: [1, 0] },
+              { name: 'timeline', start: [0,1], end: [1,1] }
+              ]}
+              flex={true}
+              responsive={true}
+              margin="medium"
+              overflowY="scroll"
+              >
+              {adaptLevels &&
+                <Box gridArea="timeline-filters" border={true} align="center" pad="small" overflowY="auto">
+                  <TitleText title="Individual Assignment Metrics Bar Chart" text="This graph shows data for an individual page. Switch the unit of time using the filters to the left." topMargin="small"/>
+                  <Box direction="row">
+                    {adaptLevels &&
+                      <>
+                    <Select
+                      options={Object.keys(adaptLevels)}
+                      margin={{right: "small", vertical: "xsmall"}}
+                      value={levelGroup}
+                      onChange={({ option }) => handleChange("pageLevelGroup", option)}
+                    />
+                    {levelGroup &&
+                      <Select
+                        options={adaptLevels[levelGroup]}
+                        margin={{right: "medium", left: "medium", vertical: "xsmall"}}
+                        value={levelName}
+                        onChange={({ option }) => handleChange("pageLevelName", option)}
+                      />
+                    }
+                    </>
+                  }
+                  </Box>
+                    <Button primary label="Apply" disabled={disableAssignment} onClick={handleIndividual} margin={{bottom: "small", top: "small", left: "small"}}/>
+
+                </Box>
+              }
+                {(individualAssignmentViews != null) &&
+                  <Box gridArea="timeline" align="center" pad="small" overflowY="auto">
+
+                    <Box  justify="center" direction="row">
+                      <Button alignSelf="start" secondary onClick={() => setShowFilter(true)} icon={<Filter/>} margin={{top: "small", left: "small"}}/>
+                        {showFilter && (
+                          <Layer
+                            onEsc={() => setShowFilter(false)}
+                            onClickOutside={() => setShowFilter(false)}
+                            position="left"
+                            margin={{left: "large"}}
+                          >
+                          <Button icon={<Close/>} onClick={() => setShowFilter(false)} />
+                          <Box direction="column" alignSelf="center"  margin="large">
+                            <Text size="medium" weight="bold" textAlign="center">Bar Chart Display Filters</Text>
+                            <Text>Unit of Time:</Text>
+                            <Select
+                              options={['Day', 'Week', '2 Weeks', 'Month']}
+                              margin={{right: "medium", left: "medium"}}
+                              value={binLabel}
+                              onChange={({ option }) => changeBinVal(option)}
+                            />
+                            <Button primary label="Apply" onClick={() => pageViewCharts()} margin="large"/>
+                          </Box>
+                        </Layer>
+                      )}
+                      {individualAssignmentViews &&
+                        <Box width="980px" height="100%">
+                        <PageViews data={individualAssignmentViews} type="individual" xaxis="_id" yaxis="count" binLabel={binLabel} width={980} height={500}/>
+                        </Box>
+                      }
+                    </Box>
+                  </Box>
+                }
+                {disableAssignment && !individualAssignmentViews &&
+                  <Box gridArea="timeline" background="light-2" >
+                    <InfoBox infoText="Loading, please wait" showIcon={true} icon={<Spinner/>} />
+                  </Box>
+                }
+            </Grid>
+          </Grommet>
         </Tab>
       }
       {realCourses &&
