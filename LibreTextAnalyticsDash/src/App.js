@@ -178,7 +178,7 @@ function App() {
 
   useEffect(() => {
     let realCourses = {};
-    axios("/realcourses").then((response) => {
+    axios(state.homepage+"/realcourses").then((response) => {
       let x = {};
       response.data.forEach((course) => {
         x[course.course] = course._id;
