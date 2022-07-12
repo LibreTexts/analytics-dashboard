@@ -1,9 +1,9 @@
-.custom-tooltip{
-    margin: 0;
-    line-height: 24px;
-    border: 1px solid #f5f5f5;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px;
+.custom-tooltip {
+  margin: 0;
+  line-height: 24px;
+  border: 1px solid #f5f5f5;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px;
 }
 
 th {
@@ -11,12 +11,12 @@ th {
 }
 
 .lt-data {
-  background-color: rgb(255, 255, 158, .5)
+  background-color: rgb(255, 255, 158, 0.5);
   /* rgb(179, 229, 252, .5); */
 }
 
 .adapt-data {
-  background-color: rgb(171, 247, 177, .5);
+  background-color: rgb(171, 247, 177, 0.5);
 }
 
 .new-line {
@@ -24,11 +24,11 @@ th {
 }
 
 .svg-container {
-	display: inline-block;
-	position: relative;
-	width: 100%;
-	vertical-align: middle;
-	overflow: hidden;
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  vertical-align: middle;
+  overflow: hidden;
 }
 
 a {
@@ -50,19 +50,21 @@ a {
 
 .desc {
   margin: 0;
-  color: rgb(3, 62, 146)
+  color: rgb(3, 62, 146);
 }
 
 rect {
-    pointer-events: all;
-    fill: #022851;
+  pointer-events: all;
+  fill: #022851;
 }
 
-rect:hover {      /* new */
-	fill: #FFBF00;
+rect:hover {
+  /* new */
+  fill: #ffbf00;
 }
 
-svg, canvas {
+svg,
+canvas {
   pointer-events: all;
 }
 /* Style the buttons that are used to open and close the accordion panel */
@@ -79,7 +81,8 @@ svg, canvas {
 }
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-.active, .accordion:hover {
+.active,
+.accordion:hover {
   background-color: #ccc;
 }
 
@@ -91,13 +94,13 @@ svg, canvas {
   overflow: hidden;
 }
 .collapsible .content {
-    padding: 6px;
-    background-color: #eeeeee;
+  padding: 6px;
+  background-color: #eeeeee;
 }
 .collapsible .header {
-    background-color: #dddddd;
-    padding: 6px;
-    cursor: pointer;
+  background-color: #dddddd;
+  padding: 6px;
+  cursor: pointer;
 }
 
 strong {
