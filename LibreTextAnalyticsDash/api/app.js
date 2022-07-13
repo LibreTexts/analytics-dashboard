@@ -1,36 +1,19 @@
-import {
-  realCourseQuery,
-  allDataQuery,
-  getTagQuery,
-  timelineQuery,
-  unitsQuery
-} from "./mainFunctions.js";
-import {
-  studentChartQuery,
-  studentAssignmentQuery
-} from "./studentView.js";
-import {
-  pageViewChartQuery,
-  individualPageViewChartQuery,
-  getIndividual
-} from "./pageView.js";
-import {
-  adaptCodeQuery,
-  getAdaptQuery,
-  adaptLevelQuery
-} from "./assignmentView.js";
 
-import axios from 'axios';
-import express from 'express';
+const main = require("./mainFunctions.js")
+const studentView = require("./studentView.js")
+const pageView = require("./pageView.js")
+const assignmentView = require("./assignmentView.js")
+
+var axios = require('axios');
+const express = require("express");
 const app = express();
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import crypto from 'crypto';
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const crypto = require('crypto');
 app.use(bodyParser.json());
 app.use(cors());
-import dotenv from 'dotenv';
-dotenv.config();
-import basicAuth from 'express-basic-auth';
+require("dotenv").config();
+const basicAuth = require('express-basic-auth');
 
 const coll = process.env.COLL;
 const pageColl = process.env.PCOLL;
@@ -127,7 +110,7 @@ function getRequest(queryString) {
     //console.log(studentEnrollment)
   }
 
-  let libretextToAdaptConfig = getRequest(adaptCodeQuery)
+  let libretextToAdaptConfig = getRequest(assignmentView.adaptCodeQuery)
   var adaptCodes = {}
   axios(libretextToAdaptConfig).then(function (response) {
     adaptCodes = (response.data['documents'])
@@ -145,7 +128,7 @@ function getRequest(queryString) {
     console.log(error)
   })
 
-  let realCourseConfig = getRequest(realCourseQuery);
+  let realCourseConfig = getRequest(main.realCourseQuery);
   let realCourseNames = {}
   axios(realCourseConfig)
     .then(function (response) {
@@ -180,7 +163,7 @@ function sendData(endpoint, queryFunction, dataChange, adaptCodes) {
 }
 
 app.post('/timelineData', (req,res,next) => {
-  let queryString = timelineQuery(req.body);
+  let queryString = main.timelineQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -243,7 +226,7 @@ app.post('/timelineData', (req,res,next) => {
 // }
 // sendData('/data', allDataQuery, allDataChange, await adaptCodes)
 app.post('/data', async (req,res,next) => {
-  let queryString = allDataQuery(req.body, await adaptCodes);
+  let queryString = main.allDataQuery(req.body, await adaptCodes);
   let config = getRequest(queryString);
   //console.log(enrollmentData)
   var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
@@ -302,7 +285,7 @@ app.post('/data', async (req,res,next) => {
 });
 
 app.post('/individual', (req,res,next) => {
-  let queryString = getIndividual(req.body);
+  let queryString = pageView.getIndividual(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -322,7 +305,7 @@ app.post('/individual', (req,res,next) => {
 });
 
 app.post('/studentchart', (req,res,next) => {
-  let queryString = studentChartQuery(req.body);
+  let queryString = studentView.studentChartQuery(req.body);
   let config = getRequest(queryString);
   var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
   axios(config)
@@ -362,7 +345,7 @@ app.post('/studentchart', (req,res,next) => {
 });
 
 app.post('/pageviews', (req,res,next) => {
-  let queryString = pageViewChartQuery(req.body);
+  let queryString = pageView.pageViewChartQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -379,7 +362,7 @@ app.post('/pageviews', (req,res,next) => {
 });
 
 app.post('/individualpageviews', (req,res,next) => {
-  let queryString = individualPageViewChartQuery(req.body, adaptCodes);
+  let queryString = pageView.individualPageViewChartQuery(req.body, adaptCodes);
   // console.log("QUERY STRING")
   // console.log(queryString)
   let config = getRequest(queryString);
@@ -403,7 +386,7 @@ app.post('/individualpageviews', (req,res,next) => {
 });
 
 app.post('/studentassignments', (req,res,next) => {
-  let queryString = studentAssignmentQuery(req.body, adaptCodes);
+  let queryString = studentView.studentAssignmentQuery(req.body, adaptCodes);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -423,7 +406,7 @@ app.post('/studentassignments', (req,res,next) => {
 
 
 app.post('/adapt', (req,res,next) => {
-  let queryString = getAdaptQuery(req.body);
+  let queryString = assignmentView.getAdaptQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -438,7 +421,7 @@ app.post('/adapt', (req,res,next) => {
 });
 
 app.post('/adaptlevels', (req,res,next) => {
-  let queryString = adaptLevelQuery(req.body, adaptCodes);
+  let queryString = assignmentView.adaptLevelQuery(req.body, adaptCodes);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -455,7 +438,7 @@ app.post('/adaptlevels', (req,res,next) => {
 });
 
 app.post('/tags', (req,res,next) => {
-  let queryString = getTagQuery(req.body);
+  let queryString = main.getTagQuery(req.body);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -471,7 +454,7 @@ app.post('/tags', (req,res,next) => {
 });
 
 app.post('/chapters', (req,res,next) => {
-  let queryString = unitsQuery(req.body)
+  let queryString = main.unitsQuery(req.body)
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {

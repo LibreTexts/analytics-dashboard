@@ -1,14 +1,13 @@
-import axios from 'axios';
-import express from 'express';
+var axios = require('axios');
+const express = require("express");
 const app = express();
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import crypto from 'crypto';
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const crypto = require('crypto');
 app.use(bodyParser.json());
 app.use(cors());
-import dotenv from 'dotenv';
-dotenv.config();
-import basicAuth from 'express-basic-auth';
+require("dotenv").config();
+const basicAuth = require('express-basic-auth');
 
 const coll = process.env.COLL;
 const pageColl = process.env.PCOLL;
@@ -30,7 +29,7 @@ function encryptStudent(student) {
   return student;
 }
 
-export function studentChartQuery(params) {
+function studentChartQuery(params) {
   var group = '$'+params.groupBy
 
   var data = {
@@ -180,7 +179,7 @@ export function studentChartQuery(params) {
   return data;
 }
 
-export function studentAssignmentQuery(params, adaptCodes) {
+function studentAssignmentQuery(params, adaptCodes) {
   var codeFound = adaptCodes.find(o => o.course === params.course)
   console.log(params)
   console.log(codeFound)
@@ -290,3 +289,5 @@ export function studentAssignmentQuery(params, adaptCodes) {
 
     return data;
 }
+
+module.exports = { studentChartQuery, studentAssignmentQuery }

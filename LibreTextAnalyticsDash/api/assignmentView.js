@@ -1,14 +1,13 @@
-import axios from 'axios';
-import express from 'express';
+var axios = require('axios');
+const express = require("express");
 const app = express();
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import crypto from 'crypto';
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const crypto = require('crypto');
 app.use(bodyParser.json());
 app.use(cors());
-import dotenv from 'dotenv';
-dotenv.config();
-import basicAuth from 'express-basic-auth';
+require("dotenv").config();
+const basicAuth = require('express-basic-auth');
 
 const coll = process.env.COLL;
 const pageColl = process.env.PCOLL;
@@ -18,7 +17,7 @@ const dataSource = process.env.SRC;
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
-export var adaptCodeQuery = {
+var adaptCodeQuery = {
   "collection": "adaptCodes",
   "database": db,
   "dataSource": dataSource,
@@ -34,7 +33,7 @@ export var adaptCodeQuery = {
   ]
 }
 
-export function getAdaptQuery(params) {
+function getAdaptQuery(params) {
 
   // var arr = params.course.split("_")
   // var index = arr.findIndex(value => /\d/.test(value))
@@ -69,7 +68,7 @@ export function getAdaptQuery(params) {
   return data
 }
 
-export function adaptLevelQuery(params, adaptCodes) {
+function adaptLevelQuery(params, adaptCodes) {
   //console.log(params.courseId)
     var codeFound = adaptCodes.find(o => o.course === params.courseId)
     //console.log(codeFound)
@@ -105,3 +104,5 @@ export function adaptLevelQuery(params, adaptCodes) {
     }
     return data;
 }
+
+module.exports = { adaptCodeQuery, getAdaptQuery, adaptLevelQuery }

@@ -1,14 +1,13 @@
-import axios from 'axios';
-import express from 'express';
+var axios = require('axios');
+const express = require("express");
 const app = express();
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import crypto from 'crypto';
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const crypto = require('crypto');
 app.use(bodyParser.json());
 app.use(cors());
-import dotenv from 'dotenv';
-dotenv.config();
-import basicAuth from 'express-basic-auth';
+require("dotenv").config();
+const basicAuth = require('express-basic-auth')
 
 const coll = process.env.COLL;
 const pageColl = process.env.PCOLL;
@@ -427,3 +426,5 @@ export function getIndividual(params, courseData) {
     data['pipeline'].splice(1, 0, match)
     return data;
 }
+
+module.exports = { pageViewChartQuery, individualPageViewChartQuery, getIndividual }

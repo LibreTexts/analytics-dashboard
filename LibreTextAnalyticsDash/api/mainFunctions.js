@@ -1,14 +1,13 @@
-import axios from 'axios';
-import express from 'express';
+var axios = require('axios');
+const express = require("express");
 const app = express();
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import crypto from 'crypto';
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const crypto = require('crypto');
 app.use(bodyParser.json());
 app.use(cors());
-import dotenv from 'dotenv';
-dotenv.config();
-import basicAuth from 'express-basic-auth';
+require("dotenv").config();
+const basicAuth = require('express-basic-auth')
 
 const coll = process.env.COLL;
 const pageColl = process.env.PCOLL;
@@ -18,7 +17,7 @@ const dataSource = process.env.SRC;
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
-export var realCourseQuery = {
+var realCourseQuery = {
   "collection": coll,
   "database": db,
   "dataSource": dataSource,
@@ -87,7 +86,7 @@ export var realCourseQuery = {
   ]
 }
 
-export function allDataQuery(params, adaptCodes) {
+function allDataQuery(params, adaptCodes) {
   console.log(adaptCodes)
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   if (codeFound) {
@@ -364,7 +363,7 @@ export function allDataQuery(params, adaptCodes) {
     return data;
 }
 
-export function getTagQuery(params) {
+function getTagQuery(params) {
 
   var data = {
     "collection": "metatags",
@@ -402,7 +401,7 @@ export function getTagQuery(params) {
   return data
 }
 
-export function timelineQuery(params, courseData) {
+function timelineQuery(params, courseData) {
 
     var data = {
       "collection": coll,
@@ -526,7 +525,7 @@ export function timelineQuery(params, courseData) {
     return data;
 }
 
-export function unitsQuery(params, courseData) {
+function unitsQuery(params, courseData) {
 
   var data = {
     "collection": coll,
@@ -587,3 +586,5 @@ export function unitsQuery(params, courseData) {
 
   return data
 }
+
+module.exports = { realCourseQuery, allDataQuery, getTagQuery, timelineQuery, unitsQuery }

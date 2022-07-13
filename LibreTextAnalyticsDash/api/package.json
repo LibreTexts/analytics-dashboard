@@ -15,7 +15,7 @@
   },
   "name": "libretext-node",
   "version": "1.0.0",
-  "exports": "./index.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
@@ -23,6 +23,5 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
-  "type": "module"
+  "description": ""
 }
