@@ -17,7 +17,7 @@ const dataSource = process.env.SRC;
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
-export function pageViewChartQuery(params, courseData) {
+function pageViewChartQuery(params, courseData) {
 
   var data = {
     "collection": coll,
@@ -139,7 +139,7 @@ export function pageViewChartQuery(params, courseData) {
   return data;
 }
 
-export function individualPageViewChartQuery(params, adaptCodes) {
+function individualPageViewChartQuery(params, adaptCodes) {
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
 
   if (params.individual) {
@@ -293,7 +293,7 @@ export function individualPageViewChartQuery(params, adaptCodes) {
   return data;
 }
 
-export function getIndividual(params, courseData) {
+function getIndividual(params, courseData) {
 
     var data = {
         "collection": coll,
