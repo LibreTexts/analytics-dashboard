@@ -1,15 +1,14 @@
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url);
-var axios = require('axios');
-const express = require("express");
+import axios from 'axios';
+import express from 'express';
 const app = express();
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const crypto = require('crypto');
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import crypto from 'crypto';
 app.use(bodyParser.json());
 app.use(cors());
-require("dotenv").config();
-const basicAuth = require('express-basic-auth')
+import dotenv from 'dotenv';
+dotenv.config();
+import basicAuth from 'express-basic-auth';
 
 const coll = process.env.COLL;
 const pageColl = process.env.PCOLL;
