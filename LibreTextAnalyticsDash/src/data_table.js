@@ -12,6 +12,9 @@ export default function DataTable({
   hasAdapt,
   showColumns,
   activityFilter,
+  showNonStudents,
+  ltCourse,
+  adaptCourse
 }) {
   //console.log("TAB", tab)
   //console.log(showColumns)
@@ -46,19 +49,25 @@ export default function DataTable({
       return {};
     };
   }
+  var showData = JSON.parse(JSON.stringify(data));
+  if (showNonStudents === false) {
+    showData = showData.filter(o => o.isEnrolled)
+  }
 
-  data.forEach((val, index) => {
+  showData.forEach((val, index) => {
     if (Object.keys(val).includes("max")) {
-      data[index]["max"] = formatDate(val["max"]);
+      showData[index]["max"] = formatDate(val["max"]);
     } else if (!Object.keys(val).includes("max")) {
-      data[index]["max"] = "";
+      showData[index]["max"] = "";
     }
     if (val["mostRecentAdaptLoad"]) {
-      data[index]["mostRecentAdaptLoad"] = formatDate(
+      showData[index]["mostRecentAdaptLoad"] = formatDate(
         val["mostRecentAdaptLoad"]
       );
     }
+    showData[index]["enrolled"] = val["isEnrolled"] ? "Yes" : "No";
   });
+  //console.log(showData)
 
   // if (activityFilter === "No Recent LibreText Activity") {
   //   data.sort((a, b) => {
@@ -152,7 +161,7 @@ export default function DataTable({
   //console.log(data)
   var headers = [
     { label: "Name", key: idAccessor },
-    { label: "LT " + column2Label, key: "objectCount" },
+    { label: "LT " + column2Label, key: "objectCount" }
   ];
 
   var columns = [
@@ -167,7 +176,8 @@ export default function DataTable({
     },
   ];
 
-  if (tab === "student") {
+  if (tab === "student" && ltCourse) {
+    headers.splice(1, 0, { label: "Is Enrolled", key: "enrolled" })
     headers.push(
       { label: "LT " + column3Label, key: "viewCount" },
       { label: "LT Most Recent Page Load", key: "max" },
@@ -276,7 +286,7 @@ export default function DataTable({
     );
   }
 
-  if (tab === "student" && hasAdapt) {
+  if (tab === "student" && (hasAdapt || adaptCourse)) {
     headers.push(
       {
         label: "Adapt Unique Interaction Days",
@@ -365,7 +375,7 @@ export default function DataTable({
   return (
     <>
       <ReactTable
-        data={data}
+        data={showData}
         ref={(r) => {
           reactTable = r;
         }}

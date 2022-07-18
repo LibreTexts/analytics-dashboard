@@ -6,6 +6,7 @@ import {
   Heading,
   Box,
   Button,
+  CheckBox,
   CheckBoxGroup,
   Collapsible,
   DateInput,
@@ -61,6 +62,8 @@ import {
   changeColumns,
   changeActivityFilter,
   pageViewCharts,
+  reactGrids,
+  reactRows
 } from "./filterFunctions.js";
 import { infoText } from "./allInfoText.js";
 import BarGraph from "./bargraph.js";
@@ -160,7 +163,10 @@ function App() {
       "LT Unique Interaction Days": true,
     },
     gridHeight: "small",
-    homepage: "/analytics/api"
+    homepage: "/analytics/api",
+    showNonEnrolledStudents: true,
+    ltCourse: false,
+    adaptCourse: false
   })
 
    const [click, setClick] = useState(false);
@@ -181,11 +187,20 @@ function App() {
     axios(state.homepage+"/realcourses").then((response) => {
       let x = {};
       response.data.forEach((course) => {
-        x[course.course] = course._id;
+        x[course.course] = {courseId: course._id, ltCourse: course.ltCourse, adaptCourse: course.adaptCourse};
       });
       realCourses = x;
       setRealCourses(realCourses);
     });
+
+    // //let ltCourses = JSON.parse(JSON.stringify(realCourses));
+    // axios(state.homepage+"/adaptcourses").then((response) => {
+    //   Object.keys(response.data).forEach((course) => {
+    //     realCourses[course] = {courseId: response.data[course], ltCourse: false, adaptCourse: true}
+    //   })
+    //   setRealCourses(realCourses)
+    //   console.log(realCourses)
+    // })
   }, []);
 
   return (
@@ -244,14 +259,10 @@ function App() {
                   )}
                   <Grid
                     fill={true}
-                    rows={["2/3", "2/3", "auto"]}
+                    rows={reactRows(state)}
                     columns={["15%", "79%"]}
                     gap="small"
-                    areas={[
-                      { name: "table", start: [0, 0], end: [1, 0] },
-                      { name: "plots", start: [0, 1], end: [1, 1] },
-                      { name: "timeline", start: [0, 2], end: [1, 2] }
-                    ]}
+                    areas={reactGrids(state)}
                     flex={true}
                     responsive={true}
                     margin="medium"
@@ -302,10 +313,13 @@ function App() {
                               hasAdapt={state.hasAdapt}
                               showColumns={state.tableColumns}
                               activityFilter={state.activityFilter}
+                              showNonStudents={state.showNonEnrolledStudents}
+                              ltCourse={state.ltCourse}
+                              adaptCourse={state.adaptCourse}
                             />
                           </Box>
                         )}
-                        {state.studentData && click && state.display && (
+                        {state.studentData && click && state.display && state.ltCourse && (
                           <LayeredComponent
                             gridArea="plots"
                             title="Student Metrics Bar Chart"
@@ -342,7 +356,7 @@ function App() {
                             clickFunction={state.getStudentChartData}
                           />
                         )}
-                        {state.allStudents && state.hasAdapt && (
+                        {state.allStudents && (state.hasAdapt || state.adaptCourse) && (
                           <LayeredComponent
                             gridArea="timeline"
                             title="Individual Student Adapt Assignments"
@@ -389,7 +403,7 @@ function App() {
             </Grommet>
           </Tab>
         )}
-        {click && (
+        {click && state.ltCourse && (
           <Tab title="By Page" overflowY="scroll">
             {state.disableCourse && !state.pageData && (
               <InfoBox
@@ -513,7 +527,7 @@ function App() {
             </Grommet>
           </Tab>
         )}
-        {state.hasAdapt && (
+        {click && state.hasAdapt && (
           <Tab title="By Assignment">
             <Grommet theme={theme}>
               <Grid
@@ -632,7 +646,7 @@ function App() {
                   alignSelf="start"
                   border={true}
                   width="300px"
-                  height="100px"
+                  height="150px"
                 >
                   <Box direction="row">
                     <Box
@@ -660,6 +674,14 @@ function App() {
                       Adapt Data
                     </Text>
                   </Box>
+                  <Button
+                    label="Refresh Course"
+                    secondary
+                    color="#0047BA"
+                    size="small"
+                    margin={{horizontal: "large"}}
+                    onClick={() => handleClick(state, setState, "refresh", queryVariables)}
+                  />
                 </Box>
               )}
             </Box>
@@ -712,8 +734,11 @@ function App() {
                 gridArea="filters"
                 border={true}
                 direction="row"
-                height="125px"
+                height="175px"
                 margin={{ bottom: "medium" }}
+              >
+              <Box
+                direction="column"
               >
                 <Box
                   margin={{ bottom: "medium", top: "xsmall" }}
@@ -732,7 +757,6 @@ function App() {
                     </Text>
                   </Box>
                   <Box
-                    direction="column"
                     pad="small"
                     direction="row"
                     margin={{ top: "medium" }}
@@ -787,8 +811,15 @@ function App() {
                     />
                   </Box>
                 </Box>
+                <CheckBox
+                  label="Include Non-enrolled Students"
+                  checked={state.showNonEnrolledStudents}
+                  pad={{left: "large", bottom: "small"}}
+                  onClick={() => setState({...state, showNonEnrolledStudents: !state.showNonEnrolledStudents})}
+                />
+                </Box>
               </Box>
-              {state.allChapters && state.courseLevel && (
+              {state.allChapters && (
                 <Box margin={{ bottom: "medium" }}>
                   <Button
                     alignSelf="start"

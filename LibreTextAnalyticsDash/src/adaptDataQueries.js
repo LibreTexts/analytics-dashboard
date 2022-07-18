@@ -65,7 +65,7 @@ export function getStudentAssignments(state, setState) {
       "Content-Type": "application/json",
     },
     data: {
-      course: state.courseId,
+      courseId: state.courseId,
       individual: state.student
     },
   }).then((response) => {

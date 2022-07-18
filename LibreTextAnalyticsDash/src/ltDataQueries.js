@@ -3,6 +3,8 @@ import axios from "axios";
 export async function getData(data, state, setState) {
   var promises = []
   var tempState = JSON.parse(JSON.stringify(state))
+  var course = state.courseId
+  var courseData = {}
   for (const config of data) {
     //console.log(JSON.parse(config.data)['documents'][0]['id'])
     promises.push(await axios(config).then(function (response) {
@@ -13,12 +15,14 @@ export async function getData(data, state, setState) {
         var value = d[key]
         console.log("key", key)
         tempState[key] = value
+        courseData[key] = value
         tempState["display"] = true
         tempState["disableCourse"] = true
         tempState["showInfoBox"] = false
         if (key === "studentData") {
           if (Object.keys(value[0]).includes("adapt") && value[0]["adapt"] !== false) {
             tempState["hasAdapt"] = true
+            courseData["hasAdapt"] = true
             var columns = {
               "All": true,
               "LT Unique Pages Accessed": true,
@@ -32,6 +36,8 @@ export async function getData(data, state, setState) {
             var checks = Object.keys(columns);
             tempState["tableColumns"] = columns;
             tempState["checkedValues"] = checks;
+            courseData["tableColumns"] = columns;
+            courseData["checkedValues"] = checks;
           } else {
             var columns = {
               "All": true,
@@ -43,6 +49,8 @@ export async function getData(data, state, setState) {
             var checks = Object.keys(columns);
             tempState["tableColumns"] = columns;
             tempState["checkedValues"] = checks;
+            courseData["tableColumns"] = columns;
+            courseData["checkedValues"] = checks;
           }
         } else if (key === "adaptLevels") {
           var levels = {};
@@ -52,10 +60,12 @@ export async function getData(data, state, setState) {
             levels[a._id.replaceAll('"', "")] = names;
           });
           tempState["adaptLevels"] = levels;
+          courseData["adaptLevels"] = levels;
         } else if (key === "studentTimelineData") {
           var students = []
           value.forEach((s) => students.push(s._id));
           tempState["allStudents"] = students;
+          courseData["allStudents"] = students;
         } else if (key === "pageTimelineData") {
           var pages = []
           value.forEach((p) => {
@@ -66,8 +76,19 @@ export async function getData(data, state, setState) {
             }
           })
           tempState["allPages"] = pages;
+          courseData["allPages"] = pages;
+        } else if (key === "adaptStudents") {
+          var students = []
+          value.forEach(v => {
+            students.push(v._id)
+          })
+          tempState["allStudents"] = students;
+          courseData["allStudents"] = students;
+        } else if (key === "chapters") {
+          var courseStructure = calculateCourseStructure(value);
+          tempState["allChapters"] = courseStructure;
+          courseData["allChapters"] = courseStructure;
         }
-        console.log(state)
         //setState(tempState)
         //console.log(response.data)
       }).catch(function (error) {
@@ -75,8 +96,8 @@ export async function getData(data, state, setState) {
       })
     )
   }
-  console.log("tempState", tempState)
-  Promise.all(promises).then(() => setState(tempState));
+  tempState[course] = courseData;
+  Promise.all(promises).then(() => setState({...tempState}));
 }
 
 function getAxiosCall(url, data, state) {
@@ -92,12 +113,12 @@ function getAxiosCall(url, data, state) {
 }
 
 export function getAllDataQuery(state, setState, type) {
+  console.log("state", state)
   if (type === "student") {
     var group = "$actor.id"
   } else if (type === "page") {
     var group = "$object.id"
   }
-  console.log("allData", state)
   var data = {
     startDate: state.start,
     endDate: state.end,
@@ -108,13 +129,12 @@ export function getAllDataQuery(state, setState, type) {
     tagType: state.tagType,
     tagTitle: state.tagTitle,
     adaptLevelGroup: state.levelGroup,
-    adaptLevelName: state.levelName
+    adaptLevelName: state.levelName,
+    ltCourse: state.ltCourse,
+    adaptCourse: state.adaptCourse
   }
   var config = getAxiosCall("/data", data, state)
-  console.log(config)
   return config;
-  //getData([config], state, setState)
-  //return data;
 }
 
 export function getObjects(state, setState, type) {
@@ -123,14 +143,12 @@ export function getObjects(state, setState, type) {
   } else if (type === "page") {
     var group = "$object.id"
   }
-  console.log(state)
   var data = {
     course: state.course,
     courseId: state.courseId,
     groupBy: group,
     path: state.dataPath,
   }
-  console.log(data)
   var config = getAxiosCall("/timelineData", data, state)
   return config;
 }
@@ -146,6 +164,14 @@ export function studentChartQuery(state, setState) {
   }
 
   var config = getAxiosCall("/studentchart", data, state)
+  return config;
+}
+
+export function adaptStudentsQuery(state, setState) {
+  var data = {
+    courseId: state.courseId
+  }
+  var config = getAxiosCall("/adaptstudents", data, state)
   return config;
 }
 
@@ -197,6 +223,14 @@ export function adaptLevels(state, setState) {
     courseId: state.courseId
   }
   var config = getAxiosCall("/adaptlevels", data, state)
+  return config;
+}
+
+export function courseStructureDropdown(state, setState) {
+  var data = {
+    courseId: state.courseId
+  }
+  var config = getAxiosCall("/chapters", data, state)
   return config;
 }
 
@@ -563,10 +597,43 @@ export function getIndividualPageViewData(state, setState) {
   return state;
 }
 
+function calculateCourseStructure(data) {
+
+  let chapter = {};
+  data.forEach((element, index) => {
+    element["chapter"].forEach((e, i) => {
+      if (i !== element["chapter"].length - 1 && !(i in chapter)) {
+        chapter[i] = {};
+      }
+      if (i < element["chapter"].length - 1) {
+        if (!(e in chapter[i])) {
+          if (element["chapter"][i + 1] !== {}) {
+            chapter[i][e] = [element["chapter"][i + 1]];
+          }
+        } else if (!chapter[i][e].includes(element["chapter"][i + 1])) {
+          if (element["chapter"][i + 1] !== {}) {
+            chapter[i][e].push(element["chapter"][i + 1]);
+          }
+        }
+      }
+    });
+  });
+
+  return chapter;
+  //needed?
+  var levels = {};
+  Object.keys(chapter).forEach((key) => {
+    Object.keys(chapter[key]).forEach((c) => {
+      levels[c] = key;
+    });
+  });
+}
+
 export function getChapters(state, setState) {
   let allChapters = [];
   let chapter = {};
   let tree = [];
+  var tempState = JSON.parse(JSON.stringify(state))
   axios({
     method: "post",
     url: state.homepage+"/chapters",
@@ -581,10 +648,11 @@ export function getChapters(state, setState) {
     var d = [];
     d = JSON.parse(response.data);
     var longestPath = d[0]["count"];
-    setState({
-      ...state,
-      pathLength: longestPath
-    })
+    tempState["pathLength"] = longestPath;
+    // setState({
+    //   ...tempState,
+    //   pathLength: longestPath
+    // })
     //state.setPathLength(longestPath);
     d.forEach((element, index) => {
       element["chapter"].forEach((e, i) => {
@@ -611,15 +679,20 @@ export function getChapters(state, setState) {
         levels[c] = key;
       });
     });
+    tempState["courseLevel"] = levels;
+    tempState["allChapters"] = chapter;
+    // setState({
+    //   ...state,
+    //   courseLevel: levels,
+    //   allChapters: chapter
+    // })
     setState({
-      ...state,
-      courseLevel: levels,
-      allChapters: chapter
+      ...tempState
     })
     // state.setCourseLevel(levels);
     // state.setAllChapters(chapter);
   });
-  return state;
+  //return state;
 }
 
   export function getTagInfo(state, setState) {

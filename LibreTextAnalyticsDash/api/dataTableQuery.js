@@ -1,96 +1,12 @@
-var axios = require('axios');
-const express = require("express");
-const app = express();
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const crypto = require('crypto');
-app.use(bodyParser.json());
-app.use(cors());
-require("dotenv").config();
-const basicAuth = require('express-basic-auth')
 
-const coll = process.env.COLL;
-const pageColl = process.env.PCOLL;
-const adaptColl = process.env.ACOLL;
-const db = process.env.DB;
-const dataSource = process.env.SRC;
-const hashKey = process.env.studentHash;
-const userPassword = process.env.userPassword;
+//query to get the data for the main tables, connects the lt data to adapt
 
-var realCourseQuery = {
-  "collection": coll,
-  "database": db,
-  "dataSource": dataSource,
-  "pipeline": [
-    {
-      '$addFields': {
-        'pageObject': {'$concat': ['$object.subdomain', '-', '$object.id']}
-      }
-    },
-    {
-      '$match': {
-        '$expr': {
-          '$eq':["$actor.courseName", "$pageObject"]
-        }
-      }
-    },
-    {
-      '$project': {
-        'actor': '$actor',
-        'course':
-          {'$cond': {
-            'if': {
-              '$eq': [{'$arrayElemAt': [{'$split': ['$object.url', '/']}, -1]}, "Text"]
-            },
-            'then': {
-              '$concat': [
-                {'$replaceAll': {'input': {'$arrayElemAt': [{'$split': ['$object.url', '/']}, -2]}, 'find': '%3A', 'replacement': ":"}}, '/',
-                {'$arrayElemAt': [{'$split': ['$object.url', '/']}, -1]}
-              ]
-            },
-            'else': {
-              '$arrayElemAt': [{'$split': ['$object.url', '/']}, -1]
-            }
-          }
-        }
-      }
-    },
-    {
-      '$group': {
-        '_id': '$actor.courseName',
-        'courseId': {'$addToSet': '$course'}
-      }
-    },
-    {
-      '$project': {
-        'courses': {
-            '$filter': {
-                'input': '$courseId',
-                'cond': {
-                  '$not': {
-                    '$or': [
-                      {'$regexFind': {'input': '$$this', 'regex': "#"}},
-                      {'$regexFind': {'input': '$$this', 'regex': "3A"}}
-                    ]
-                  }
-                }
-            }
-        }
-    }
-  },
-  {
-    '$addFields': {
-      'course': {'$replaceAll': {'input': {'$first': '$courses'}, 'find': '_', 'replacement': " "}}
-    }
-  }
-  ]
-}
-
-function allDataQuery(params, adaptCodes) {
-  //console.log(adaptCodes)
+function dataTableQuery(params, adaptCodes, dbInfo) {
+  //gets the adapt course code based on the libretext course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   if (codeFound) {
     var adaptLookup = {
+      //getting adapt variables
       "$lookup": {
         "from": "adapt",
         "localField": "_id",
@@ -106,6 +22,7 @@ function allDataQuery(params, adaptCodes) {
               }
             }
           },
+          //reformatting the date to be able to use it in a table
           {
             '$addFields': {
               'day': {'$replaceAll': {
@@ -122,6 +39,7 @@ function allDataQuery(params, adaptCodes) {
               }
             }
           },
+          //group by student, find the most recent assignment load for adapt, dates, and assignments
           {
             '$group': {
               '_id': '$anon_student_id',
@@ -139,6 +57,7 @@ function allDataQuery(params, adaptCodes) {
         ]
       }
     }
+    //preserves students who have libretext data but no adapt data
     var adaptUnwind = {
       "$unwind": {
         'path': '$adapt',
@@ -146,14 +65,17 @@ function allDataQuery(params, adaptCodes) {
       }
     }
   }
+  //for filtering data by adapt assignment
+  //todo: make a dropdown on the frontend to choose specific level groups and names to look at
   if (params.adaptLevelGroup) {
     adaptLookup['$lookup']['pipeline'][0]['$match']['$expr']['$and'].push({'$eq': ['$level_group', params.adaptLevelGroup]})
   }
   if (params.adaptLevelName) {
     adaptLookup['$lookup']['pipeline'][0]['$match']['$expr']['$and'].push({'$eq': ['$level_name', params.adaptLevelName]})
   }
-  // console.log(params.courseId)
-  // console.log(codeFound)
+
+  //getting variables based on whether it's the student or page tab
+  //grabs the variable to aggregate by
   if (params.groupBy === '$actor.id') {
     var aggregationAttr = "$object.id"
     var isPage = false
@@ -161,11 +83,11 @@ function allDataQuery(params, adaptCodes) {
     var aggregationAttr = "$actor.id"
     var isPage = true
   }
-  //console.log(isPage)
+
   var data = {
-      "collection": coll,
-      "database": db,
-      "dataSource": dataSource,
+      "collection": dbInfo.coll,
+      "database": dbInfo.db,
+      "dataSource": dbInfo.dataSource,
       "pipeline": [
       {
         "$match": {
@@ -177,8 +99,10 @@ function allDataQuery(params, adaptCodes) {
           }
         }
       },
-        {
-          "$addFields": {
+      //date formatting, making it easier to access attributes
+      //if this is the student tab the page attributes will be null
+      {
+        "$addFields": {
             "newDate": {'$dateFromString': {'dateString': '$object.timestamp'}},
             'pageTitle': '$pageInfo.title',
             'pageURL': '$pageInfo.url',
@@ -189,6 +113,7 @@ function allDataQuery(params, adaptCodes) {
             }
           }
         },
+        //group by student or page, get attributes for the data table
         {
           "$group": {
             "_id": params.groupBy,
@@ -203,6 +128,7 @@ function allDataQuery(params, adaptCodes) {
             "percent": {"$push": {'$toDouble': {'$replaceAll': {'input': '$result.percent', 'find': '%', 'replacement': ''}}}}
           }
         },
+        //formatting the final attributes, using $size to count the number of elements
         {
           "$addFields": {
             "durationInMinutes": {'$trunc': [{'$divide': ['$durationInSeconds', 60]}, 1]},
@@ -219,14 +145,16 @@ function allDataQuery(params, adaptCodes) {
           }
         }
     ]}
+    //insert the adapt aggregation if the course has adapt data
+    //need to check .isInAdapt because some courses have an adapt code but no data
     if (codeFound && codeFound.isInAdapt && !isPage) {
       data['pipeline'].splice(3, 0, adaptLookup)
       data['pipeline'].splice(4, 0, adaptUnwind)
     }
-    //console.log(data['pipeline'])
+    //page info lookup for the page data table
     var lookup = {
       "$lookup": {
-        "from": pageColl,
+        "from": dbInfo.pageColl,
         "localField": "object.id",
         "foreignField": "id",
         "as": "pageInfo"
@@ -241,6 +169,7 @@ function allDataQuery(params, adaptCodes) {
       }
     }
 
+    //filter by date, tag, etc
     var filterMatch = {
       "$match": {
         '$expr': {
@@ -249,6 +178,7 @@ function allDataQuery(params, adaptCodes) {
       }
     }
 
+    //filter by course unit
     var unitLookup = {
       "$match": {
         '$expr': {
@@ -363,228 +293,4 @@ function allDataQuery(params, adaptCodes) {
     return data;
 }
 
-function getTagQuery(params) {
-
-  var data = {
-    "collection": "metatags",
-    "database": db,
-    "dataSource": dataSource,
-    "pipeline": [
-      {
-        "$lookup": {
-          'from': 'pageinfo',
-          'localField': 'id',
-          'foreignField': 'id',
-          'as': 'pageInfo'
-        }
-      },
-      {
-        "$unwind": {
-          'path': '$pageInfo'
-        }
-      },
-      {
-        "$match": {
-          '$expr': {
-            '$gt': [{ '$indexOfCP': [ "$pageInfo.courseName", params.course ] }, -1]
-          }
-        }
-      },
-      {
-        "$group": {
-          '_id': '$type',
-          'title': {'$addToSet': '$title'}
-        }
-      }
-    ]
-  }
-  return data
-}
-
-function timelineQuery(params, courseData) {
-
-    var data = {
-      "collection": coll,
-      "database": db,
-      "dataSource": dataSource,
-      "pipeline": [
-        {
-          '$match': {
-            '$expr': {
-              '$and': [
-                {'$eq': ['$verb', 'read']},
-                {'$eq': ['$actor.courseName', params.courseId]}
-              ]
-            }
-          }
-        },
-        {
-          '$lookup': {
-            "from": pageColl,
-            "localField": "object.id",
-            "foreignField": "id",
-            "as": "pageInfo"
-          }
-        },
-        {
-          '$unwind': {
-            'path': '$pageInfo'
-          }
-        },
-        {
-          '$addFields': {
-            'course': '$pageInfo.courseName'
-          }
-        },
-        {
-          '$addFields': {
-            'startDate': {'$dateFromString': {'dateString': '$object.timestamp'}},
-            'endDate': {'$add': [{'$dateFromString': {'dateString': '$object.timestamp'}}, '$object.timeMe']},
-            'pageTitle': '$pageInfo.title',
-            'pageURL': '$pageInfo.url'
-          }
-        },
-        {
-          '$group': {
-            '_id': params.groupBy,
-            'allStartDates': {'$addToSet': '$startDate'},
-            'allEndDates': {'$addToSet': '$endDate'},
-            "pageTitle": {'$addToSet': '$pageTitle'},
-            "pageURL": {'$addToSet': '$pageURL'}
-          }
-        },
-        {
-          '$sort': {'_id': 1}
-        }
-      ]
-    }
-    var match = {
-      '$match': {
-        '$expr': {
-          '$and': []
-        }
-      }
-    }
-
-    var unitLookup = {
-      '$match': {
-        '$expr': {
-          '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
-        }
-      }
-    }
-
-    var unwind = {
-      '$unwind': {
-        'path': '$pageInfo'
-      }
-    }
-
-    var pageTitle = {
-      "$addFields": {
-        "pageTitle": {'$first': '$pageTitle'},
-        "pageURL": {'$first': '$pageURL'}
-      }
-    }
-
-    if (params.groupBy === "$object.id") {
-      data['pipeline'].splice(8, 0, pageTitle)
-      var lookup =
-      {
-        "$lookup": {
-          "from": pageColl,
-          "localField": "_id",
-          "foreignField": "id",
-          "as": "pageInfo"
-        }
-      }
-      var addField = {
-        "$addFields": {
-          'pageTitle': {"$first": "$pageInfo.title"},
-          'pageList': ["$_id", {"$first": "$pageInfo.title"}]
-        }
-      }
-    }
-    var unset = {
-      '$unset': ["pageTitle", "pageURL"]
-    }
-    if (params.groupBy === "$actor.id") {
-      data['pipeline'].splice(8, 0, unset)
-      var lookup = {
-        '$lookup': {
-          "from": pageColl,
-          "localField": "object.id",
-          "foreignField": "id",
-          "as": "pageInfo"
-        }
-      }
-    }
-    if (params.path) {
-      data['pipeline'].splice(6, 0, unitLookup)
-    }
-    return data;
-}
-
-function unitsQuery(params, courseData) {
-
-  var data = {
-    "collection": coll,
-    "database": db,
-    "dataSource": dataSource,
-    "pipeline": [
-      {
-        '$match': {
-          '$expr': {
-            '$and': [
-              {'$eq': ['$verb', 'read']},
-              {'$eq': ['$actor.courseName', params.courseId]}
-            ]
-          }
-        }
-      },
-      {
-        "$lookup": {
-          "from": pageColl,
-          "localField": "object.id",
-          "foreignField": "id",
-          "as": "pageInfo"
-        }
-      },
-      {
-        "$unwind": {
-          'path': "$pageInfo"
-        }
-      },
-      {
-        '$addFields': {
-          'course': '$pageInfo.courseName'
-        }
-      },
-      {
-        '$group': {
-          '_id': '$pageInfo.text',
-          'chapter': {'$addToSet': '$pageInfo.path'}
-        }
-      },
-      {
-        '$unwind': {
-          'path': "$chapter"
-        }
-      },
-      {
-        '$addFields': {
-          'count': {'$size': '$chapter'}
-        }
-      },
-      {
-        '$sort': {
-          'count': -1
-        }
-      }
-    ]
-  }
-
-  return data
-}
-
-module.exports = { realCourseQuery, allDataQuery, getTagQuery, timelineQuery, unitsQuery }
+module.exports = { dataTableQuery }

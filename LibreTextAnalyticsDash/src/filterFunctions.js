@@ -13,27 +13,51 @@ import {
   studentChartQuery,
   pageViewQuery,
   individualPageViews,
-  adaptLevels
+  adaptLevels,
+  courseStructureDropdown,
+  adaptStudentsQuery
 } from "./ltDataQueries.js";
 import {
   getAdaptLevels,
   getAdaptData,
   getStudentAssignments
 } from "./adaptDataQueries.js";
-//import state from "./App.js";
 
 const FunctionContext = React.createContext();
 
+export function reactGrids(state) {
+  var grids = [
+    { name: "table", start: [0, 0], end: [1, 0] },
+    { name: "timeline", start: [0, 1], end: [1, 1] }
+  ]
+  if (state.ltCourse) {
+    grids.forEach(g => {
+      if (g.name === "timeline") {
+        g.start = [0, 2]
+        g.end = [1, 2]
+      }
+    })
+    grids.splice(1, 0, { name: "plots", start: [0, 1], end: [1, 1] })
+  }
+  return grids;
+}
+
+export function reactRows(state) {
+  var rows = ["2/3", "2/3"]
+  if (state.ltCourse) {
+    rows.push("auto")
+  }
+  return rows;
+}
+
 export async function handleClick(state, setState, type, queryVariables) {
-  console.log(queryVariables)
-  //event.preventdefault();
   if (queryVariables) {
     queryVariables.setClick(true);
   }
   if (state.courseId) {
     var tempState = JSON.parse(JSON.stringify(state));
-    setState({
-      ...state,
+    tempState = {
+      ...tempState,
       studentData: null,
       pageData: null,
       showTableFilters: false,
@@ -48,38 +72,46 @@ export async function handleClick(state, setState, type, queryVariables) {
       allChapters: null,
       chosenPath: null,
       dataPath: null,
-      disableCourse: true
-    })
-    //setState(tempState)
-    var configs = []
-    configs.push(getAllDataQuery(state, setState, "student"))
-    console.log(state)
-    configs.push(getAllDataQuery(state, setState, "page"))
-    configs.push(studentChartQuery(state, setState))
-    configs.push(getObjects(state, setState, "student"))
-    configs.push(getObjects(state, setState, "page"))
-    configs.push(pageViewQuery(state, setState))
-    configs.push(adaptLevels(state, setState))
-    console.log(configs)
-    await getData(configs, state, setState)
-    console.log("state", state)
-    // tempState = (await getStudentChartData(tempState, setState));
-    // setState(tempState)
-    // tempState = (await getPageViewData(tempState, setState));
-    // setState(tempState)
-    // tempState = (await getAdaptLevels(tempState, setState));
-    // setState(tempState)
-    // tempState = (await getObjectList(tempState, setState));
-    // setState(tempState)
-    // tempState = (await getChapters(tempState, setState));
-    // setState(tempState)
-    // tempState = await getAggregateData(tempState, setState);
-    // setState(tempState)
+      disableCourse: true,
+      individualAssignmentViews: null,
+      index: 0,
+      hasAdapt: false,
+      tab: "student",
+      levelGroup: null,
+      levelName: null,
+      disableAssignment: false,
+      studentAssignments: null,
+      disableStudent: false
+    }
+    setState(tempState)
+    if (!Object.keys(tempState).includes(state.courseId) || type === "refresh") {
+      var configs = []
+      configs.push(getAllDataQuery(tempState, setState, "student"))
+      //console.log(state)
+      configs.push(getAllDataQuery(tempState, setState, "page"))
+      configs.push(studentChartQuery(tempState, setState))
+      if (state.ltCourse) {
+        configs.push(getObjects(tempState, setState, "student"))
+        configs.push(getObjects(tempState, setState, "page"))
+      } else {
+        configs.push(adaptStudentsQuery(tempState, setState))
+      }
+      configs.push(pageViewQuery(tempState, setState))
+      configs.push(adaptLevels(tempState, setState))
+      configs.push(courseStructureDropdown(tempState, setState))
+      await getData(configs, tempState, setState)
+    } else {
+      var allKeys = Object.keys(tempState[state.courseId])
+      allKeys.forEach((key) => {
+        tempState[key] = tempState[state.courseId][key]
+      })
+      setState({
+        ...tempState
+      })
+    }
   } else {
     alert("Please choose a course.");
   }
-  console.log("final state");
-  console.log(tempState)
 }
 
 export function handleFilterClick(state, setState, path = false) {
@@ -140,9 +172,11 @@ export function handleIndividual(state, setState, type) {
     tempState["individualAssignmentViews"] = null
     tempState["disableAssignment"] = true
     setState(tempState)
+    console.log("assignments")
     //queryVariables.setDisableAssignment(true);
   }
   if (type === "studentAssignments") {
+    console.log("here")
     var s = getStudentAssignments(tempState, setState)
     setState(s);
   } else {
@@ -278,20 +312,23 @@ export function handleChange(type, value, state, setState, realCourses, queryVar
     // queryVariables.setDisable(false);
   }
   if (type === "courseId") {
-    console.log(realCourses)
+    //console.log(realCourses)
     setState({
       ...state,
       page: null,
       student: null,
       disablePage: false,
       courseName: value,
-      courseId: realCourses[value],
+      courseId: realCourses[value].courseId,
       course: value,
       disableCourse: false,
       chosenPath: null,
       dataPath: null,
       start: null,
-      end: null
+      end: null,
+      ltCourse: realCourses[value].ltCourse,
+      adaptCourse: realCourses[value].adaptCourse,
+      hasAdapt: realCourses[value].adaptCourse
     })
     queryVariables.setClick(false)
   }

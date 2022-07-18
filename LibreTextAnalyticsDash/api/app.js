@@ -1,8 +1,18 @@
 
-const main = require("./mainFunctions.js")
-const studentView = require("./studentView.js")
-const pageView = require("./pageView.js")
-const assignmentView = require("./assignmentView.js")
+const dataTable = require("./dataTableQuery.js");
+const adaptCode = require("./adaptCodeQuery.js");
+const adaptLevel = require("./adaptLevelQuery.js");
+const aggregatePageViews = require("./aggregatePageViewsQuery.js");
+const allCourses = require("./allCoursesQuery.js");
+const courseUnits = require("./courseUnitsQuery.js");
+const individualData = require("./individualDataQuery.js");
+const individualPageViews = require("./individualPageViewsQuery.js");
+const individualTimeline = require("./individualTimelineQuery.js");
+const studentChart = require("./studentChartQuery.js");
+const studentAdaptAssignment = require("./studentAdaptAssignmentQuery.js");
+const allAdaptCourses = require("./allAdaptCoursesQuery.js");
+const adaptDataTable = require("./adaptDataTableQuery.js");
+const adaptStudents = require("./adaptStudentsQuery.js");
 
 var axios = require('axios');
 const express = require("express");
@@ -15,11 +25,13 @@ app.use(cors());
 require("dotenv").config();
 const basicAuth = require('express-basic-auth');
 
-const coll = process.env.COLL;
-const pageColl = process.env.PCOLL;
-const adaptColl = process.env.ACOLL;
-const db = process.env.DB;
-const dataSource = process.env.SRC;
+const dbInfo = {
+  coll: process.env.COLL,
+  pageColl: process.env.PCOLL,
+  adaptColl: process.env.ACOLL,
+  db: process.env.DB,
+  dataSource: process.env.SRC
+}
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
@@ -54,25 +66,20 @@ function decryptStudent(student) {
       decrypted += chunk.toString('utf8');
     }
   });
-  decipher.on('end', () => {
-    //console.log(decrypted);
-    // Prints: some clear text data
-  });
 
   decipher.write(student, 'hex');
   decipher.end();
   return decrypted
 }
 
+//get the list of all students enrolled in a given course (found in adapt enrollment data)
 var enrollmentQuery = {
   "collection": "enrollments",
-  "database": db,
-  "dataSource": dataSource,
+  "database": dbInfo.db,
+  "dataSource": dbInfo.dataSource,
   "pipeline": [
     {
       '$group': {
-        // '_id': '$email',
-        // 'courses': {'$addToSet': '$class'}
         '_id': '$class',
         'students': {'$addToSet': '$email'}
       }
@@ -94,12 +101,11 @@ function getRequest(queryString) {
   return config;
 }
 
+  //find a course in the adapt data, find student enrollment
   function findEnrollmentData(adaptCodes, enrollmentData, course) {
-    //console.log(enrollmentData)
     var codeFound = adaptCodes.find(o => o.course === course)
-    //console.log(codeFound)
     var courseCode = codeFound ? parseInt(codeFound.code) : null
-    //console.log(courseCode)
+
     var studentEnrollment = []
     if (codeFound) {
       var studentEnrollment = enrollmentData.find(o => o._id === courseCode)
@@ -107,10 +113,9 @@ function getRequest(queryString) {
     } else {
       return []
     }
-    //console.log(studentEnrollment)
   }
 
-  let libretextToAdaptConfig = getRequest(assignmentView.adaptCodeQuery)
+  let libretextToAdaptConfig = getRequest(adaptCode.adaptCodeQuery(dbInfo))
   var adaptCodes = {}
   axios(libretextToAdaptConfig).then(function (response) {
     adaptCodes = (response.data['documents'])
@@ -128,11 +133,20 @@ function getRequest(queryString) {
     console.log(error)
   })
 
-  let realCourseConfig = getRequest(main.realCourseQuery);
+  let realCourseConfig = getRequest(allCourses.allCoursesQuery(dbInfo));
   let realCourseNames = {}
   axios(realCourseConfig)
     .then(function (response) {
       realCourseNames = response.data['documents']
+      realCourseNames.forEach((c, index) => {
+        var codeFound = adaptCodes.find(o => o.course === c._id)
+        if (codeFound && codeFound.isInAdapt) {
+          c['adaptCourse'] = true
+        } else {
+          c['adaptCourse'] = false
+        }
+      })
+
     })
     .catch(function (error) {
       console.log(error)
@@ -140,6 +154,35 @@ function getRequest(queryString) {
 
   app.get('/realcourses', (req, res) => {
     res.json(realCourseNames)
+  })
+
+  let adaptCourseConfig = getRequest(allAdaptCourses.allAdaptCoursesQuery(dbInfo));
+  let adaptCourses = {}
+  axios(adaptCourseConfig)
+    .then(function (response) {
+      // console.log(response.data)
+      // console.log(adaptCodes)
+      adaptCourses = response.data['documents']
+      let courses = {};
+      adaptCourses.forEach((course) => {
+        courses[course._id] = course.course
+      })
+      Object.keys(courses).forEach((course) => {
+        var codeFound = adaptCodes.find(o => o.code === courses[course])
+        if (codeFound) {
+          delete courses[course]
+        } else {
+          courses["ltCourse"] = false
+        }
+      })
+      adaptCourses = courses;
+    })
+    .catch(function (error) {
+      console.log(error)
+    });
+
+  app.get('/adaptcourses', (req, res) => {
+    res.json(adaptCourses)
   })
 
 function sendData(endpoint, queryFunction, dataChange, adaptCodes) {
@@ -163,20 +206,25 @@ function sendData(endpoint, queryFunction, dataChange, adaptCodes) {
 }
 
 app.post('/timelineData', (req,res,next) => {
-  let queryString = main.timelineQuery(req.body);
+  let queryString = individualTimeline.individualTimelineQuery(req.body, dbInfo);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
         let newData = (response.data)
-        newData['documents'].forEach((d, index) => {
-          if (d._id.length >= 20) {
-            newData['documents'][index]._id = decryptStudent(d._id)
+        if (newData['documents'].length > 0) {
+          newData['documents'].forEach((d, index) => {
+            if (d._id.length >= 20) {
+              newData['documents'][index]._id = decryptStudent(d._id)
+            }
+          })
+          if (newData['documents'][0]._id.includes('@')) {
+            newData['studentTimelineData'] = newData['documents']
+          } else {
+            newData['pageTimelineData'] = newData['documents']
           }
-        })
-        if (newData['documents'][0]._id.includes('@')) {
-          newData['studentTimelineData'] = newData['documents']
         } else {
-          newData['pageTimelineData'] = newData['documents']
+          newData['studentTimelineData'] = null
+          newData['pageTimelineData'] = null
         }
         delete newData['documents']
         newData = JSON.stringify(newData)
@@ -226,50 +274,69 @@ app.post('/timelineData', (req,res,next) => {
 // }
 // sendData('/data', allDataQuery, allDataChange, await adaptCodes)
 app.post('/data', async (req,res,next) => {
-  let queryString = main.allDataQuery(req.body, await adaptCodes);
+  //console.log(req.body)
+  let queryString = dataTable.dataTableQuery(req.body, await adaptCodes, dbInfo);
+  if (req.body.adaptCourse && !req.body.ltCourse) {
+    queryString = adaptDataTable.adaptDataTableQuery(req.body, dbInfo);
+  }
   let config = getRequest(queryString);
-  //console.log(enrollmentData)
-  var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
-  // console.log("STUDENT ENROLLMENT")
-  // console.log(studentEnrollment)
+  var tab = ""
+  if (req.body.groupBy === "$actor.id") {
+    tab = "student"
+  } else {
+    tab = "page"
+  }
+  var adaptCourse = req.body.adaptCourse;
+  //get all students enrolled in the course
+  var studentEnrollment = JSON.parse(JSON.stringify(await findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
   axios(config)
       .then(function async (response) {
         let newData = (response.data)
-        newData['documents'].forEach((student, index) => {
-          if (student._id.length >= 20) {
-            //console.log(student)
-            if (studentEnrollment.length > 0) {
-              if (studentEnrollment.includes(student._id)) {
-                newData['documents'][index]['isEnrolled'] = true
-              //console.log(true)
-                studentEnrollment.find((s, index) => {
-                  if (s === student._id) {
-                    studentEnrollment.splice(index, 1)
-                  }
-                })
-              } else {
-                newData['documents'][index]['isEnrolled'] = false
-              }
-            } else if (studentEnrollment.length === 0) {
-              newData['documents'][index]['isEnrolled'] = true
+        if (tab === "student") {
+          var hasAdapt = false
+          newData['documents'].forEach((student, index) => {
+            if (Object.keys(student).includes("adapt") || adaptCourse) {
+              hasAdapt = true
             }
-            newData['documents'][index]['hasData'] = true
-            newData['documents'][index]._id = decryptStudent(student._id)
+            if (adaptCourse) {
+              newData['documents'][index]['adapt'] = true
+            }
+            //check if there is enrollment data for the course
+              if (studentEnrollment.length > 0) {
+                //check to see if the student is enrolled
+                if (studentEnrollment.includes(student._id)) {
+                  //mark the student as enrolled
+                  newData['documents'][index]['isEnrolled'] = true
+                  //if the student is in the course, remove that student from the enrollment list
+                  studentEnrollment.find((s, index) => {
+                    if (s === student._id) {
+                      studentEnrollment.splice(index, 1)
+                    }
+                  })
+                } else {
+                  //mark the student as not enrolled
+                  newData['documents'][index]['isEnrolled'] = false
+                }
+              //add true to all students if there is no enrollment data so the entire table isn't grayed out
+              } else if (studentEnrollment.length === 0) {
+                newData['documents'][index]['isEnrolled'] = true
+              }
+              newData['documents'][index]['hasData'] = true
+              newData['documents'][index]._id = decryptStudent(student._id)
+          })
         }
-        })
-        if (studentEnrollment.length > 0 && newData['documents'][0]._id.length >= 20) {
-          //console.log(studentEnrollment)
+        //if there is an enrolled student that has no data, add them to the table
+        if (studentEnrollment.length > 0 && tab === "student") {
           studentEnrollment.forEach(s => {
-            //console.log(s)
             newData['documents'].splice(0, 0, {
               _id: decryptStudent(s),
               isEnrolled: true,
               hasData: false,
-              adapt: newData['documents'][1].adapt ? true : false
+              adapt: hasAdapt
             })
           })
         }
-        if (newData['documents'][0]._id.includes('@')) {
+        if (tab === "student") {
           newData['studentData'] = newData['documents']
         } else {
           newData['pageData'] = newData['documents']
@@ -285,7 +352,7 @@ app.post('/data', async (req,res,next) => {
 });
 
 app.post('/individual', (req,res,next) => {
-  let queryString = pageView.getIndividual(req.body);
+  let queryString = individualData.individualDataQuery(req.body, dbInfo);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -304,8 +371,28 @@ app.post('/individual', (req,res,next) => {
 
 });
 
+app.post('/adaptstudents', (req,res,next) => {
+  let queryString = adaptStudents.adaptStudentsQuery(req.body, dbInfo);
+  let config = getRequest(queryString);
+  axios(config)
+      .then(function (response) {
+        let newData = (response.data)
+        newData['documents'].forEach((s, index) => {
+          newData['documents'][index]._id = decryptStudent(s._id)
+        })
+        newData['adaptStudents'] = newData['documents']
+        delete newData['documents']
+        newData = JSON.stringify(newData)
+        res.json(newData);
+      })
+      .catch(function (error) {
+          console.log(error);
+      });
+
+});
+
 app.post('/studentchart', (req,res,next) => {
-  let queryString = studentView.studentChartQuery(req.body);
+  let queryString = studentChart.studentChartQuery(req.body, dbInfo);
   let config = getRequest(queryString);
   var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
   axios(config)
@@ -345,7 +432,7 @@ app.post('/studentchart', (req,res,next) => {
 });
 
 app.post('/pageviews', (req,res,next) => {
-  let queryString = pageView.pageViewChartQuery(req.body);
+  let queryString = aggregatePageViews.aggregatePageViewsQuery(req.body, dbInfo);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -362,7 +449,7 @@ app.post('/pageviews', (req,res,next) => {
 });
 
 app.post('/individualpageviews', (req,res,next) => {
-  let queryString = pageView.individualPageViewChartQuery(req.body, adaptCodes);
+  let queryString = individualPageViews.individualPageViewsQuery(req.body, adaptCodes, dbInfo);
   // console.log("QUERY STRING")
   // console.log(queryString)
   let config = getRequest(queryString);
@@ -386,7 +473,7 @@ app.post('/individualpageviews', (req,res,next) => {
 });
 
 app.post('/studentassignments', (req,res,next) => {
-  let queryString = studentView.studentAssignmentQuery(req.body, adaptCodes);
+  let queryString = studentAdaptAssignment.studentAdaptAssignmentQuery(req.body, adaptCodes, dbInfo, encryptStudent);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -405,23 +492,23 @@ app.post('/studentassignments', (req,res,next) => {
 });
 
 
-app.post('/adapt', (req,res,next) => {
-  let queryString = assignmentView.getAdaptQuery(req.body);
-  let config = getRequest(queryString);
-  axios(config)
-      .then(function (response) {
-        let newData = (response.data)
-        newData = JSON.stringify(newData)
-        res.json(newData);
-      })
-      .catch(function (error) {
-          console.log(error);
-      });
-
-});
+// app.post('/adapt', (req,res,next) => {
+//   let queryString = assignmentView.getAdaptQuery(req.body);
+//   let config = getRequest(queryString);
+//   axios(config)
+//       .then(function (response) {
+//         let newData = (response.data)
+//         newData = JSON.stringify(newData)
+//         res.json(newData);
+//       })
+//       .catch(function (error) {
+//           console.log(error);
+//       });
+//
+// });
 
 app.post('/adaptlevels', (req,res,next) => {
-  let queryString = assignmentView.adaptLevelQuery(req.body, adaptCodes);
+  let queryString = adaptLevel.adaptLevelQuery(req.body, adaptCodes, dbInfo);
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
@@ -437,30 +524,31 @@ app.post('/adaptlevels', (req,res,next) => {
 
 });
 
-app.post('/tags', (req,res,next) => {
-  let queryString = main.getTagQuery(req.body);
-  let config = getRequest(queryString);
-  axios(config)
-      .then(function (response) {
-        let newData = (response.data)
-        newData['tags'] = newData['documents']
-        newData = JSON.stringify(newData)
-        res.json(newData);
-      })
-      .catch(function (error) {
-          console.log(error);
-      });
-
-});
+// app.post('/tags', (req,res,next) => {
+//   let queryString = main.getTagQuery(req.body);
+//   let config = getRequest(queryString);
+//   axios(config)
+//       .then(function (response) {
+//         let newData = (response.data)
+//         newData['tags'] = newData['documents']
+//         newData = JSON.stringify(newData)
+//         res.json(newData);
+//       })
+//       .catch(function (error) {
+//           console.log(error);
+//       });
+//
+// });
 
 app.post('/chapters', (req,res,next) => {
-  let queryString = main.unitsQuery(req.body)
+  let queryString = courseUnits.courseUnitsQuery(req.body, dbInfo)
   let config = getRequest(queryString);
   axios(config)
       .then(function (response) {
         let newData = (response.data)
         newData['chapters'] = newData['documents']
-        newData = JSON.stringify(newData['documents'])
+        delete newData['documents']
+        newData = JSON.stringify(newData)
         res.json(newData);
       })
       .catch(function (error) {
