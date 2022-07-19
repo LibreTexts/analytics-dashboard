@@ -14,30 +14,13 @@ export default class StudentTable extends React.Component {
     };
   }
   render() {
-    //const [exportData, setExportData] = useState(this.props.data)
-    //console.log(this.props.data)
+    if (this.props.displayMode) {
+      var idAccessor = "displayModeStudent";
+    } else {
+      var idAccessor = "_id";
+    }
     var filename = "student-chart-data.csv";
 
-    function createLink(pageInfo) {
-      var title = pageInfo.original.pageTitle;
-      var url = pageInfo.original.pageURL;
-      var isEnrolled = pageInfo.original.isEnrolled;
-      var tab = "page";
-      if (url === undefined) {
-        tab = "student";
-      }
-      if (tab === "page") {
-        return (
-          <a href={url} target="_blank">
-            {title}
-          </a>
-        );
-      } else if (tab === "student") {
-        return pageInfo.original._id;
-      } else if (tab === "student" && !isEnrolled) {
-        return <Text size="small">{pageInfo.original._id}</Text>;
-      }
-    }
     function formatDate(val, type) {
       if (type === "lt" && val.original.max) {
         var d = new Date(val.original.max);
@@ -63,9 +46,9 @@ export default class StudentTable extends React.Component {
       {
         Header: "Name",
         width: 250,
-        accessor: "_id",
+        accessor: idAccessor,
         filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["_id"] }),
+          matchSorter(rows, filter.value, { keys: [idAccessor] }),
         filterAll: true,
       },
       {

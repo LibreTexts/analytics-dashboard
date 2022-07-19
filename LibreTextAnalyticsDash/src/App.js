@@ -22,6 +22,7 @@ import {
 import { Close, Filter } from "grommet-icons";
 import "./index.css";
 import StudentChart from "./studentChart.js";
+import GradesPageView from "./gradesPageViewsChart.js"
 import PageViews from "./totalPageViewsChart.js";
 import TitleText from "./titleWithInfo.js";
 import DataTable from "./data_table.js";
@@ -48,6 +49,7 @@ import {
   handleClick,
   handleFilterClick,
   handleIndividual,
+  handleGrade,
   changeBarXAxis,
   changeBarYAxis,
   changeBinVal,
@@ -62,6 +64,7 @@ import {
   changeColumns,
   changeActivityFilter,
   pageViewCharts,
+  changePropValue,
   reactGrids,
   reactRows
 } from "./filterFunctions.js";
@@ -105,6 +108,7 @@ function App() {
     disablePage: false,
     disableStudent: false,
     disableAssignment: false,
+    disableGradesAssignment: false,
     course: null,
     courseId: null,
     //click: false,
@@ -112,6 +116,7 @@ function App() {
     totalPageViews: null,
     individualPageViews: null,
     individualAssignmentViews: null,
+    gradesPageView: null,
     studentAssignments: null,
     studentDates: null,
     student: null,
@@ -127,6 +132,8 @@ function App() {
     display: true,
     bin: 1,
     binLabel: "Day",
+    sliderValue: 10,
+    numBinsGrades: 10,
     unit: "day",
     allData: {},
     pathLength: 0,
@@ -148,6 +155,8 @@ function App() {
     adaptLevels: {},
     levelGroup: null,
     levelName: null,
+    gradeLevelGroup: null,
+    gradeLevelName: null,
     hasAdapt: false,
     showInfoBox: true,
     showTableFilters: false,
@@ -166,7 +175,8 @@ function App() {
     homepage: "/analytics/api",
     showNonEnrolledStudents: true,
     ltCourse: false,
-    adaptCourse: false
+    adaptCourse: false,
+    displayMode: false
   })
 
    const [click, setClick] = useState(false);
@@ -199,7 +209,6 @@ function App() {
     //     realCourses[course] = {courseId: response.data[course], ltCourse: false, adaptCourse: true}
     //   })
     //   setRealCourses(realCourses)
-    //   console.log(realCourses)
     // })
   }, []);
 
@@ -316,6 +325,7 @@ function App() {
                               showNonStudents={state.showNonEnrolledStudents}
                               ltCourse={state.ltCourse}
                               adaptCourse={state.adaptCourse}
+                              displayMode={state.displayMode}
                             />
                           </Box>
                         )}
@@ -341,6 +351,7 @@ function App() {
                                 yaxis={state.barYAxis}
                                 yaxisLabel={state.barYAxisLabel}
                                 width={1000}
+                                displayMode={state.displayMode}
                               />
                             }
                             data={state.studentChart}
@@ -489,7 +500,6 @@ function App() {
                             filterLabel="Bar Chart Display Filters"
                             state={state}
                             setState={setState}
-                            disable={state.disablePage}
                             component={
                               <PageViews
                                  data={state.individualPageViews}
@@ -532,11 +542,12 @@ function App() {
             <Grommet theme={theme}>
               <Grid
                 fill={true}
-                rows={["auto"]}
+                rows={["auto", "auto"]}
                 columns={["15%", "79%"]}
                 gap="small"
                 areas={[
                   { name: "timeline", start: [0, 0], end: [1, 0] },
+                  { name: "gradesChart", start: [0, 1], end: [1, 1]},
                 ]}
                 flex={true}
                 responsive={true}
@@ -599,6 +610,60 @@ function App() {
                       />}
                   />
                 )}
+                {state.adaptLevels && (
+                  <LayeredComponent
+                    gridArea="gradesChart"
+                    disable={state.disableGradesAssignment}
+                    loading={infoText.loadingMessage}
+                    title="Grades by Assignment Histogram"
+                    infoText={infoText.assignmentGradesChart}
+                    filterLabel="Grades Histogram Filters"
+                    filterType="slider"
+                    state={state}
+                    setState={setState}
+                    component={
+                      <GradesPageView
+                        data={state.gradesPageView}
+                        range={[0,1]}
+                        numberOfBins={state.numBinsGrades}
+                        height={500}
+                      />
+                    }
+                    data={state.gradesPageView}
+                    label={state.sliderValue}
+                    filterOptions={[1, state.gradesPageView]}
+                    filterSelectLabel="Number of bins:"
+                    filterFunction={changePropValue}
+                    clickFunction={changePropValue}
+                    selectComponent={<SelectWithApply
+                        selectOptions={Object.keys(state.adaptLevels)}
+                        value={state.gradeLevelGroup}
+                        dropdownFunction={handleChange}
+                        clickFunction={handleGrade}
+                        state={state}
+                        setState={setState}
+                        type="gradesPageLevelGroup"
+                        disable={state.disableGradesAssignment}
+                        optionalSelect={<Select
+                          options={state.adaptLevels[state.gradeLevelGroup]}
+                          margin={{
+                            right: "medium",
+                            left: "medium",
+                            vertical: "xsmall",
+                          }}
+                          value={state.gradeLevelName}
+                          onChange={({ option }) =>
+                            handleChange(
+                              "gradesPageLevelName",
+                              option,
+                              state, setState
+                            )
+                          }
+                        />}
+                        renderSelect={state.gradeLevelGroup}
+                      />}
+                  />
+                )}
               </Grid>
             </Grommet>
           </Tab>
@@ -645,9 +710,15 @@ function App() {
                   direction="column"
                   alignSelf="start"
                   border={true}
-                  width="300px"
-                  height="150px"
+                  width="375px"
+                  height="225px"
                 >
+                  <CheckBox
+                    label="Display Mode"
+                    checked={state.displayMode}
+                    pad={{left: "medium", top: "small"}}
+                    onClick={() => setState({...state, displayMode: !state.displayMode})}
+                  />
                   <Box direction="row">
                     <Box
                       margin={{ left: "small", bottom: "small", top: "small" }}
@@ -672,6 +743,23 @@ function App() {
                     />
                     <Text margin={{ left: "small", bottom: "small" }}>
                       Adapt Data
+                    </Text>
+                  </Box>
+                  <Box direction="row">
+                    <Box
+                      margin={{ left: "small", bottom: "small" }}
+                      border={true}
+                      height="30px"
+                      width="40px"
+                      background="gainsboro"
+                    />
+                    <Text margin={{ left: "small", bottom: "small" }}>
+                      No LibreText Data
+                    </Text>
+                  </Box>
+                  <Box direction="row">
+                    <Text weight="bold" margin={{ left: "small", bottom: "small"}}>
+                      Not Enrolled in Course
                     </Text>
                   </Box>
                   <Button

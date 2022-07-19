@@ -21,6 +21,9 @@ export default function SelectWithApply({
   if (dropSize) {
     dropHeight = dropSize
   }
+  if (type === "studentAssignments" && state.displayMode) {
+    selectOptions = state.encryptedStudents
+  }
   return (
     <Box direction="row">
       <Select

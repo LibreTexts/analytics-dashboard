@@ -5,7 +5,7 @@ export async function getAdaptLevels(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state));
   await axios({
     method: "post",
-    url: state.homepage+"/adaptlevels",
+    url: state.homepage + "/adaptlevels",
     headers: {
       "Content-Type": "application/json",
     },
@@ -34,7 +34,7 @@ export async function getAdaptLevels(state, setState) {
 export function getAdaptData(state, setState) {
   axios({
     method: "post",
-    url: state.homepage+"/adapt",
+    url: state.homepage + "/adapt",
     headers: {
       "Content-Type": "application/json",
     },
@@ -58,7 +58,7 @@ export function getStudentAssignments(state, setState) {
   tempState["studentAssignments"] = null
   axios({
     method: "post",
-    url: state.homepage+"/studentassignments",
+    url: state.homepage + "/studentassignments",
     headers: {
       "Content-Type": "application/json",
     },
@@ -67,14 +67,6 @@ export function getStudentAssignments(state, setState) {
       individual: state.student
     },
   }).then((response) => {
-    // setState({
-    //   ...state,
-    //   studentAssignmentData: JSON.parse(response.data)['documents']
-    // })
-    // tempState = {
-    //   ...tempState,
-    //   studentAssignmentData: JSON.parse(response.data)['documents']
-    // }
     var d = JSON.parse(response.data)
     var key = Object.keys(d)[0]
     var value = d[key]
@@ -82,8 +74,36 @@ export function getStudentAssignments(state, setState) {
     setState({
       ...tempState
     })
-    //console.log(tempState.studentAssignments)
-    //state.setStudentAssignmentData(JSON.parse(response.data)['documents'])
   });
   return tempState;
+}
+
+// Robert 7/15
+export function getGradesPageViewData(state, setState) {
+  console.log("adapt data")
+  // console.log(state)
+  var tempState = JSON.parse(JSON.stringify(state));
+  tempState = {
+    ...tempState,
+    totalPageViews: null
+  }
+  axios({
+    method: 'post',
+    url: state.homepage + '/gradepageviews',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data: {
+      courseId: state.courseId,
+      levelGroup: state.gradeLevelGroup,
+      levelName: state.gradeLevelName
+    },
+  })
+  .then(response => {
+    tempState = {
+      ...tempState,
+      gradesPageView: JSON.parse(response.data)["documents"]
+    }
+    setState(tempState);
+  });
 }

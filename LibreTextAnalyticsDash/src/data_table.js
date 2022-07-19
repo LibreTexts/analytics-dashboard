@@ -14,19 +14,22 @@ export default function DataTable({
   activityFilter,
   showNonStudents,
   ltCourse,
-  adaptCourse
+  adaptCourse,
+  displayMode
 }) {
-  //console.log("TAB", tab)
-  //console.log(showColumns)
-  //console.log('hasAdapt', hasAdapt)
   const [pageSize, setPageSize] = React.useState(20);
   let reactTable = React.useRef(null);
   const [exportData, setExportData] = React.useState(data);
   //console.log(this.props.data)
-  if (tab === "student") {
+  if (tab === "student" && !displayMode) {
     var column2Label = "Unique Pages Accessed";
     var column3Label = "Total Page Views";
     var idAccessor = "_id";
+    var filename = "student-data.csv";
+  } else if (tab === "student" && displayMode) {
+    var column2Label = "Unique Pages Accessed";
+    var column3Label = "Total Page Views";
+    var idAccessor = "displayModeStudent";
     var filename = "student-data.csv";
   } else if (tab === "page") {
     var column3Label = "Number of Times Viewed";
@@ -134,9 +137,9 @@ export default function DataTable({
         </a>
       );
     } else if (tab === "student" && hasData) {
-      return pageInfo.original._id;
+      return pageInfo.original[idAccessor];
     } else if (tab === "student" && !hasData) {
-      return <Text weight="bold">{pageInfo.original._id}</Text>;
+      return <Text weight="bold">{pageInfo.original[idAccessor]}</Text>;
     }
   }
 
@@ -186,7 +189,7 @@ export default function DataTable({
     columns.push(
       {
         Header: <Tip content={column2Label}>{column2Label}</Tip>,
-        headerClassName: "lt-data",
+        headerClassName: "lt-data wordwrap",
         accessor: "objectCount",
         show: showColumns["LT " + column2Label],
         getProps: (state, rowInfo, column) => {
@@ -202,7 +205,7 @@ export default function DataTable({
       },
       {
         Header: <Tip content={column3Label}>{column3Label}</Tip>,
-        headerClassName: "lt-data",
+        headerClassName: "lt-data wordwrap",
         accessor: "viewCount",
         show: showColumns["LT " + column3Label],
         getProps: (state, rowInfo, column) => {
@@ -222,7 +225,7 @@ export default function DataTable({
             Most Recent Page Load
           </Tip>
         ),
-        headerClassName: "lt-data",
+        headerClassName: "lt-data wordwrap",
         accessor: "max",
         show: showColumns["LT Most Recent Page Load"],
         //Cell: val => formatDate(val, "lt"),
@@ -241,7 +244,7 @@ export default function DataTable({
         Header: (
           <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>
         ),
-        headerClassName: "lt-data",
+        headerClassName: "lt-data wordwrap",
         accessor: "dateCount",
         show: showColumns["LT Unique Interaction Days"],
         getProps: (state, rowInfo, column) => {
@@ -300,7 +303,7 @@ export default function DataTable({
         Header: (
           <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>
         ),
-        headerClassName: "adapt-data",
+        headerClassName: "adapt-data wordwrap",
         accessor: "adaptUniqueInteractionDays",
         show: showColumns["Adapt Unique Interaction Days"],
         getProps: (state, rowInfo, column) => {
@@ -318,7 +321,7 @@ export default function DataTable({
       },
       {
         Header: <Tip content="Unique Assignments">Unique Assignments</Tip>,
-        headerClassName: "adapt-data",
+        headerClassName: "adapt-data wordwrap",
         accessor: "adaptUniqueAssignments",
         show: showColumns["Adapt Unique Assignments"],
         getProps: (state, rowInfo, column) => {
@@ -336,7 +339,7 @@ export default function DataTable({
         Header: (
           <Tip content="Most Recent Page Load">Most Recent Page Load</Tip>
         ),
-        headerClassName: "adapt-data",
+        headerClassName: "adapt-data wordwrap",
         accessor: "mostRecentAdaptLoad",
         show: showColumns["Adapt Most Recent Page Load"],
         //Cell: val => formatDate(val, "adapt"),
@@ -350,28 +353,44 @@ export default function DataTable({
         filterMethod: (filter, rows) =>
           matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
         filterAll: true,
+      },
+      {
+        Header: <Tip content="Average Percent Per Assignment">Average Percent Per Assignment</Tip>,
+        headerClassName: "adapt-data wordwrap",
+        accessor: "adaptAvgPercentScore",
+        show: true,
+        //Cell: val => formatDate(val, "adapt"),
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)'
+                    },
+                };
+            },
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["adaptAvgPercentScore"] }),
+        filterAll: true
+      },
+      {
+        Header: <Tip content="Average Attempts Per Assignment">Average Percent Per Assignment</Tip>,
+        headerClassName: "adapt-data wordwrap",
+        accessor: "adaptAvgAttempts",
+        show: true,
+        //Cell: val => formatDate(val, "adapt"),
+        getProps: (state, rowInfo, column) => {
+                return {
+                    style: {
+                        background: 'rgb(171, 247, 177, .5)'
+                    },
+                };
+            },
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["adaptAvgAttempts"] }),
+        filterAll: true
       }
-      // ,
-      // {
-      //   Header: <Tip content="Average Percent Per Assignment">Average Percent Per Assignment</Tip>,
-      //   headerClassName: "adapt-data",
-      //   accessor: "adaptPercent",
-      //   show: true,
-      //   //Cell: val => formatDate(val, "adapt"),
-      //   getProps: (state, rowInfo, column) => {
-      //           return {
-      //               style: {
-      //                   background: 'rgb(171, 247, 177, .5)'
-      //               },
-      //           };
-      //       },
-      //   filterMethod: (filter, rows) =>
-      //     matchSorter(rows, filter.value, { keys: ["adaptPercent"] }),
-      //   filterAll: true
-      // }
     );
   }
-
+  
   return (
     <>
       <ReactTable

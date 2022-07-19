@@ -11,7 +11,11 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
   }
   //student on the front end is unencrypted, is encrypted in the database
   //need to encrypt to be able to match
-  var student = encryptStudent(params.individual)
+  if (params.individual.includes("@")) {
+    var student = encryptStudent(params.individual)
+  } else {
+    var student = params.individual
+  }
 
   //grab data from the adapt collection
   var data = {

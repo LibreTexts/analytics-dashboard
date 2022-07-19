@@ -7,12 +7,14 @@ const allCourses = require("./allCoursesQuery.js");
 const courseUnits = require("./courseUnitsQuery.js");
 const individualData = require("./individualDataQuery.js");
 const individualPageViews = require("./individualPageViewsQuery.js");
+const individualGradePageViews = require("./individualGradePageViewsQuery.js");
 const individualTimeline = require("./individualTimelineQuery.js");
 const studentChart = require("./studentChartQuery.js");
 const studentAdaptAssignment = require("./studentAdaptAssignmentQuery.js");
 const allAdaptCourses = require("./allAdaptCoursesQuery.js");
 const adaptDataTable = require("./adaptDataTableQuery.js");
 const adaptStudents = require("./adaptStudentsQuery.js");
+const allStudents = require("./allStudentsQuery.js");
 
 var axios = require('axios');
 const express = require("express");
@@ -205,6 +207,27 @@ function sendData(endpoint, queryFunction, dataChange, adaptCodes) {
   });
 }
 
+app.post('/allstudents', (req,res,next) => {
+  let queryString = allStudents.allStudentsQuery(req.body, dbInfo);
+  let config = getRequest(queryString);
+  axios(config)
+      .then(function (response) {
+        let newData = (response.data)
+        newData['documents'].forEach((d, index) => {
+          newData['documents'][index]["displayModeStudent"] = d._id
+          newData['documents'][index]._id = decryptStudent(d._id)
+        })
+        newData["allStudents"] = newData["documents"]
+        delete newData['documents']
+        newData = JSON.stringify(newData)
+        res.json(newData);
+      })
+      .catch(function (error) {
+          console.log(error);
+      });
+
+});
+
 app.post('/timelineData', (req,res,next) => {
   let queryString = individualTimeline.individualTimelineQuery(req.body, dbInfo);
   let config = getRequest(queryString);
@@ -214,6 +237,7 @@ app.post('/timelineData', (req,res,next) => {
         if (newData['documents'].length > 0) {
           newData['documents'].forEach((d, index) => {
             if (d._id.length >= 20) {
+              newData['documents'][index]["displayModeStudent"] = d._id
               newData['documents'][index]._id = decryptStudent(d._id)
             }
           })
@@ -236,43 +260,6 @@ app.post('/timelineData', (req,res,next) => {
 
 });
 
-// function allDataChange(newData) {
-//   newData['documents'].forEach((student, index) => {
-//     if (student._id.length >= 20) {
-//       //console.log(student)
-//       if (studentEnrollment.length > 0) {
-//         if (studentEnrollment.includes(student._id)) {
-//           newData['documents'][index]['isEnrolled'] = true
-//         //console.log(true)
-//           studentEnrollment.find((s, index) => {
-//             if (s === student._id) {
-//               studentEnrollment.splice(index, 1)
-//             }
-//           })
-//         } else {
-//           newData['documents'][index]['isEnrolled'] = false
-//         }
-//       } else if (studentEnrollment.length === 0) {
-//         newData['documents'][index]['isEnrolled'] = true
-//       }
-//       newData['documents'][index]['hasData'] = true
-//       newData['documents'][index]._id = decryptStudent(student._id)
-//   }
-//   })
-//   if (studentEnrollment.length > 0 && newData['documents'][0]._id.length >= 20) {
-//     //console.log(studentEnrollment)
-//     studentEnrollment.forEach(s => {
-//       //console.log(s)
-//       newData['documents'].splice(0, 0, {
-//         _id: decryptStudent(s),
-//         isEnrolled: true,
-//         hasData: false,
-//         adapt: newData['documents'][1].adapt ? true : false
-//       })
-//     })
-//   }
-// }
-// sendData('/data', allDataQuery, allDataChange, await adaptCodes)
 app.post('/data', async (req,res,next) => {
   //console.log(req.body)
   let queryString = dataTable.dataTableQuery(req.body, await adaptCodes, dbInfo);
@@ -322,6 +309,7 @@ app.post('/data', async (req,res,next) => {
                 newData['documents'][index]['isEnrolled'] = true
               }
               newData['documents'][index]['hasData'] = true
+              newData['documents'][index]["displayModeStudent"] = student._id
               newData['documents'][index]._id = decryptStudent(student._id)
           })
         }
@@ -332,7 +320,8 @@ app.post('/data', async (req,res,next) => {
               _id: decryptStudent(s),
               isEnrolled: true,
               hasData: false,
-              adapt: hasAdapt
+              adapt: hasAdapt,
+              displayModeStudent: s
             })
           })
         }
@@ -400,6 +389,7 @@ app.post('/studentchart', (req,res,next) => {
         let newData = (response.data)
         newData['documents'].forEach((student, index) => {
           var allStudents = JSON.parse(JSON.stringify(student.students))
+          var encryptedStudents = JSON.parse(JSON.stringify(student.students))
           student.students.forEach((s, i) => {
             if (s.length >= 20) {
               if (!studentEnrollment.includes(s)) {
@@ -419,6 +409,7 @@ app.post('/studentchart', (req,res,next) => {
             allStudents[i] = decryptStudent(s)
           })
           newData['documents'][index].students = allStudents
+          newData['documents'][index]["displayModeStudents"] = encryptedStudents
         })
         newData['studentChart'] = newData['documents']
         delete newData['documents']
@@ -463,6 +454,25 @@ app.post('/individualpageviews', (req,res,next) => {
           newData['individualAssignmentViews'] = newData['documents']
         }
         delete newData['documents']
+        newData = JSON.stringify(newData)
+        res.json(newData);
+      })
+      .catch(function (error) {
+          console.log(error);
+      });
+
+});
+
+// Robert Au 7/14/22 -- following refactoring
+app.post('/gradepageviews', (req,res,next) => {
+  let queryString = individualGradePageViews.individualGradePageViewsQuery(req.body, adaptCodes, dbInfo);
+  // console.log("QUERY STRING")
+  // console.log(queryString)
+  let config = getRequest(queryString);
+  //console.log(config)
+  axios(config)
+      .then(function (response) {
+        let newData = (response.data)
         newData = JSON.stringify(newData)
         res.json(newData);
       })

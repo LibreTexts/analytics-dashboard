@@ -32,8 +32,9 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
           },
           {
             '$addFields': {
-              'date': {'$dateTrunc': {
-                  'date': { '$toDate': '$day'},
+              'date': {
+                '$dateTrunc': {
+                  'date': { '$toDate': '$day' },
                   'unit': 'day'
                 }
               }
@@ -41,17 +42,174 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
           },
           //group by student, find the most recent assignment load for adapt, dates, and assignments
           {
+            '$project': {
+              'date': '$date',
+              'levelname': '$level_name',
+              'student': '$anon_student_id',
+              'levelpoints': '$level_points',
+              'problemname': '$problem_name',
+              'page_id': '$page_id',
+              'points': {
+                '$cond':
+                {
+                  'if': { '$eq': ['$outcome', "CORRECT"] },
+                  'then': {
+                    '$convert': {
+                      'input': '$problem_points',
+                      'to': 'double'
+                    }
+                  },
+                  'else': 0
+                }
+              }
+            }
+          },
+          {
             '$group': {
-              '_id': '$anon_student_id',
-              'mostRecentAdaptLoad': {'$max': '$day'},
-              'dates': {'$addToSet': '$date'},
-              'assignments': {'$addToSet': '$page_id'}
+              '_id': {
+                'student': '$student',
+                'level': '$levelname',
+                'problemname': '$problemname',
+              },
+              'dates': {
+                '$addToSet': '$date'
+              },
+              'page_ids': {
+                '$addToSet': '$page_id'
+              },
+              'levelpoints': {
+                '$first': '$levelpoints'
+              },
+              'bestScore': {
+                '$max': '$points'
+              },
+              'attempts': {
+                '$sum': 1
+              },
+            }
+          },
+          {
+            '$group': {
+              '_id': {
+                'level': '$_id.level',
+                'student': '$_id.student',
+              },
+              'dateArrays': {
+                '$addToSet': '$dates'
+              },
+              'page_idArrays': {
+                '$addToSet': '$page_ids'
+              },
+              'Sum': {
+                '$sum': '$bestScore'
+              },
+              'attemptsPerLevel': {
+                '$sum': '$attempts'
+              },
+              'levelpoints': {
+                '$first': {
+                  '$convert': {
+                    'input': '$levelpoints',
+                    'to': 'double'
+                  }
+                }
+              }
             }
           },
           {
             '$addFields': {
-              'adaptUniqueInteractionDays': {'$size': '$dates'},
-              'adaptUniqueAssignments': {'$size': '$assignments'}
+              'score': {
+                '$divide': [
+                  '$Sum',
+                  '$levelpoints'
+                ]
+              },
+              'dates': {
+                '$reduce': {
+                  'input': '$dateArrays',
+                  'initialValue': [],
+                  'in': { '$setUnion': ["$$value", "$$this"] }
+                }
+              },
+              'page_ids': {
+                '$reduce': {
+                  'input': '$page_idArrays',
+                  'initialValue': [],
+                  'in': { '$setUnion': ["$$value", "$$this"] }
+                }
+              }
+            }
+          },
+          {
+            '$group': {
+              '_id': {
+                'student': '$_id.student',
+              },
+              'dateArrays': {
+                '$addToSet': '$dates'
+              },
+              'page_idArrays': {
+                '$addToSet': '$page_ids'
+              },
+              'Sums': {
+                '$push': '$Sum'
+              },
+              'scoresArray': {
+                '$push': '$score'
+              },
+              'attemptsOverall': {
+                '$push': '$attemptsPerLevel'
+              },
+            }
+          },
+          {
+            '$addFields': {
+              'adaptAvgPercentScore': {
+                '$avg': '$scoresArray'
+              },
+
+              'adaptAvgAttempts': {
+                '$avg': '$attemptsOverall'
+              },
+
+              'dates': {
+                '$reduce': {
+                  'input': '$dateArrays',
+                  'initialValue': [],
+                  'in': { '$setUnion': ["$$value", "$$this"] }
+                }
+              },
+
+              'page_ids': {
+                '$reduce': {
+                  'input': '$page_idArrays',
+                  'initialValue': [],
+                  'in': { '$setUnion': ["$$value", "$$this"] }
+                }
+              }
+            }
+          },
+          {
+            '$addFields': {
+              'mostRecentAdaptLoad': {
+                '$max': '$dates'
+              },
+              'adaptUniqueInteractionDays': {
+                '$size': '$dates'
+              },
+              'adaptUniqueAssignments': {
+                '$size': '$page_ids'
+              }
+            }
+          },
+          {
+            '$project': {
+              'page_idArrays': 0,
+              'dateArrays': 0,
+              'scoresArray': 0,
+              'attemptsOverall': 0,
+              'page_ids': 0,
+              'dates': 0,
             }
           }
         ]
@@ -141,7 +299,9 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
             "adaptUniqueAssignments": '$adapt.adaptUniqueAssignments',
             "mostRecentAdaptLoad": '$adapt.mostRecentAdaptLoad',
             "adaptPercent": '$adapt.adaptPercent',
-            "adaptAttempts": '$adapt.adaptAttempts'
+            "adaptAttempts": '$adapt.adaptAttempts',
+            "adaptAvgAttempts": '$adapt.adaptAvgAttempts',
+            "adaptAvgPercentScore": '$adapt.adaptAvgPercentScore',
           }
         }
     ]}

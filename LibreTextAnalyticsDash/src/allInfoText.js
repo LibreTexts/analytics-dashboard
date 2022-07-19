@@ -11,6 +11,8 @@
         "This graph shows data for an individual page. Switch the unit of time using the filters to the left.",
       individualAssignmentsChart:
         "This graph shows data for an individual assignment. Switch the unit of time using the filters to the left.",
+      assignmentGradesChart:
+        "This graph shows grade distribution of a selected assignment. Grade ranges do not include the max value, except for the last bin.",
       courseText:
         "Please choose a course.",
       loadingMessage:

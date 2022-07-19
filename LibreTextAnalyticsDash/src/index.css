@@ -107,6 +107,12 @@ strong {
   font-weight: normal;
   text-decoration: underline;
 }
+
+/* enable word wrap for datatable */
+.wordwrap {
+  white-space: pre-line !important;
+  word-wrap: break-word;
+}
 /*
 svg:hover {
   fill: #FFBF00;

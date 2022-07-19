@@ -61,9 +61,15 @@ export async function getData(data, state, setState) {
           });
           tempState["adaptLevels"] = levels;
           courseData["adaptLevels"] = levels;
-        } else if (key === "studentTimelineData") {
+        } else if (key === "allStudents") {
           var students = []
-          value.forEach((s) => students.push(s._id));
+          var encryptedStudents = []
+          value.forEach((v) => {
+            students.push(v._id)
+            encryptedStudents.push(v.displayModeStudent);
+          })
+          tempState["encryptedStudents"] = encryptedStudents;
+          courseData["encryptedStudents"] = encryptedStudents;
           tempState["allStudents"] = students;
           courseData["allStudents"] = students;
         } else if (key === "pageTimelineData") {
@@ -134,6 +140,14 @@ export function getAllDataQuery(state, setState, type) {
     adaptCourse: state.adaptCourse
   }
   var config = getAxiosCall("/data", data, state)
+  return config;
+}
+
+export function allStudentsQuery(state, setState) {
+  var data = {
+    courseId: state.courseId
+  }
+  var config = getAxiosCall("/allstudents", data, state)
   return config;
 }
 

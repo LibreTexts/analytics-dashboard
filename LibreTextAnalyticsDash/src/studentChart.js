@@ -24,6 +24,7 @@ export default function StudentChart({
   allData,
   hasAdapt,
   showColumns,
+  displayMode
 }) {
   const [studentData, setStudentData] = React.useState(null);
   const [newWidth, setNewWidth] = React.useState(width);
@@ -36,10 +37,8 @@ export default function StudentChart({
       student["_id"] = String(student["_id"]).split("T")[0];
     });
   }
-  
-  function getStudents(val, allData, original) {
-    //console.log(val)
-    //console.log(original)
+
+  function getStudents(val, allData, original, displayMode) {
     var index = original.findIndex((o) => o._id === val._id);
     setActiveIndex(index);
     var data = [];
@@ -57,7 +56,6 @@ export default function StudentChart({
     data = data.filter((element) => {
       return element !== undefined;
     });
-    //console.log(data)
     setNewWidth(450);
     setLeftMargin(10);
     setStudentData(data);
@@ -111,7 +109,7 @@ export default function StudentChart({
           <Bar
             dataKey="count"
             fill="#0047BA"
-            onClick={(val) => getStudents(val, allData, data)}
+            onClick={(val) => getStudents(val, allData, data, displayMode)}
           >
             {data.map((entry, index) => (
               <Cell
@@ -130,6 +128,7 @@ export default function StudentChart({
             data={studentData}
             hasAdapt={hasAdapt}
             showColumns={showColumns}
+            displayMode={displayMode}
           />
         </Box>
       )}
