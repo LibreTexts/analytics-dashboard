@@ -65,8 +65,10 @@ export async function getData(data, state, setState) {
           var students = []
           var encryptedStudents = []
           value.forEach((v) => {
-            students.push(v._id)
-            encryptedStudents.push(v.displayModeStudent);
+            if (v.isEnrolled) {
+              students.push(v._id)
+              encryptedStudents.push(v.displayModeStudent);
+            }
           })
           tempState["encryptedStudents"] = encryptedStudents;
           courseData["encryptedStudents"] = encryptedStudents;

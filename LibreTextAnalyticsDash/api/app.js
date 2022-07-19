@@ -210,12 +210,21 @@ function sendData(endpoint, queryFunction, dataChange, adaptCodes) {
 app.post('/allstudents', (req,res,next) => {
   let queryString = allStudents.allStudentsQuery(req.body, dbInfo);
   let config = getRequest(queryString);
+  var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)));
   axios(config)
       .then(function (response) {
         let newData = (response.data)
         newData['documents'].forEach((d, index) => {
+          var id = d._id
           newData['documents'][index]["displayModeStudent"] = d._id
           newData['documents'][index]._id = decryptStudent(d._id)
+          if (studentEnrollment.length < 1) {
+            newData['documents'][index]["isEnrolled"] = true
+          } else if (studentEnrollment.includes(id)) {
+            newData['documents'][index]["isEnrolled"] = true
+          } else {
+            newData['documents'][index]["isEnrolled"] = false
+          }
         })
         newData["allStudents"] = newData["documents"]
         delete newData['documents']
