@@ -2,16 +2,13 @@
 
 function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent) {
   //find the adapt code for the lt course id
-  var codeFound = adaptCodes.find(o => o.course === params.course)
+  var codeFound = adaptCodes.find(o => o.course === params.courseId)
   var course = codeFound;
   if (!codeFound) {
-    course = params.course
+    course = params.courseId
   } else {
     course = codeFound.code
   }
-  console.log("Adapt Assn Query")
-  console.log(params)
-  console.log(course)
   //student on the front end is unencrypted, is encrypted in the database
   //need to encrypt to be able to match
   var student = encryptStudent(params.individual)

@@ -50,8 +50,6 @@ export function getAdaptData(state, setState) {
 }
 
 export function getStudentAssignments(state, setState) {
-  console.log("adapt data")
-  console.log(state)
   var tempState = JSON.parse(JSON.stringify(state));
   setState({
     ...state,
@@ -81,7 +79,6 @@ export function getStudentAssignments(state, setState) {
     var key = Object.keys(d)[0]
     var value = d[key]
     tempState[key] = value
-    console.log("student assignments", tempState)
     setState({
       ...tempState
     })
