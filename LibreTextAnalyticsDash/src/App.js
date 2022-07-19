@@ -754,12 +754,12 @@ function App() {
                       background="gainsboro"
                     />
                     <Text margin={{ left: "small", bottom: "small" }}>
-                      No LibreText Data
+                      Not Enrolled in Course
                     </Text>
                   </Box>
                   <Box direction="row">
                     <Text weight="bold" margin={{ left: "small", bottom: "small"}}>
-                      Not Enrolled in Course
+                      Enrolled with No Data
                     </Text>
                   </Box>
                   <Button
