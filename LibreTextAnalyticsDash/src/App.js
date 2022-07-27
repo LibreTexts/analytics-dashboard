@@ -188,7 +188,7 @@ function App() {
       "LT Unique Interaction Days": true,
     },
     gridHeight: "small",
-    homepage: "",
+    homepage: "/analytics/api",
     showNonEnrolledStudents: true,
     ltCourse: false,
     adaptCourse: false,
