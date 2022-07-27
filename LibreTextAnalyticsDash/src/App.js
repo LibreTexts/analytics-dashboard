@@ -15,8 +15,6 @@ import {
   Notification,
   Select,
   Spinner,
-  Tabs,
-  Tab,
   Text,
 } from "grommet";
 import { Close, Filter } from "grommet-icons";
@@ -31,6 +29,8 @@ import InfoBox from "./collapsible_info_box.js";
 import MultiSelect from "./multiSelect.js";
 import LayeredComponent from "./componentWithLayer.js";
 import SelectWithApply from "./selectWithApply.js";
+import DataFilterText from "./dataFilterText";
+import CourseDropdown from "./courseDropdown.js";
 import {
   getAggregateData,
   getObjectList,
@@ -66,10 +66,15 @@ import {
   pageViewCharts,
   changePropValue,
   reactGrids,
-  reactRows
+  reactRows,
+  sortData
 } from "./filterFunctions.js";
 import { infoText } from "./allInfoText.js";
+import Legend from "./legend.js";
 import BarGraph from "./bargraph.js";
+import Tabs from "./tabs.js";
+import HeaderGrid from "./headerGrid.js";
+import DataFilters from "./dataFilters.js";
 import axios from "axios";
 import useResizeObserver from "@react-hook/resize-observer";
 
@@ -99,6 +104,10 @@ const useSize = (target) => {
 
 function App() {
   const [state, setState] = useState({
+    studentTab: true,
+    pageTab: false,
+    assignmentTab: false,
+    filterTab: false,
     start: null,
     end: null,
     showFilter: false,
@@ -120,7 +129,7 @@ function App() {
     studentAssignments: null,
     studentDates: null,
     student: null,
-    studentdata: null,
+    studentData: null,
     pageResult: null,
     page: null,
     pageId: null,
@@ -132,9 +141,16 @@ function App() {
     display: true,
     bin: 1,
     binLabel: "Day",
+    unit: "day",
+    individualPageBin: 1,
+    individualPageBinLabel: "Day",
+    individualPageUnit: "day",
+    individualAssignmentBin: 1,
+    individualAssignmentBinLabel: "Day",
+    individualAssignmentUnit: "day",
+    individualAssignmentSortLabel: "By Due Date",
     sliderValue: 10,
     numBinsGrades: 10,
-    unit: "day",
     allData: {},
     pathLength: 0,
     allChapters: null,
@@ -172,11 +188,12 @@ function App() {
       "LT Unique Interaction Days": true,
     },
     gridHeight: "small",
-    homepage: "/analytics/api",
+    homepage: "",
     showNonEnrolledStudents: true,
     ltCourse: false,
     adaptCourse: false,
-    displayMode: false
+    displayMode: false,
+    filters: []
   })
 
    const [click, setClick] = useState(false);
@@ -193,79 +210,139 @@ function App() {
   }
 
   useEffect(() => {
-    let realCourses = {};
-    axios(state.homepage+"/realcourses").then((response) => {
-      let x = {};
-      response.data.forEach((course) => {
-        x[course.course] = {courseId: course._id, ltCourse: course.ltCourse, adaptCourse: course.adaptCourse};
-      });
-      realCourses = x;
-      setRealCourses(realCourses);
-    });
+    var courses = JSON.parse(localStorage.getItem("allCourses"))
+    if (courses) {
+      var success = Object.keys(courses).find(key => courses[key].ltCourse === true)
+    } else {
+      var success = false
+    }
 
-    // //let ltCourses = JSON.parse(JSON.stringify(realCourses));
-    // axios(state.homepage+"/adaptcourses").then((response) => {
-    //   Object.keys(response.data).forEach((course) => {
-    //     realCourses[course] = {courseId: response.data[course], ltCourse: false, adaptCourse: true}
-    //   })
-    //   setRealCourses(realCourses)
-    // })
+    if (!localStorage.getItem("allCourses") || !success) {
+      let realCourses = {};
+      axios(state.homepage+"/realcourses").then((response) => {
+        let x = {};
+        response.data.forEach((course) => {
+          x[course.course] = {courseId: course._id, ltCourse: course.ltCourse, adaptCourse: course.adaptCourse};
+        });
+        realCourses = x;
+        //setRealCourses(realCourses);
+      });
+
+      //let ltCourses = JSON.parse(JSON.stringify(realCourses));
+      axios(state.homepage+"/adaptcourses").then((response) => {
+        Object.keys(response.data).forEach((course) => {
+          realCourses[course] = {courseId: response.data[course], ltCourse: false, adaptCourse: true}
+        })
+        setRealCourses(realCourses)
+        localStorage.setItem("allCourses", JSON.stringify(realCourses))
+      })
+    } else {
+      setRealCourses(JSON.parse(localStorage.getItem("allCourses")))
+    }
   }, []);
 
   return (
     <>
-    <Grommet theme={theme} full fill={true} overflowY="scroll">
-      <Tabs
-        justify="start"
-        margin="medium"
-        activeIndex={state.index}
-        onActive={(value) => handleTabs(value, state, setState, queryVariables)}
-        style={{ overflowY: "scroll" }}
-      >
-        {click && (
-          <Tab title="By Student" overflowY="scroll">
-            {state.disableCourse && !state.studentData && (
-              <InfoBox
-                infoText={infoText.loadingMessage}
-                showIcon={true}
-                icon={<Spinner />}
-              />
-            )}
-            {state.studentData && state.studentData && state.studentData.length < 1 && (
-                <Notification
-                  title={infoText.noDataMessage}
-                  onClose={() => {}}
+    <Grommet theme={theme} full fill={true} style={{overflowX: "hidden"}}>
+      {realCourses && !state.studentData &&
+        <HeaderGrid
+          state={state}
+          setState={setState}
+          handleClick={handleClick}
+          queryVariables={queryVariables}
+          realCourses={realCourses}
+          infoText={infoText}
+          handleChange={handleChange}
+          changeColumns={changeColumns}
+          data={state.studentData}
+          initPage={true}
+        />
+      }
+      {state.filterTab &&
+        <>
+          <HeaderGrid
+            state={state}
+            setState={setState}
+            handleClick={handleClick}
+            queryVariables={queryVariables}
+            realCourses={realCourses}
+            infoText={infoText}
+            handleChange={handleChange}
+            changeColumns={changeColumns}
+            data={true}
+          />
+          <Grid
+            fill={true}
+            rows={["auto"]}
+            columns={["50%", "50%"]}
+            gap="small"
+            areas={[
+              { name: "filters", start: [0, 0], end: [0, 0] },
+              { name: "dropdown", start: [1, 0], end: [1, 0] }
+            ]}
+            flex={true}
+            responsive={true}
+            overflow="hidden"
+            justifyContent="center"
+          >
+          {click &&
+            <>
+            <DataFilters
+              state={state}
+              setState={setState}
+              handleChange={handleChange}
+              handleClick={handleClick}
+              infoText={infoText}
+              queryVariables={queryVariables}
+              handleFilterClick={handleFilterClick}
+              menuCollapsible={menuCollapsible}
+            />
+            {state.allChapters && state.ltCourse &&
+              <Box width="500px" border={state.resetPath} margin={{left: "xlarge"}} gridArea="dropdown">
+                {!state.resetPath && (
+                  <TitleText
+                    title="Course Structure Dropdown"
+                    text={infoText.courseStructureDropdown}
+                  />
+                )}
+                {state.resetPath && (
+                  <Text margin="medium">
+                    Please hit apply for the changes to take effect.
+                  </Text>
+                )}
+                <MultiSelect
+                  resetPath={state.resetPath}
+                  pathLength={state.pathLength}
+                  data={state.allChapters}
+                  levels={state.courseLevel}
+                  handleChange={() => handleChange(state, setState)}
+                  filterClick={() => handleFilterClick(state, setState)}
+                  init={state.dataPath}
+                  clearPath={state.clearPath}
                 />
-              )}
-            <Grommet theme={theme} full fill={true} overflowY="scroll">
-              <Box fill={true}>
-                <Box direction="row">
-                  {state.studentData && (
-                    <Box>
-                      <Box
-                        width="100px"
-                        margin={{ top: "medium", left: "xsmall" }}
-                      >
-                        <Button
-                          label="Choose Columns"
-                          secondary
-                          color="#0047BA"
-                          size="small"
-                          onClick={() => setState({...state, showCheckboxes: !state.showCheckboxes})}
-                        />
-                      </Box>
-                      {state.showCheckboxes && (
-                        <CheckBoxGroup
-                          margin={{ top: "medium", left: "xsmall" }}
-                          options={Object.keys(state.tableColumns)}
-                          value={state.checkedValues}
-                          onChange={({ option, value }) =>
-                            changeColumns(option, value, state, setState)
-                          }
-                        />
-                      )}
-                    </Box>
-                  )}
+              </Box>
+            }
+            </>
+          }
+          </Grid>
+        </>
+      }
+        {state.studentTab && (
+          <>
+              {state.studentData &&
+                <HeaderGrid
+                  state={state}
+                  setState={setState}
+                  handleClick={handleClick}
+                  queryVariables={queryVariables}
+                  realCourses={realCourses}
+                  infoText={infoText}
+                  handleChange={handleChange}
+                  changeColumns={changeColumns}
+                  data={state.studentData}
+                  click={click}
+                />
+              }
                   <Grid
                     fill={true}
                     rows={reactRows(state)}
@@ -274,8 +351,8 @@ function App() {
                     areas={reactGrids(state)}
                     flex={true}
                     responsive={true}
-                    margin="medium"
-                    overflowY="scroll"
+                    overflow="hidden"
+                    justifyContent="center"
                   >
                     {
                       // {tagTypes &&
@@ -302,6 +379,7 @@ function App() {
                             border={true}
                             overflowY="scroll"
                             responsive={true}
+                            width="100%"
                           >
                             {
                               // <Box direction="row">
@@ -367,7 +445,7 @@ function App() {
                             clickFunction={state.getStudentChartData}
                           />
                         )}
-                        {state.allStudents && (state.hasAdapt || state.adaptCourse) && (
+                        {click && state.allStudents && (state.hasAdapt || state.adaptCourse) && (
                           <LayeredComponent
                             gridArea="timeline"
                             title="Individual Student Adapt Assignments"
@@ -389,11 +467,12 @@ function App() {
                               />
                             }
                             data={state.studentAssignments}
-                            label={state.binLabel}
-                            filterOptions={["Day", "Week", "2 Weeks", "Month"]}
-                            filterSelectLabel="Unit of Time:"
-                            filterFunction={changeBinVal}
-                            clickFunction={state.pageViewCharts}
+                            label={state.individualAssignmentSortLabel}
+                            filterOptions={["Alphabetically", "By Due Date"]}
+                            filterSelectLabel="Sort:"
+                            filterFunction={sortData}
+                            clickFunction={sortData}
+                            type="studentAssignments"
                             selectComponent={<SelectWithApply
                                 selectOptions={state.allStudents}
                                 value={state.student}
@@ -409,29 +488,27 @@ function App() {
                           </>
                     )}
                   </Grid>
-                </Box>
-              </Box>
-            </Grommet>
-          </Tab>
+                </>
         )}
-        {click && state.ltCourse && (
-          <Tab title="By Page" overflowY="scroll">
-            {state.disableCourse && !state.pageData && (
-              <InfoBox
-                infoText={infoText.loadingMessage}
-                showIcon={true}
-                icon={<Spinner />}
-              />
-            )}
-            {state.pageData && state.pageData.length < 1 && (
-              <Notification title={infoText.noDataMessage} onClose={() => {}} />
-            )}
+        {click && state.ltCourse && state.pageTab && (
+          <>
             <Grommet theme={theme} full fill="true" overflowY="scroll">
-              <Box fill={true}>
-                <Box direction="row">
+            {state.pageData &&
+              <HeaderGrid
+                state={state}
+                setState={setState}
+                handleClick={handleClick}
+                queryVariables={queryVariables}
+                realCourses={realCourses}
+                infoText={infoText}
+                handleChange={handleChange}
+                changeColumns={changeColumns}
+                data={state.pageData}
+              />
+            }
                   <Grid
                     fill={true}
-                    rows={["2/3", "2/3", "auto"]}
+                    rows={["2/3", "2/3", "1/3"]}
                     columns={["15%", "79%"]}
                     gap="small"
                     areas={[
@@ -441,8 +518,8 @@ function App() {
                     ]}
                     flex={true}
                     responsive={true}
-                    margin="medium"
-                    overflowY="scroll"
+                    overflow="hidden"
+                    justifyContent="center"
                   >
                     {state.pageData && state.pageData.length > 0 && (
                       <>
@@ -472,6 +549,7 @@ function App() {
                             filterLabel="Bar Chart Display Filters"
                             state={state}
                             setState={setState}
+                            loading={infoText.loadingMessage}
                             component={
                               <PageViews
                                 data={state.pageViews}
@@ -488,6 +566,7 @@ function App() {
                             filterSelectLabel="Unit of Time:"
                             filterFunction={changeBinVal}
                             clickFunction={pageViewCharts}
+                            type="aggregatePageViews"
                           />
                         )}
                         {state.pageData && click && state.display && state.allPages && (
@@ -506,17 +585,18 @@ function App() {
                                  type="individual"
                                  xaxis="_id"
                                  yaxis="count"
-                                 binLabel={state.binLabel}
+                                 binLabel={state.individualPageBinLabel}
                                  width={980}
                                  height={500}
                                />
                             }
                             data={state.individualPageViews}
-                            label={state.binLabel}
+                            label={state.individualPageBinLabel}
                             filterOptions={["Day", "Week", "2 Weeks", "Month"]}
                             filterSelectLabel="Unit of Time:"
                             filterFunction={changeBinVal}
                             clickFunction={pageViewCharts}
+                            type="individualPageViews"
                             selectComponent={<SelectWithApply
                                 selectOptions={state.allPages}
                                 value={state.page}
@@ -532,14 +612,25 @@ function App() {
                   </>
                 )}
                   </Grid>
-                </Box>
-              </Box>
             </Grommet>
-          </Tab>
+            </>
         )}
-        {click && state.hasAdapt && (
-          <Tab title="By Assignment">
+        {click && state.hasAdapt && state.assignmentTab && (
+          <>
             <Grommet theme={theme}>
+            {state.hasAdapt &&
+              <HeaderGrid
+                state={state}
+                setState={setState}
+                handleClick={handleClick}
+                queryVariables={queryVariables}
+                realCourses={realCourses}
+                infoText={infoText}
+                handleChange={handleChange}
+                changeColumns={changeColumns}
+                data={state.hasAdapt}
+              />
+            }
               <Grid
                 fill={true}
                 rows={["auto", "auto"]}
@@ -551,8 +642,8 @@ function App() {
                 ]}
                 flex={true}
                 responsive={true}
-                margin="medium"
-                overflowY="scroll"
+                overflow="hidden"
+                justifyContent="center"
               >
                 {state.adaptLevels && (
                   <LayeredComponent
@@ -570,17 +661,18 @@ function App() {
                         type="individual"
                         xaxis="_id"
                         yaxis="count"
-                        binLabel={state.binLabel}
+                        binLabel={state.individualAssignmentBinLabel}
                         width={980}
                         height={500}
                       />
                     }
                     data={state.individualAssignmentViews}
-                    label={state.binLabel}
+                    label={state.individualAssignmentBinLabel}
                     filterOptions={["Day", "Week", "2 Weeks", "Month"]}
                     filterSelectLabel="Unit of Time:"
                     filterFunction={changeBinVal}
                     clickFunction={handleIndividual}
+                    type="individualAssignmentViews"
                     selectComponent={<SelectWithApply
                         selectOptions={Object.keys(state.adaptLevels)}
                         value={state.levelGroup}
@@ -613,6 +705,7 @@ function App() {
                 {state.adaptLevels && (
                   <LayeredComponent
                     gridArea="gradesChart"
+                    type="numBinsGrades"
                     disable={state.disableGradesAssignment}
                     loading={infoText.loadingMessage}
                     title="Grades by Assignment Histogram"
@@ -666,344 +759,65 @@ function App() {
                 )}
               </Grid>
             </Grommet>
-          </Tab>
-        )}
-        {realCourses && (
-          <Box fill>
-            <Box width="100%" responsive={true} margin={{ bottom: "small" }}>
-              {state.showInfoBox && (
-                <InfoBox
-                  show={state.showInfoBox}
-                  infoText={infoText.courseText}
-                  color="#b0e0e6"
-                  main={true}
-                />
-              )}
-            </Box>
-            <Box direction="row">
-              <Box
-                gridArea="courses"
-                alignContent="center"
-                align="center"
-                alignSelf="center"
-                fill
-              >
-                <Box>
-                  <SelectWithApply
-                    selectOptions={Object.keys(realCourses)}
-                    value={state.courseName}
-                    dropdownFunction={handleChange}
-                    clickFunction={handleClick}
-                    state={state}
-                    setState={setState}
-                    type="courseId"
-                    disable={state.disableCourse}
-                    width="300px"
-                    dropSize="medium"
-                    realCourses={realCourses}
-                    queryVariables={queryVariables}
-                  />
-                </Box>
-              </Box>
-              {state.studentData && (
-                <Box
-                  direction="column"
-                  alignSelf="start"
-                  border={true}
-                  width="375px"
-                  height="225px"
-                >
-                  <CheckBox
-                    label="Display Mode"
-                    checked={state.displayMode}
-                    pad={{left: "medium", top: "small"}}
-                    onClick={() => setState({...state, displayMode: !state.displayMode})}
-                  />
-                  <Box direction="row">
-                    <Box
-                      margin={{ left: "small", bottom: "small", top: "small" }}
-                      border={true}
-                      height="30px"
-                      width="40px"
-                      background="rgb(255, 255, 158, .5)"
-                    />
-                    <Text
-                      margin={{ left: "small", bottom: "small", top: "small" }}
-                    >
-                      LibreText Data
-                    </Text>
-                  </Box>
-                  <Box direction="row">
-                    <Box
-                      margin={{ left: "small", bottom: "small" }}
-                      border={true}
-                      height="30px"
-                      width="40px"
-                      background="rgb(171, 247, 177, .5)"
-                    />
-                    <Text margin={{ left: "small", bottom: "small" }}>
-                      Adapt Data
-                    </Text>
-                  </Box>
-                  <Box direction="row">
-                    <Box
-                      margin={{ left: "small", bottom: "small" }}
-                      border={true}
-                      height="30px"
-                      width="40px"
-                      background="gainsboro"
-                    />
-                    <Text margin={{ left: "small", bottom: "small" }}>
-                      Not Enrolled in Course
-                    </Text>
-                  </Box>
-                  <Box direction="row">
-                    <Text weight="bold" margin={{ left: "small", bottom: "small"}}>
-                      Enrolled with No Data
-                    </Text>
-                  </Box>
-                  <Button
-                    label="Refresh Course"
-                    secondary
-                    color="#0047BA"
-                    size="small"
-                    margin={{horizontal: "large"}}
-                    onClick={() => handleClick(state, setState, "refresh", queryVariables)}
-                  />
-                </Box>
-              )}
-            </Box>
-          </Box>
-        )}
-
-        <Box
-          gridArea="header"
-          background="#022851"
-          fill={true}
-          contentAlign="center"
-          margin={{ top: "small" }}
-        >
-          <Heading
-            level="3"
-            alignSelf="start"
-            responsive={true}
-            gridArea="header"
-            margin="small"
-          >
-            LibreTexts Activity Dashboard
-          </Heading>
-        </Box>
-
-        {state.studentData && state.pageData && (
-          <Box>
-            <Button
-              margin="medium"
-              color="#022851"
-              label="Data Filters"
-              onClick={() => setState({...state, showTableFilters: !state.showTableFilters})}
-            />
-          </Box>
-        )}
-        {!state.showTableFilters &&
-          state.studentData &&
-          state.pageData &&
-          count === 0 && (
-            <InfoBox
-              count={count}
-              setCount={setCount}
-              infoText={infoText.dataFilter}
-              color="#b0e0e6"
-            />
-          )}
-        {state.showTableFilters && (
-          <>
-            <Box direction="row">
-              <Box
-                gridArea="filters"
-                border={true}
-                direction="row"
-                height="175px"
-                margin={{ bottom: "medium" }}
-              >
-              <Box
-                direction="column"
-              >
-                <Box
-                  margin={{ bottom: "medium", top: "xsmall" }}
-                  direction="row"
-                  height="100px"
-                >
-                  <Box>
-                    <Text
-                      size="large"
-                      weight="bold"
-                      textAlign="center"
-                      margin={{ left: "small" }}
-                    >
-                      {" "}
-                      Data Filters{" "}
-                    </Text>
-                  </Box>
-                  <Box
-                    pad="small"
-                    direction="row"
-                    margin={{ top: "medium" }}
-                  >
-                    <Text margin={{ vertical: "small", right: "xsmall" }}>
-                      Start:
-                    </Text>
-                    <DateInput
-                      format="mm/dd/yyyy"
-                      value={state.start}
-                      onChange={({ value }) => {
-                        handleChange("start", value, state, setState);
-                      }}
-                    />
-                    <Text
-                      margin={{
-                        vertical: "small",
-                        right: "xsmall",
-                        left: "xsmall",
-                      }}
-                    >
-                      End:
-                    </Text>
-                    <DateInput
-                      format="mm/dd/yyyy"
-                      value={state.end}
-                      onChange={({ value }) => {
-                        handleChange("end", value, state, setState);
-                      }}
-                    />
-                  </Box>
-                  <Box direction="row" alignSelf="center" pad="small">
-                    <Button
-                      size="small"
-                      margin={{
-                        bottom: "small",
-                        top: "medium",
-                        horizontal: "medium",
-                      }}
-                      label="Clear Dates"
-                      onClick={clearDates}
-                      color="#022851"
-                    />
-                    <Button
-                      label="Apply"
-                      margin={{ top: "small" }}
-                      style={{ height: 45 }}
-                      primary
-                      color="#0047BA"
-                      disabled={state.disable}
-                      onClick={() => handleFilterClick(state, setState)}
-                    />
-                  </Box>
-                </Box>
-                <CheckBox
-                  label="Include Non-enrolled Students"
-                  checked={state.showNonEnrolledStudents}
-                  pad={{left: "large", bottom: "small"}}
-                  onClick={() => setState({...state, showNonEnrolledStudents: !state.showNonEnrolledStudents})}
-                />
-                </Box>
-              </Box>
-              {state.allChapters && (
-                <Box margin={{ bottom: "medium" }}>
-                  <Button
-                    alignSelf="start"
-                    margin={{ horizontal: "xlarge" }}
-                    label="Course Structure Menu"
-                    onClick={() => menuCollapsible(state, setState)}
-                    color="#022851"
-                  />
-                  <Collapsible open={state.openFilter}>
-                    <Box width="350px" border={state.resetPath} margin="large">
-                      {!state.resetPath && (
-                        <TitleText
-                          title="Course Structure Dropdown"
-                          text={infoText.courseStructureDropdown}
-                        />
-                      )}
-                      {state.resetPath && (
-                        <Text margin="medium">
-                          Please hit apply for the changes to take effect.
-                        </Text>
-                      )}
-                      <MultiSelect
-                        resetPath={state.resetPath}
-                        pathLength={state.pathLength}
-                        data={state.allChapters}
-                        levels={state.courseLevel}
-                        handleChange={() => handleChange(state, setState)}
-                        filterClick={() => handleFilterClick(state, setState)}
-                        init={state.dataPath}
-                        clearPath={state.clearPath}
-                      />
-                    </Box>
-                  </Collapsible>
-                </Box>
-              )}
-            </Box>
           </>
         )}
-        {(state.chosenPath || state.start || state.end || state.reset) && !state.showTableFilters && (
-          <Box
-            direction="column"
-            border={true}
-            margin={{ top: "small", right: "medium" }}
-            width={{ min: "500px" }}
-          >
-            {state.chosenPath && (
-              <Text margin="small">
-                Current chosen path:{" "}
-                {state.chosenPath.split("/").map((a) => (
-                  <li>{a.replaceAll("_", " ")}</li>
-                ))}
-              </Text>
-            )}
-            {state.start && (
-              <Text margin="small">
-                Start Date: {new Date(state.start.split("T")[0]).toString()}
-              </Text>
-            )}
-            {state.end && (
-              <Text margin="small">
-                End Date: {new Date(state.end.split("T")[0]).toString()}
-              </Text>
-            )}
-            {!state.reset && (
-              <Button
-                secondary
-                size="small"
-                label="Clear All Filters"
-                alignSelf="center"
-                color="#022851"
-                margin={{ vertical: "small" }}
-                onClick={() => filterReset(state, setState)}
-                type="reset"
-              />
-            )}
-            {state.reset && (
-              <Box direction="column">
-                <Text margin="medium">
-                  Please hit apply for the changes to take effect.
-                </Text>
-                <Button
-                  primary
-                  label="Apply"
-                  onClick={() => applyReset(state, setState)}
-                  color="#022851"
-                  margin={{
-                    bottom: "small",
-                    top: "small",
-                    horizontal: "large",
-                  }}
-                />
-              </Box>
-            )}
+        {
+        // {realCourses && !state.studentData && (
+        //   <Box fill>
+        //     <Box width="100%" responsive={true} margin={{ bottom: "small" }}>
+        //       {state.showInfoBox && (
+        //         <InfoBox
+        //           show={state.showInfoBox}
+        //           infoText={infoText.courseText}
+        //           color="#b0e0e6"
+        //           main={true}
+        //         />
+        //       )}
+        //     </Box>
+        //     <Box direction="row">
+        //       <Box
+        //         gridArea="courses"
+        //         alignContent="center"
+        //         align="center"
+        //         alignSelf="center"
+        //         fill
+        //       >
+        //         <Box>
+        //           <SelectWithApply
+        //             selectOptions={Object.keys(realCourses)}
+        //             value={state.courseName}
+        //             dropdownFunction={handleChange}
+        //             clickFunction={handleClick}
+        //             state={state}
+        //             setState={setState}
+        //             type="courseId"
+        //             disable={state.disableCourse}
+        //             width="300px"
+        //             dropSize="medium"
+        //             realCourses={realCourses}
+        //             queryVariables={queryVariables}
+        //           />
+        //         </Box>
+        //       </Box>
+        //     </Box>
+        //   </Box>
+        // )}
+      }
+        {false && state.courseId &&
+          <Box border={true}>
+            {state.ltCourse && !state.adaptCourse &&
+              <Text>This course only has LibreText data.</Text>
+            }
+            {state.adaptCourse && !state.ltCourse &&
+              <Text>This course only has Adapt data.</Text>
+            }
+            {state.ltCourse && state.adaptCourse &&
+              <Text>This course has LibreText and Adapt data.</Text>
+            }
           </Box>
-        )}
-      </Tabs>
+        }
+
+
       </Grommet>
     </>
   );

@@ -13,7 +13,16 @@ import {
   Label,
   ResponsiveContainer,
 } from "recharts";
-import { Box, Button, Grid, Layer, Select, Spinner, Text, RangeInput } from "grommet";
+import {
+  Box,
+  Button,
+  Grid,
+  Layer,
+  Select,
+  Spinner,
+  Text,
+  RangeInput,
+} from "grommet";
 import { Filter, Close, FormClose } from "grommet-icons";
 import TitleText from "./titleWithInfo.js";
 import InfoBox from "./collapsible_info_box.js";
@@ -23,7 +32,7 @@ export default function LayeredComponent({
   title,
   infoText,
   filterLabel,
-  filterType="dropdown",
+  filterType = "dropdown",
   state,
   setState,
   component,
@@ -35,22 +44,28 @@ export default function LayeredComponent({
   filterFunction,
   clickFunction,
   selectComponent,
-  disable
+  disable,
+  type,
 }) {
   const [showFilter, setShowFilter] = useState(false);
 
-  var height = "150px"
-  var border = false
+  var height = "150px";
+  var border = false;
   var disableButton = true;
   if (selectComponent) {
-    height="225px"
-    border = true
-    disableButton = disable
+    height = "225px";
+    border = true;
+    disableButton = disable;
   }
 
-  var chartHeight = "510px"
+  var chartHeight = "510px";
   if (title === "Student Metrics Bar Chart" || !data) {
-    chartHeight = ""
+    chartHeight = "";
+  }
+
+  var option = ""
+  if (filterType === "slider") {
+    option = state.sliderValue
   }
 
   return (
@@ -83,11 +98,7 @@ export default function LayeredComponent({
           height={height}
           border={border}
         >
-          <TitleText
-            title={title}
-            text={infoText}
-            topMargin="small"
-          />
+          <TitleText title={title} text={infoText} topMargin="small" />
           {selectComponent}
         </Box>
         <Box
@@ -96,52 +107,19 @@ export default function LayeredComponent({
           direction="row"
           overflowY="scroll"
           responsive={true}
-          border={border}
+          border={(border && data) ? true : false}
           height={chartHeight}
         >
-        {data &&
-          <Button
-            alignSelf="start"
-            secondary
-            onClick={() => setShowFilter(true)}
-            icon={<Filter />}
-            margin={{ top: "small", left: "small" }}
-          />
-        }
-          {filterType === "dropdown" && showFilter && (
-            <Layer
-              onEsc={() => setShowFilter(false)}
-              onClickOutside={() => setShowFilter(false)}
-              position="left"
-              margin={{ left: "large" }}
-            >
-              <Button icon={<Close />} onClick={() => setShowFilter(false)} />
-              <Box direction="column" alignSelf="center" margin="large">
-                <Text size="medium" weight="bold" textAlign="center">
-                  {filterLabel}
-                </Text>
-                <Text>{filterSelectLabel}</Text>
-                <Select
-                  options={filterOptions}
-                  margin={{
-                    right: "medium",
-                    left: "medium",
-                  }}
-                  value={label}
-                  onChange={({ option }) =>
-                    filterFunction(option, state, setState)
-                  }
-                />
-                <Button
-                  primary
-                  label="Apply"
-                  onClick={() => clickFunction(state, setState)}
-                  margin="large"
-                />
-              </Box>
-            </Layer>
+          {data && (
+            <Button
+              alignSelf="start"
+              secondary
+              onClick={() => setShowFilter(true)}
+              icon={<Filter />}
+              margin={{ top: "small", left: "small" }}
+            />
           )}
-          {filterType === "slider" && showFilter && (
+          {showFilter && (
             <Layer
               onEsc={() => setShowFilter(false)}
               onClickOutside={() => setShowFilter(false)}
@@ -153,31 +131,56 @@ export default function LayeredComponent({
                 <Text size="medium" weight="bold" textAlign="center">
                   {filterLabel}
                 </Text>
-                <Text>{filterSelectLabel} {label}</Text>
-                <RangeInput
-                  min={filterOptions[0]}
-                  max={filterOptions[1].length}
-                  margin={{ right: "medium", left: "medium" }}
-                  value={label}
-                  onChange={event => filterFunction("sliderValue", event.target.value, state, setState)}
-                />
-                <Button
-                  primary
-                  label="Apply"
-                  onClick={() => {
-                    filterFunction("numBinsGrades", state.sliderValue, state, setState)
-                  }}
-                  margin="large"
-                />
+                {filterType === "dropdown" && (
+                  <>
+                    <Text>{filterSelectLabel}</Text>
+                    <Select
+                      options={filterOptions}
+                      margin={{
+                        right: "medium",
+                        left: "medium",
+                      }}
+                      value={label}
+                      onChange={({ option }) =>
+                        filterFunction(option, state, setState, type, data)
+                      }
+                    />
+                  </>
+                )}
+                {filterType === "slider" && (
+                  <>
+                    <Text>
+                      {filterSelectLabel} {label}
+                    </Text>
+                    <RangeInput
+                      min={filterOptions[0]}
+                      max={filterOptions[1].length}
+                      margin={{ right: "medium", left: "medium" }}
+                      value={label}
+                      onChange={(event) =>
+                        filterFunction(
+                          state,
+                          setState,
+                          "sliderValue",
+                          event.target.value
+                        )
+                      }
+                    />
+                  </>
+                )}
+                {(type !== "studentAssignments") &&
+                  <Button
+                    primary
+                    label="Apply"
+                    onClick={() => clickFunction(state, setState, type, option, data)}
+                    margin="large"
+                  />
+                }
               </Box>
             </Layer>
           )}
           {disableButton && !data && (
-            <InfoBox
-              infoText={loading}
-              showIcon={true}
-              icon={<Spinner />}
-            />
+            <InfoBox infoText={loading} showIcon={true} icon={<Spinner />} />
           )}
           {data && component}
         </Box>

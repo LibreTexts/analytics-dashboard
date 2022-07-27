@@ -3,7 +3,7 @@ import React from 'react';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Label, ResponsiveContainer } from 'recharts';
 
 export default function GradesPageView({ height, data, range, numberOfBins }) {
-  // Initialize data 
+  // Initialize data
   let dataBins = null;
   const inc = range[1] / numberOfBins
 
@@ -40,7 +40,7 @@ export default function GradesPageView({ height, data, range, numberOfBins }) {
   }
 
   return (
-    <ResponsiveContainer height={chartHeight}>
+    <ResponsiveContainer width="99%" aspect={3}>
       <BarChart
         width={500}
         height={chartHeight}

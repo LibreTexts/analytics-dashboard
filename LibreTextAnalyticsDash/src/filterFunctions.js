@@ -57,9 +57,33 @@ export function reactGrids(state) {
 export function reactRows(state) {
   var rows = ["2/3", "2/3"]
   if (state.ltCourse) {
-    rows.push("auto")
+    rows.push("1/3")
   }
   return rows;
+}
+
+export function sortData(option, state, setState, type, data) {
+  //setState({...state, individualAssignmentSortLabel: option})
+
+  if (option === "Alphabetically") {
+    data = data.sort((a, b) => {
+      return (''+a.level_name).localeCompare(b.level_name)
+    })
+    setState({...state,
+      individualAssignmentSortLabel: option,
+      studentAssignments:
+        data
+    })
+  } else if (option === "By Due Date") {
+    data = data.sort((a, b) => {
+      return (new Date(a.due) - new Date(b.due))
+    })
+    setState({...state,
+      individualAssignmentSortLabel: option,
+      studentAssignments:
+        data
+    })
+  }
 }
 
 export async function handleClick(state, setState, type, queryVariables) {
@@ -86,6 +110,10 @@ export async function handleClick(state, setState, type, queryVariables) {
       dataPath: null,
       disableCourse: true,
       individualAssignmentViews: null,
+      gradesPageView: null,
+      gradeLevelGroup: null,
+      gradeLevelName: null,
+      disableGradesAssignment: false,
       index: 0,
       hasAdapt: false,
       tab: "student",
@@ -93,30 +121,43 @@ export async function handleClick(state, setState, type, queryVariables) {
       levelName: null,
       disableAssignment: false,
       studentAssignments: null,
-      disableStudent: false
+      disableStudent: false,
+      start: null,
+      end: null,
+      studentTab: true,
+      pageTab: false,
+      assignmentTab: false,
+      filterTab: false,
+      reset: false
     }
     setState(tempState)
-    if (!Object.keys(tempState).includes(state.courseId) || type === "refresh") {
+    var courseData = JSON.parse(localStorage.getItem(state.courseId))
+    if ((!courseData || Object.keys(courseData).length < 1) || type === "refresh" ) {
       var configs = []
       configs.push(getAllDataQuery(tempState, setState, "student"))
       //console.log(state)
-      configs.push(getAllDataQuery(tempState, setState, "page"))
-      configs.push(studentChartQuery(tempState, setState))
       if (state.ltCourse) {
+        configs.push(getAllDataQuery(tempState, setState, "page"))
+        configs.push(getObjects(tempState, setState, "page"))
+      }
+      configs.push(studentChartQuery(tempState, setState))
+      //if (state.ltCourse) {
         configs.push(allStudentsQuery(tempState, setState))
         //configs.push(getObjects(tempState, setState, "student"))
-        configs.push(getObjects(tempState, setState, "page"))
-      } else {
-        configs.push(adaptStudentsQuery(tempState, setState))
-      }
+      // } else {
+      //   configs.push(adaptStudentsQuery(tempState, setState))
+      // }
       configs.push(pageViewQuery(tempState, setState))
       configs.push(adaptLevels(tempState, setState))
       configs.push(courseStructureDropdown(tempState, setState))
       await getData(configs, tempState, setState)
     } else {
-      var allKeys = Object.keys(tempState[state.courseId])
+      // var allKeys = Object.keys(tempState[state.courseId])
+      var courseData = JSON.parse(localStorage.getItem(state.courseId))
+      console.log(courseData)
+      var allKeys = Object.keys(courseData)
       allKeys.forEach((key) => {
-        tempState[key] = tempState[state.courseId][key]
+        tempState[key] = courseData[key]
       })
       setState({
         ...tempState
@@ -127,9 +168,10 @@ export async function handleClick(state, setState, type, queryVariables) {
   }
 }
 
-export function handleFilterClick(state, setState, path = false) {
-  setState({
-    ...state,
+export async function handleFilterClick(state, setState, path = false) {
+  var tempState = JSON.parse(JSON.stringify(state));
+  tempState = {
+    ...tempState,
     openFilter: false,
     showTableFilters: false,
     resetPath: false,
@@ -141,18 +183,51 @@ export function handleFilterClick(state, setState, path = false) {
     page: null,
     disablePage: false,
     individualPageViews: null
-  })
-  if (path) {
-    setState({
-      ...state,
-      chosenPath: path
-    })
   }
+  if (path) {
+    tempState["chosenPath"] = path;
+  }
+  setState(tempState)
 
-  getAggregateData(state, setState);
-  getPageViewData(state, setState);
-  getStudentChartData(state, setState);
-  getObjectList(state, setState);
+  // getAggregateData(state, setState);
+  // getPageViewData(state, setState);
+  // getStudentChartData(state, setState);
+  // getObjectList(state, setState);
+
+  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  //if () {
+    var configs = []
+    configs.push(getAllDataQuery(tempState, setState, "student"))
+    //console.log(state)
+    if (state.ltCourse) {
+      configs.push(getAllDataQuery(tempState, setState, "page"))
+      configs.push(getObjects(tempState, setState, "page"))
+    }
+
+    configs.push(studentChartQuery(tempState, setState))
+    //if (state.ltCourse) {
+      configs.push(allStudentsQuery(tempState, setState))
+      //configs.push(getObjects(tempState, setState, "student"))
+
+    // } else {
+    //   configs.push(adaptStudentsQuery(tempState, setState))
+    // }
+    configs.push(pageViewQuery(tempState, setState))
+    configs.push(adaptLevels(tempState, setState))
+    configs.push(courseStructureDropdown(tempState, setState))
+    await getData(configs, tempState, setState)
+  // } else {
+  //   // var allKeys = Object.keys(tempState[state.courseId])
+  //   var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  //   console.log(courseData)
+  //   var allKeys = Object.keys(courseData)
+  //   allKeys.forEach((key) => {
+  //     tempState[key] = courseData[key]
+  //   })
+  //   setState({
+  //     ...tempState
+  //   })
+  // }
 }
 
 export function handleIndividual(state, setState, type) {
@@ -163,22 +238,21 @@ export function handleIndividual(state, setState, type) {
     } else {
       tempState["studentAssignments"] = null
       tempState["disableStudent"] = true
-      setState(tempState)
+      //setState(tempState)
     }
   } else if (state.tab === "page") {
     tempState["individualPageViews"] = null
     tempState["disablePage"] = true
-    setState(tempState)
+    //setState(tempState)
   } else if (state.tab === "assignment") {
     tempState["individualAssignmentViews"] = null
     tempState["disableAssignment"] = true
-    setState(tempState)
+    //setState(tempState)
   }
   if (type === "studentAssignments") {
-    var s = getStudentAssignments(tempState, setState)
-    setState(s);
+    getStudentAssignments(tempState, setState)
   } else {
-    setState(getIndividualPageViewData(tempState, setState));
+    getIndividualPageViewData(tempState, setState)
   }
 }
 
@@ -226,36 +300,55 @@ export function changeBarYAxis(option, state, setState) {
   }
 }
 
-export function changeBinVal(option, state, setState) {
+export function changeBinVal(option, state, setState, type) {
+  var tempState = JSON.parse(JSON.stringify(state));
+  var courseData = JSON.parse(localStorage.getItem(state.courseId));
+  var bin = "bin";
+  var binLabel = "binLabel";
+  var unit = "unit";
+
+  if (type === "individualPageViews") {
+    bin = "individualPageBin"
+    binLabel = "individualPageBinLabel"
+    unit = "individualPageUnit"
+  } else if (type === "individualAssignmentViews") {
+    bin = "individualAssignmentBin"
+    binLabel = "individualAssignmentBinLabel"
+    unit = "individualAssignmentUnit"
+  }
   if (option === "Day") {
+    tempState[bin] = 1
+    tempState[binLabel] = option
+    tempState[unit] = "day"
     setState({
-      ...state,
-      binLabel: option,
-      unit: "day",
-      bin: 1
+      ...tempState
     })
   } else if (option === "Week") {
+    tempState[bin] = 1
+    tempState[binLabel] = option
+    tempState[unit] = "week"
     setState({
-      ...state,
-      binLabel: option,
-      unit: "week",
-      bin: 1
+      ...tempState
     })
   } else if (option === "2 Weeks") {
+    tempState[bin] = 2
+    tempState[binLabel] = option
+    tempState[unit] = "week"
     setState({
-      ...state,
-      binLabel: option,
-      unit: "week",
-      bin: 2
+      ...tempState
     })
   } else if (option === "Month") {
+    tempState[bin] = 1
+    tempState[binLabel] = option
+    tempState[unit] = "month"
     setState({
-      ...state,
-      binLabel: option,
-      unit: "month",
-      bin: 1
+      ...tempState
     })
   }
+  courseData[bin] = tempState[bin]
+  courseData[binLabel] = tempState[binLabel]
+  courseData[unit] = tempState[unit]
+  localStorage.setItem(state.courseId, JSON.stringify(courseData))
 }
 
 export function filterDates(allDates, date, type) {
@@ -273,12 +366,18 @@ export function filterDates(allDates, date, type) {
 }
 
 export function handleChange(type, value, state, setState, realCourses, queryVariables) {
+  console.log("handleChange", state)
+  var courseData = JSON.parse(localStorage.getItem(state.courseId))
   if (type === "start") {
     setState({
       ...state,
       start: value,
       disable: false
     })
+    courseData["start"] = value;
+    courseData["filters"].push({start: value})
+    courseData["disable"] = false;
+    localStorage.setItem(state.courseId, JSON.stringify(courseData));
   }
   if (type === "end") {
     setState({
@@ -288,6 +387,7 @@ export function handleChange(type, value, state, setState, realCourses, queryVar
     })
   }
   if (type === "courseId") {
+    console.log(state.disableCourse)
     setState({
       ...state,
       page: null,
@@ -303,7 +403,13 @@ export function handleChange(type, value, state, setState, realCourses, queryVar
       end: null,
       ltCourse: realCourses[value].ltCourse,
       adaptCourse: realCourses[value].adaptCourse,
-      hasAdapt: realCourses[value].adaptCourse
+      hasAdapt: realCourses[value].adaptCourse,
+      index: 0,
+      tab: "student",
+      studentTab: true,
+      pageTab: false,
+      assignmentTab: false,
+      filterTab: false
     })
     queryVariables.setClick(false)
   }
@@ -338,7 +444,7 @@ export function handleChange(type, value, state, setState, realCourses, queryVar
   } else if (type === "pageLevelName") {
     setState({
       ...state,
-      individualAssignmentViews: null,
+      //individualAssignmentViews: null,
       levelName: value,
       disableAssignment: false
     })
@@ -351,7 +457,7 @@ export function handleChange(type, value, state, setState, realCourses, queryVar
   } else if (type === "gradesPageLevelName") {
     setState({
       ...state,
-      gradesPageView: null,
+      //gradesPageView: null,
       gradeLevelName: value,
       disableGradesAssignment: false,
     })
@@ -423,7 +529,7 @@ export function handleTabs(value, state, setState, queryVariables) {
   }
 }
 
-export function clearDates(event, state, setState) {
+export function clearDates(state, setState) {
   setState({
     ...state,
     start: null,
@@ -542,16 +648,19 @@ export function changeActivityFilter(option, data, state, setState) {
   // }
 }
 
-export function pageViewCharts(state, setState) {
+export function pageViewCharts(state, setState, type) {
   setState({
     ...state,
     gridHeight: "large"
   })
-  getPageViewData(state, setState);
-  getIndividualPageViewData(state, setState);
+  if (type === "aggregatePageViews") {
+    getPageViewData(state, setState);
+  } else if (type === "individualPageViews") {
+    getIndividualPageViewData(state, setState);
+  }
 }
 
-export function changePropValue(prop, option, state, setState) {
+export function changePropValue(state, setState, prop, option) {
   let tempState = JSON.parse(JSON.stringify(state))
   tempState[prop] = option
   setState({
@@ -561,9 +670,10 @@ export function changePropValue(prop, option, state, setState) {
 
 // 7/15 Robert
 export function handleGrade(state, setState, type) {
+  let tempState = JSON.parse(JSON.stringify(state))
+  tempState["disableGradesAssignment"] = true
   setState({
-    ...state,
-    disableGradesAssignment: true,
+    ...tempState
   })
-  getGradesPageViewData(state, setState);
+  getGradesPageViewData(tempState, setState);
 }

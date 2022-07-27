@@ -1,5 +1,12 @@
 function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
+  //find the adapt code for the lt course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
+  var course = codeFound;
+  if (!codeFound) {
+    course = params.courseId
+  } else {
+    course = codeFound.code
+  }
 
   var data = {
     "collection": dbInfo.adaptColl,
@@ -10,7 +17,7 @@ function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
         "$match": {
           '$expr': {
             '$and': [
-              { '$eq': ["$class", codeFound.code] },
+              { '$eq': ["$class", course] },
               { '$eq': ["$level_name", params.levelName] }
             ]
           }

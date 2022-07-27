@@ -44,7 +44,7 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
             'due': '$due',
             'points' : {
               "$cond" : {
-                'if': {'$eq': ['$outcome', "CORRECT"]},
+                'if': {'$and': [{'$ne': ['$problem_points', ""]}, {'$eq': ['$outcome', "CORRECT"]}]},
                 'then': {
                   "$convert" : {
                     'input' : '$problem_points',

@@ -56,25 +56,37 @@ export function getStudentAssignments(state, setState) {
     studentAssignments: null
   })
   tempState["studentAssignments"] = null
-  axios({
-    method: "post",
-    url: state.homepage + "/studentassignments",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    data: {
-      courseId: state.courseId,
-      individual: state.student
-    },
-  }).then((response) => {
-    var d = JSON.parse(response.data)
-    var key = Object.keys(d)[0]
-    var value = d[key]
-    tempState[key] = value
+  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  console.log(courseData)
+  if (!Object.keys(courseData).includes(state.student)) {
+    axios({
+      method: "post",
+      url: state.homepage + "/studentassignments",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        courseId: state.courseId,
+        individual: state.student
+      },
+    }).then((response) => {
+      var d = JSON.parse(response.data)
+      var key = Object.keys(d)[0]
+      var value = d[key]
+      tempState[key] = value
+      courseData[state.student] = value
+      localStorage.setItem(state.courseId, JSON.stringify(courseData))
+      //console.log(tempState)
+      setState({
+        ...tempState
+      })
+    });
+  } else {
+    tempState["studentAssignments"] = courseData[state.student]
     setState({
       ...tempState
     })
-  });
+  }
   return tempState;
 }
 
@@ -85,25 +97,38 @@ export function getGradesPageViewData(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state));
   tempState = {
     ...tempState,
-    totalPageViews: null
+    gradesPageView: null
   }
-  axios({
-    method: 'post',
-    url: state.homepage + '/gradepageviews',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    data: {
-      courseId: state.courseId,
-      levelGroup: state.gradeLevelGroup,
-      levelName: state.gradeLevelName
-    },
+  setState({
+    ...tempState
   })
-  .then(response => {
-    tempState = {
-      ...tempState,
-      gradesPageView: JSON.parse(response.data)["documents"]
-    }
-    setState(tempState);
-  });
+  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  if (!Object.keys(courseData).includes("grades"+state.gradeLevelGroup+state.gradeLevelName)) {
+    axios({
+      method: 'post',
+      url: '/gradepageviews',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        courseId: state.courseId,
+        levelGroup: state.gradeLevelGroup,
+        levelName: state.gradeLevelName
+      },
+    })
+    .then(response => {
+      tempState = {
+        ...tempState,
+        gradesPageView: JSON.parse(response.data)["documents"]
+      }
+      setState(tempState);
+      courseData["grades"+state.gradeLevelGroup+state.gradeLevelName] = JSON.parse(response.data)["documents"]
+      localStorage.setItem(state.courseId, JSON.stringify(courseData))
+    });
+  } else {
+    tempState["gradesPageView"] = courseData["grades"+state.gradeLevelGroup+state.gradeLevelName]
+    setState({
+      ...tempState
+    })
+  }
 }

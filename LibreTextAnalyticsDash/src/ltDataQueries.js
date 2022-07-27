@@ -16,6 +16,7 @@ export async function getData(data, state, setState) {
         console.log("key", key)
         tempState[key] = value
         courseData[key] = value
+        courseData["filters"] = []
         tempState["display"] = true
         tempState["disableCourse"] = true
         tempState["showInfoBox"] = false
@@ -104,6 +105,7 @@ export async function getData(data, state, setState) {
       })
     )
   }
+  localStorage.setItem(course, JSON.stringify(courseData))
   tempState[course] = courseData;
   Promise.all(promises).then(() => setState({...tempState}));
 }
@@ -147,7 +149,8 @@ export function getAllDataQuery(state, setState, type) {
 
 export function allStudentsQuery(state, setState) {
   var data = {
-    courseId: state.courseId
+    courseId: state.courseId,
+    ltCourse: state.ltCourse
   }
   var config = getAxiosCall("/allstudents", data, state)
   return config;
@@ -282,22 +285,23 @@ export async function getAggregateData(state, setState) {
       adaptLevelName: state.levelName
     },
   }).then((response) => {
-    d["student"] = JSON.parse(response.data)["documents"];
-    console.log(JSON.parse(response.data)["documents"]);
+    d["student"] = JSON.parse(response.data)["studentData"];
+    console.log(JSON.parse(response.data)["studentData"]);
     // setState({
     //   ...state,
     //   studentResult: JSON.parse(response.data)["documents"],
     //   display: true
     // })
-    studentResult = JSON.parse(response.data)["documents"]
+    studentResult = JSON.parse(response.data)["studentData"]
     tempState = {
       ...tempState,
-      studentResult: JSON.parse(response.data)["documents"],
+      studentResult: JSON.parse(response.data)["studentData"],
       display: true
     }
     // state.setStudentResult(JSON.parse(response.data)["documents"]);
     // state.setDisplay(true);
     if (
+      d["student"] &&
       Object.keys(d["student"][0]).includes("adapt") &&
       d["student"][0]["adapt"] !== false
     ) {
@@ -368,16 +372,16 @@ export async function getAggregateData(state, setState) {
       tagTitle: state.tagTitle,
     },
   }).then((response) => {
-    d["page"] = JSON.parse(response.data)["documents"];
+    d["page"] = JSON.parse(response.data)["pageData"];
     // setState({
     //   ...state,
     //   pageResult: JSON.parse(response.data)["documents"],
     //   display: true
     // })
-    pageResult = JSON.parse(response.data)["documents"];
+    pageResult = JSON.parse(response.data)["pageData"];
     tempState = {
       ...tempState,
-      pageResult: JSON.parse(response.data)["documents"],
+      pageResult: JSON.parse(response.data)["pageData"],
       display: true
     }
     //console.log(tempState)
@@ -425,7 +429,8 @@ export async function getObjectList(state, setState) {
       path: state.dataPath,
     },
   }).then((response) => {
-    var d = JSON.parse(response.data)["documents"];
+    console.log("inside", JSON.parse(response.data))
+    var d = JSON.parse(response.data)["studentTimelineData"];
     //state.setStudentDates(d);
     d.forEach((s) => students.push(s._id));
     //state.setAllStudents(students)
@@ -457,7 +462,8 @@ export async function getObjectList(state, setState) {
       path: state.dataPath,
     },
   }).then((response) => {
-    var d = JSON.parse(response.data)["documents"];
+    console.log("inside", JSON.parse(response.data))
+    var d = JSON.parse(response.data)["pageTimelineData"];
     d.forEach((s) => {
       if (s.pageTitle !== undefined) {
         pages.push(s.pageTitle);
@@ -514,7 +520,7 @@ export async function getStudentChartData(state, setState) {
     // })
     tempState = {
       ...tempState,
-      studentChartData: JSON.parse(response.data)["documents"]
+      studentChartData: JSON.parse(response.data)["studentChart"]
     }
     //state.setStudentChartData(JSON.parse(response.data)["documents"]);
   });
@@ -524,41 +530,51 @@ export async function getStudentChartData(state, setState) {
 export async function getPageViewData(state, setState) {
   //state.setTotalPageViews(null);
   var tempState = JSON.parse(JSON.stringify(state))
-  console.log(state.click)
-  // setState({
-  //   ...state,
-  //   totalPageViews: null
-  // })
+
   tempState = {
     ...tempState,
-    totalPageViews: null
+    pageViews: null
   }
-  await axios({
-    method: "post",
-    url: state.homepage+"/pageviews",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    data: {
-      bin: state.bin,
-      unit: state.unit,
-      course: state.course,
-      courseId: state.courseId,
-      start: state.start,
-      end: state.end,
-      path: state.dataPath,
-    },
-  }).then((response) => {
-    // setState({
-    //   ...state,
-    //   totalPageViews: JSON.parse(response.data)["documents"]
-    // })
-    tempState = {
-      ...tempState,
-      totalPageViews: JSON.parse(response.data)["documents"]
-    }
-    //state.setTotalPageViews(response.data);
-  });
+  setState({
+    ...tempState
+  })
+  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  if (!Object.keys(courseData).includes("aggregate"+state.bin+state.unit)) {
+    await axios({
+      method: "post",
+      url: state.homepage+"/pageviews",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        bin: state.bin,
+        unit: state.unit,
+        course: state.course,
+        courseId: state.courseId,
+        start: state.start,
+        end: state.end,
+        path: state.dataPath,
+      },
+    }).then((response) => {
+      tempState = {
+        ...tempState,
+        pageViews: JSON.parse(response.data)["pageViews"]
+      }
+      courseData["aggregate"+state.bin+state.unit] = JSON.parse(response.data)["pageViews"]
+      courseData["pageViews"] = JSON.parse(response.data)["pageViews"]
+      localStorage.setItem(state.courseId, JSON.stringify(courseData))
+      setState({
+        ...tempState
+      })
+    });
+  } else {
+    tempState["pageViews"] = courseData["aggregate"+state.bin+state.unit]
+    setState({
+      ...tempState
+    })
+    courseData["pageViews"] = courseData["aggregate"+state.bin+state.unit]
+    localStorage.setItem(state.courseId, JSON.stringify(courseData))
+  }
   return tempState;
 }
 
@@ -575,6 +591,8 @@ export function getIndividualPageViewData(state, setState) {
     var p = state.page;
     var lgroup = null;
     var lname = null;
+    var bin = state.individualPageBin;
+    var unit = state.individualPageUnit;
   } else if (state.tab === "assignment") {
     setState({
       ...state,
@@ -584,33 +602,67 @@ export function getIndividualPageViewData(state, setState) {
     var lgroup = state.levelGroup;
     var lname = state.levelName;
     var p = null;
+    var bin = state.individualAssignmentBin;
+    var unit = state.individualAssignmentUnit;
   }
-  axios({
-    method: "post",
-    url: state.homepage+"/individualpageviews",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    data: {
-      bin: state.bin,
-      unit: state.unit,
-      courseId: state.courseId,
-      start: state.start,
-      end: state.end,
-      path: state.dataPath,
-      individual: p,
-      levelGroup: lgroup,
-      levelName: lname,
-    },
-  }).then((response) => {
-      var d = JSON.parse(response.data)
-      var key = Object.keys(d)[0]
-      var value = d[key]
-      tempState[key] = value
-      //tempState["disablePage"] = true
-      setState(tempState)
-  });
-  return state;
+  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  if ((p !== null && !Object.keys(courseData).includes(bin+unit+p)) ||
+      (p === null && !Object.keys(courseData).includes("individual"+bin+unit+lgroup+lname))) {
+        console.log("not in local storage")
+    axios({
+      method: "post",
+      url: state.homepage+"/individualpageviews",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        bin: bin,
+        unit: unit,
+        courseId: state.courseId,
+        start: state.start,
+        end: state.end,
+        path: state.dataPath,
+        individual: p,
+        levelGroup: lgroup,
+        levelName: lname,
+      },
+    }).then((response) => {
+        var d = JSON.parse(response.data)
+        var key = Object.keys(d)[0]
+        var value = d[key]
+        tempState[key] = value
+        console.log(key)
+        console.log(tempState[key])
+        //tempState["disablePage"] = true
+        //setState(tempState)
+        if (p !== null) {
+          courseData[bin+unit+p] = value
+        } else {
+          courseData["individual"+bin+unit+lgroup+lname] = value
+        }
+        setState({
+          ...tempState
+        })
+        localStorage.setItem(state.courseId, JSON.stringify(courseData))
+    });
+  } else {
+    console.log("found in local storage")
+    if (p !== null) {
+      tempState["individualPageViews"] = courseData[bin+unit+p]
+      console.log(tempState["individualPageViews"])
+    } else {
+      tempState["individualAssignmentViews"] = courseData["individual"+bin+unit+lgroup+lname]
+      console.log(tempState["individualAssignmentViews"])
+    }
+    setState({
+      ...tempState
+    })
+  }
+  // setState({
+  //   ...tempState
+  // })
+  // console.log(tempState)
+  // return tempState;
 }
 
 function calculateCourseStructure(data) {

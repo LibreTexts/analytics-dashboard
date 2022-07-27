@@ -160,6 +160,9 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
               'attemptsOverall': {
                 '$push': '$attemptsPerLevel'
               },
+              'assignments': {
+                '$addToSet': '$_id.level'
+              }
             }
           },
           {
@@ -198,7 +201,7 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
                 '$size': '$dates'
               },
               'adaptUniqueAssignments': {
-                '$size': '$page_ids'
+                '$size': '$assignments'
               }
             }
           },
@@ -300,8 +303,8 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
             "mostRecentAdaptLoad": '$adapt.mostRecentAdaptLoad',
             "adaptPercent": '$adapt.adaptPercent',
             "adaptAttempts": '$adapt.adaptAttempts',
-            "adaptAvgAttempts": '$adapt.adaptAvgAttempts',
-            "adaptAvgPercentScore": '$adapt.adaptAvgPercentScore',
+            "adaptAvgAttempts": {'$round': ['$adapt.adaptAvgAttempts', 1]},
+            "adaptAvgPercentScore": {'$round': [{'$multiply': ['$adapt.adaptAvgPercentScore', 100]}, 1]},
           }
         }
     ]}

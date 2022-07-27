@@ -7,6 +7,8 @@ export default function MultiSelect({
   data,
   pathLength,
   levels,
+  state,
+  setState,
   //chosenPath,
   //setChosenPath,
   filterClick,
@@ -129,7 +131,7 @@ export default function MultiSelect({
     setChosenPath(event.key);
     //console.log(chosenPath)
     //filterClick(event)
-    handleChange("path", event.key);
+    handleChange("path", event.key, state, setState);
   }
 
   // <Box>
@@ -165,7 +167,7 @@ export default function MultiSelect({
         color="#022851"
         margin={{ horizontal: "large" }}
         onClick={(event) => {
-          filterClick(event, chosenPath);
+          filterClick(state, setState, chosenPath);
         }}
       />
     </Box>

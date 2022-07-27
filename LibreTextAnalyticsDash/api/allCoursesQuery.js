@@ -63,7 +63,8 @@ function allCoursesQuery(dbInfo) {
                     '$not': {
                       '$or': [
                         {'$regexFind': {'input': '$$this', 'regex': "#"}},
-                        {'$regexFind': {'input': '$$this', 'regex': "3A"}}
+                        {'$regexFind': {'input': '$$this', 'regex': "3A"}},
+                        {'$regexFind': {'input': '$$this', 'regex': "\\?"}}
                       ]
                     }
                   }

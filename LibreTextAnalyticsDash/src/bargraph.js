@@ -10,7 +10,7 @@ import {
   Legend,
   Bar,
   Label,
-  ResponsiveContainer,
+  ResponsiveContainer
 } from "recharts";
 import { Box, Notification } from "grommet";
 import { infoText } from "./allInfoText.js";
@@ -44,10 +44,6 @@ export default class BarGraph extends React.Component {
       if (props.payload[0] != null) {
         const newPayload = [
           {
-            name: name,
-            value: props.payload[0].payload._id.student,
-          },
-          {
             name: "Percent Earned",
             value: props.payload[0].payload.percent+"%",
           },
@@ -76,7 +72,7 @@ export default class BarGraph extends React.Component {
     };
     if (this.props.data && this.props.data.length > 0) {
       return (
-        <ResponsiveContainer height={510} width={1250}>
+        <ResponsiveContainer width="99%" aspect={3}>
           <BarChart
             width={550}
             height={375}

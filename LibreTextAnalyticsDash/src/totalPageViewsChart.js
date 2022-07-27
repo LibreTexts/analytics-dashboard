@@ -26,11 +26,13 @@ export default class PageViews extends React.Component {
     }
     var type = this.props.type;
     var label = "Pages Viewed";
+    var aspect = 4
     if (type === "individual") {
       label = "Total Views";
+      aspect = 3
     }
     return (
-      <ResponsiveContainer height={height}>
+      <ResponsiveContainer width="99%" aspect={aspect}>
         <BarChart
           width={500}
           height={height}

@@ -26,16 +26,19 @@ export default function DataTable({
     var column3Label = "Total Page Views";
     var idAccessor = "_id";
     var filename = "student-data.csv";
+    var pageLength = 8;
   } else if (tab === "student" && displayMode) {
     var column2Label = "Unique Pages Accessed";
     var column3Label = "Total Page Views";
     var idAccessor = "displayModeStudent";
     var filename = "student-data.csv";
+    var pageLength = 8;
   } else if (tab === "page") {
     var column3Label = "Number of Times Viewed";
     var column2Label = "Total Students Who Viewed";
     var idAccessor = "pageTitle";
     var filename = "page-data.csv";
+    var pageLength = 9;
   }
 
   if (tab === "student") {
@@ -372,7 +375,7 @@ export default function DataTable({
         filterAll: true
       },
       {
-        Header: <Tip content="Average Attempts Per Assignment">Average Percent Per Assignment</Tip>,
+        Header: <Tip content="Average Attempts Per Assignment">Average Attempts Per Assignment</Tip>,
         headerClassName: "adapt-data wordwrap",
         accessor: "adaptAvgAttempts",
         show: true,
@@ -390,7 +393,7 @@ export default function DataTable({
       }
     );
   }
-  
+
   return (
     <>
       <ReactTable
@@ -404,6 +407,7 @@ export default function DataTable({
         columns={columns}
         style={{ textAlign: "center", overflow: "hidden" }}
         minRows={1}
+        defaultPageSize={pageLength}
         gridArea="table"
         filterable={true}
         getTrProps={getTrProps}

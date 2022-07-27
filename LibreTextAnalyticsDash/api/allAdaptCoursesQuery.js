@@ -9,7 +9,8 @@ function allAdaptCoursesQuery(dbInfo) {
       {
         "$group": {
           '_id': "$class_name",
-          'course': {'$first': "$class"}
+          'course': {'$first': "$class"},
+          'students': {'$addToSet': "$anon_student_id"}
         }
       },
       {

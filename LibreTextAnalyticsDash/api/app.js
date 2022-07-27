@@ -167,14 +167,21 @@ function getRequest(queryString) {
       adaptCourses = response.data['documents']
       let courses = {};
       adaptCourses.forEach((course) => {
-        courses[course._id] = course.course
+        var name = course._id.toLowerCase()
+        var demoCourse = false
+        if (name.includes("test") || name.includes("demo") || name.includes("sandbox") || course.students.length < 5) {
+          demoCourse = true
+        }
+        if (course._id !== "" && !demoCourse) {
+          courses[course._id] = course.course
+        }
       })
       Object.keys(courses).forEach((course) => {
         var codeFound = adaptCodes.find(o => o.code === courses[course])
         if (codeFound) {
           delete courses[course]
         } else {
-          courses["ltCourse"] = false
+          courses[course]["ltCourse"] = false
         }
       })
       adaptCourses = courses;
