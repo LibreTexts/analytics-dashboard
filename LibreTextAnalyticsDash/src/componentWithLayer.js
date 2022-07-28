@@ -59,7 +59,7 @@ export default function LayeredComponent({
   }
 
   var chartHeight = "510px";
-  if (title === "Student Metrics Bar Chart" || !data) {
+  if (title === "Student Metrics" || !data) {
     chartHeight = "";
   }
 

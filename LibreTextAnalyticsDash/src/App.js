@@ -410,7 +410,7 @@ function App() {
                         {state.studentData && click && state.display && state.ltCourse && (
                           <LayeredComponent
                             gridArea="plots"
-                            title="Student Metrics Bar Chart"
+                            title="Student Metrics"
                             infoText={infoText.studentMetricsBarChart}
                             filterLabel="Bar Chart Display Filters"
                             state={state}
@@ -428,7 +428,7 @@ function App() {
                                 xaxisLabel={state.barXAxisLabel}
                                 yaxis={state.barYAxis}
                                 yaxisLabel={state.barYAxisLabel}
-                                width={1000}
+                                width="90%"
                                 displayMode={state.displayMode}
                               />
                             }
@@ -441,8 +441,8 @@ function App() {
                               "Most Recent Page Load",
                             ]}
                             filterSelectLabel="Data:"
-                            filterFunction={state.changeBarXAxis}
-                            clickFunction={state.getStudentChartData}
+                            filterFunction={changeBarXAxis}
+                            clickFunction={getStudentChartData}
                           />
                         )}
                         {click && state.allStudents && (state.hasAdapt || state.adaptCourse) && (
@@ -574,7 +574,7 @@ function App() {
                             gridArea="timeline"
                             disable={state.disablePage}
                             loading={infoText.loadingMessage}
-                            title="Individual Page Metrics Bar Chart"
+                            title="Individual Page Metrics"
                             infoText={infoText.individualPageViewsChart}
                             filterLabel="Bar Chart Display Filters"
                             state={state}

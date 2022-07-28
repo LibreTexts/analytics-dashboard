@@ -31,7 +31,6 @@ export default function StudentChart({
   const [leftMargin, setLeftMargin] = React.useState(30);
   const [activeIndex, setActiveIndex] = React.useState(-1);
   //console.log(data)
-
   if (xaxisLabel === "Most Recent Page Load") {
     data.forEach((student) => {
       student["_id"] = String(student["_id"]).split("T")[0];
@@ -56,7 +55,7 @@ export default function StudentChart({
     data = data.filter((element) => {
       return element !== undefined;
     });
-    setNewWidth(450);
+    setNewWidth("45%");
     setLeftMargin(10);
     setStudentData(data);
   }
@@ -91,7 +90,7 @@ export default function StudentChart({
           data={data}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="_id">
+          <XAxis dataKey="_id" interval="preserveStartEnd">
             <Label value={xaxisLabel} position="bottom" />
           </XAxis>
           <YAxis dataKey="count">

@@ -491,13 +491,13 @@ export async function getObjectList(state, setState) {
 export async function getStudentChartData(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state))
   //state.setStudentChartData(null);
-  // setState({
-  //   ...state,
-  //   studentChartData: null
-  // })
+  setState({
+    ...state,
+    studentChart: null
+  })
   tempState = {
     ...tempState,
-    studentChartData: null
+    studentChart: null
   }
   await axios({
     method: "post",
@@ -520,8 +520,11 @@ export async function getStudentChartData(state, setState) {
     // })
     tempState = {
       ...tempState,
-      studentChartData: JSON.parse(response.data)["studentChart"]
+      studentChart: JSON.parse(response.data)["studentChart"]
     }
+    setState({
+      ...tempState
+    })
     //state.setStudentChartData(JSON.parse(response.data)["documents"]);
   });
   return tempState;
