@@ -417,17 +417,17 @@ app.post('/adaptstudents', (req,res,next) => {
 
 app.post('/studentchart', (req,res,next) => {
   let queryString = studentChart.studentChartQuery(req.body, dbInfo);
-  var pages = pageCountData.find((o) => o._id === req.body.courseId);\
+  var pages = pageCountData.find((o) => o._id === req.body.courseId);
   var maxPageCount = pages.pageCount;
   var isAdaptXAxis = req.body.adaptAxisValue;
   if (isAdaptXAxis) {
     var course = adaptCodes.find(o => o.course === req.body.courseId);
     course = course.code;
     queryString = adaptStudentChart.adaptStudentChartQuery(req.body, dbInfo, adaptCodes);
-    var assignments = assignmentCountData.find(o => o._id === course);\
+    var assignments = assignmentCountData.find(o => o._id === course);
     maxPageCount = assignments.assignmentCount;
   }
-  var groupBy = req.body.groupBy;\
+  var groupBy = req.body.groupBy;
   let config = getRequest(queryString);
   var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
   axios(config)
