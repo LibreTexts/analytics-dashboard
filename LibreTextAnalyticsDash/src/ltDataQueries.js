@@ -1,4 +1,5 @@
 import axios from "axios";
+import { writeToLocalStorage } from "./filterFunctions.js";
 
 export async function getData(data, state, setState) {
   var promises = []
@@ -105,7 +106,8 @@ export async function getData(data, state, setState) {
       })
     )
   }
-  localStorage.setItem(course, JSON.stringify(courseData))
+  writeToLocalStorage(course, courseData)
+  //localStorage.setItem(course, JSON.stringify(courseData))
   tempState[course] = courseData;
   Promise.all(promises).then(() => setState({...tempState}));
 }
@@ -180,6 +182,8 @@ export function studentChartQuery(state, setState) {
     start: state.start,
     end: state.end,
     path: state.dataPath,
+    hasAdapt: state.hasAdapt,
+    adaptAxisValue: state.adaptStudentChartVal
   }
 
   var config = getAxiosCall("/studentchart", data, state)
@@ -499,34 +503,56 @@ export async function getStudentChartData(state, setState) {
     ...tempState,
     studentChart: null
   }
-  await axios({
-    method: "post",
-    url: state.homepage+"/studentchart",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    data: {
-      course: state.course,
-      courseId: state.courseId,
-      groupBy: state.barXAxis,
-      start: state.start,
-      end: state.end,
-      path: state.dataPath,
-    },
-  }).then((response) => {
-    // setState({
-    //   ...state,
-    //   studentChartData: JSON.parse(response.data)["documents"]
-    // })
-    tempState = {
-      ...tempState,
-      studentChart: JSON.parse(response.data)["studentChart"]
-    }
+  var courseData = {}
+  if (Object.keys(localStorage).includes(state.courseId)) {
+    var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  }
+  var adaptAxisValue = state.adaptStudentChartVal ? "adapt" : "lt"
+  if (!Object.keys(courseData).includes(adaptAxisValue+state.barXAxis+"studentChart")) {
+    await axios({
+      method: "post",
+      url: state.homepage+"/studentchart",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        course: state.course,
+        courseId: state.courseId,
+        groupBy: state.barXAxis,
+        start: state.start,
+        end: state.end,
+        path: state.dataPath,
+        hasAdapt: state.hasAdapt,
+        adaptAxisValue: state.adaptStudentChartVal
+      },
+    }).then((response) => {
+      // setState({
+      //   ...state,
+      //   studentChartData: JSON.parse(response.data)["documents"]
+      // })
+      courseData[adaptAxisValue+state.barXAxis+"studentChart"] = JSON.parse(response.data)["studentChart"]
+      courseData["studentChart"] = JSON.parse(response.data)["studentChart"]
+      //localStorage.setItem(state.courseId, JSON.stringify(courseData))
+      writeToLocalStorage(state.courseId, courseData)
+
+      tempState = {
+        ...tempState,
+        studentChart: JSON.parse(response.data)["studentChart"]
+      }
+      setState({
+        ...tempState
+      })
+      //state.setStudentChartData(JSON.parse(response.data)["documents"]);
+    });
+  } else {
+    tempState["studentChart"] = courseData[adaptAxisValue+state.barXAxis+"studentChart"]
     setState({
       ...tempState
     })
-    //state.setStudentChartData(JSON.parse(response.data)["documents"]);
-  });
+    courseData["studentChart"] = courseData[adaptAxisValue+state.barXAxis+"studentChart"]
+    writeToLocalStorage(state.courseId, courseData)
+    //localStorage.setItem(state.courseId, JSON.stringify(courseData))
+  }
   return tempState;
 }
 
@@ -541,7 +567,10 @@ export async function getPageViewData(state, setState) {
   setState({
     ...tempState
   })
-  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  var courseData = {}
+  if (Object.keys(localStorage).includes(state.courseId)) {
+    var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  }
   if (!Object.keys(courseData).includes("aggregate"+state.bin+state.unit)) {
     await axios({
       method: "post",
@@ -565,7 +594,8 @@ export async function getPageViewData(state, setState) {
       }
       courseData["aggregate"+state.bin+state.unit] = JSON.parse(response.data)["pageViews"]
       courseData["pageViews"] = JSON.parse(response.data)["pageViews"]
-      localStorage.setItem(state.courseId, JSON.stringify(courseData))
+      writeToLocalStorage(state.courseId, courseData)
+      //localStorage.setItem(state.courseId, JSON.stringify(courseData))
       setState({
         ...tempState
       })
@@ -576,7 +606,8 @@ export async function getPageViewData(state, setState) {
       ...tempState
     })
     courseData["pageViews"] = courseData["aggregate"+state.bin+state.unit]
-    localStorage.setItem(state.courseId, JSON.stringify(courseData))
+    writeToLocalStorage(state.courseId, courseData)
+    //localStorage.setItem(state.courseId, JSON.stringify(courseData))
   }
   return tempState;
 }
@@ -608,7 +639,10 @@ export function getIndividualPageViewData(state, setState) {
     var bin = state.individualAssignmentBin;
     var unit = state.individualAssignmentUnit;
   }
-  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  var courseData = {}
+  if (Object.keys(localStorage).includes(state.courseId)) {
+    var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  }
   if ((p !== null && !Object.keys(courseData).includes(bin+unit+p)) ||
       (p === null && !Object.keys(courseData).includes("individual"+bin+unit+lgroup+lname))) {
         console.log("not in local storage")
@@ -646,7 +680,8 @@ export function getIndividualPageViewData(state, setState) {
         setState({
           ...tempState
         })
-        localStorage.setItem(state.courseId, JSON.stringify(courseData))
+        writeToLocalStorage(state.courseId, courseData)
+        //localStorage.setItem(state.courseId, JSON.stringify(courseData))
     });
   } else {
     console.log("found in local storage")

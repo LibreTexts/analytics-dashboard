@@ -27,6 +27,35 @@ import {
 
 const FunctionContext = React.createContext();
 
+export function writeToLocalStorage(course, courseData) {
+  //check if the user allows local storage use
+  var localStorage;
+  var success = true;
+  try {
+    localStorage = window.localStorage;
+  } catch(e) {
+    console.log(e)
+    success = false
+    //do everything without using local storage
+  } finally {
+    if (success) {
+      try {
+        localStorage.setItem(course, JSON.stringify(courseData))
+      } catch(err) {
+        console.log(err.name)
+        if(err.name === 'QUOTA_EXCEEDED_ERR') {
+          console.log(err.name)
+        } else {
+          console.log("here")
+        }
+      }
+      return true
+    } else {
+      return success;
+    }
+  }
+}
+
 export function getAllStudents(state) {
   var students = [];
   if (state.displayMode) {
@@ -128,11 +157,18 @@ export async function handleClick(state, setState, type, queryVariables) {
       pageTab: false,
       assignmentTab: false,
       filterTab: false,
-      reset: false
+      reset: false,
+      barXAxis: "dateCount",
+      barXAxisLabel: "LT Unique Interaction Days",
+      adaptStudentChartVal: false
     }
     setState(tempState)
-    var courseData = JSON.parse(localStorage.getItem(state.courseId))
-    if ((!courseData || Object.keys(courseData).length < 1) || type === "refresh" ) {
+    var courseData = {}
+    if (Object.keys(localStorage).includes(state.courseId)) {
+      var courseData = JSON.parse(localStorage.getItem(state.courseId))
+    }
+    if ((!courseData || Object.keys(courseData).length < 1 || !Object.keys(courseData).includes("studentData")) ||
+        type === "refresh" ) {
       var configs = []
       configs.push(getAllDataQuery(tempState, setState, "student"))
       //console.log(state)
@@ -257,25 +293,63 @@ export function handleIndividual(state, setState, type) {
 }
 
 export function changeBarXAxis(option, state, setState) {
-  if (option === "Unique Interaction Days") {
+  if (option === "LT Unique Interaction Days") {
     setState({
       ...state,
       barXAxisLabel: option,
-      barXAxis: "dateCount"
+      barXAxis: "dateCount",
+      adaptStudentChartVal: false
     })
-  } else if (option === "Unique Pages Accessed") {
+  } else if (option === "LT Unique Pages Accessed") {
     setState({
       ...state,
       barXAxisLabel: option,
-      barXAxis: "objectCount"
+      barXAxis: "objectCount",
+      adaptStudentChartVal: false
     })
-  } else if (option === "Most Recent Page Load") {
+  } else if (option === "LT Most Recent Page Load") {
     setState({
       ...state,
       barXAxisLabel: option,
-      barXAxis: "lastDate"
+      barXAxis: "lastDate",
+      adaptStudentChartVal: false
+    })
+  } else if (option === "Adapt Unique Interaction Days") {
+    setState({
+      ...state,
+      barXAxisLabel: option,
+      barXAxis: "dateCount",
+      adaptStudentChartVal: true
+    })
+  } else if (option === "Adapt Unique Assignments") {
+    setState({
+      ...state,
+      barXAxisLabel: option,
+      barXAxis: "objectCount",
+      adaptStudentChartVal: true
+    })
+  } else if (option === "Adapt Most Recent Page Load") {
+    setState({
+      ...state,
+      barXAxisLabel: option,
+      barXAxis: "lastDate",
+      adaptStudentChartVal: true
     })
   }
+}
+
+export function getStudentChartFilters(state) {
+  var filters = [
+    "LT Unique Pages Accessed",
+    "LT Unique Interaction Days",
+    "LT Most Recent Page Load"
+  ]
+  if (state.hasAdapt) {
+    filters.push("Adapt Unique Interaction Days")
+    filters.push("Adapt Unique Assignments")
+    filters.push("Adapt Most Recent Page Load")
+  }
+  return filters;
 }
 
 export function changeBarYAxis(option, state, setState) {

@@ -67,7 +67,8 @@ import {
   changePropValue,
   reactGrids,
   reactRows,
-  sortData
+  sortData,
+  getStudentChartFilters
 } from "./filterFunctions.js";
 import { infoText } from "./allInfoText.js";
 import Legend from "./legend.js";
@@ -134,9 +135,7 @@ function App() {
     page: null,
     pageId: null,
     barXAxis: "dateCount",
-    barYAxis: "objectCount",
-    barXAxisLabel: "Unique Interaction Days",
-    barYAxisLabel: "Unique Pages Accessed",
+    barXAxisLabel: "LT Unique Interaction Days",
     index: 0,
     display: true,
     bin: 1,
@@ -193,7 +192,8 @@ function App() {
     ltCourse: false,
     adaptCourse: false,
     displayMode: false,
-    filters: []
+    filters: [],
+    adaptStudentChartVal: false
   })
 
    const [click, setClick] = useState(false);
@@ -424,10 +424,7 @@ function App() {
                                 )}
                                 tab={state.tab}
                                 data={state.studentChart}
-                                xaxis="_id"
                                 xaxisLabel={state.barXAxisLabel}
-                                yaxis={state.barYAxis}
-                                yaxisLabel={state.barYAxisLabel}
                                 width="90%"
                                 displayMode={state.displayMode}
                               />
@@ -435,11 +432,7 @@ function App() {
                             data={state.studentChart}
                             label={state.barXAxisLabel}
                             loading={infoText.loadingMessage}
-                            filterOptions={[
-                              "Unique Pages Accessed",
-                              "Unique Interaction Days",
-                              "Most Recent Page Load",
-                            ]}
+                            filterOptions={getStudentChartFilters(state)}
                             filterSelectLabel="Data:"
                             filterFunction={changeBarXAxis}
                             clickFunction={getStudentChartData}

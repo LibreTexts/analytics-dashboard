@@ -10,11 +10,14 @@ const individualPageViews = require("./individualPageViewsQuery.js");
 const individualGradePageViews = require("./individualGradePageViewsQuery.js");
 const individualTimeline = require("./individualTimelineQuery.js");
 const studentChart = require("./studentChartQuery.js");
+const adaptStudentChart = require("./adaptStudentChartQuery.js");
 const studentAdaptAssignment = require("./studentAdaptAssignmentQuery.js");
 const allAdaptCourses = require("./allAdaptCoursesQuery.js");
 const adaptDataTable = require("./adaptDataTableQuery.js");
 const adaptStudents = require("./adaptStudentsQuery.js");
 const allStudents = require("./allStudentsQuery.js");
+const pageCount = require("./pageCountQuery.js");
+const assignmentCount = require("./assignmentCountQuery.js");
 
 var axios = require('axios');
 const express = require("express");
@@ -131,6 +134,22 @@ function getRequest(queryString) {
   axios(enrollmentConfig).then(function (response) {
     enrollmentData = (response.data['documents'])
     //console.log(enrollmentData)
+  }).catch(function (error) {
+    console.log(error)
+  })
+
+  let pageConfig = getRequest(pageCount.pageCountQuery(dbInfo))
+  var pageCountData = {}
+  axios(pageConfig).then(function (response) {
+    pageCountData = (response.data['documents'])
+  }).catch(function (error) {
+    console.log(error)
+  })
+
+  let assignmentConfig = getRequest(assignmentCount.assignmentCountQuery(dbInfo))
+  var assignmentCountData = {}
+  axios(assignmentConfig).then(function (response) {
+    assignmentCountData = (response.data['documents'])
   }).catch(function (error) {
     console.log(error)
   })
@@ -398,12 +417,27 @@ app.post('/adaptstudents', (req,res,next) => {
 
 app.post('/studentchart', (req,res,next) => {
   let queryString = studentChart.studentChartQuery(req.body, dbInfo);
+  var pages = pageCountData.find((o) => o._id === req.body.courseId);\
+  var maxPageCount = pages.pageCount;
+  var isAdaptXAxis = req.body.adaptAxisValue;
+  if (isAdaptXAxis) {
+    var course = adaptCodes.find(o => o.course === req.body.courseId);
+    course = course.code;
+    queryString = adaptStudentChart.adaptStudentChartQuery(req.body, dbInfo, adaptCodes);
+    var assignments = assignmentCountData.find(o => o._id === course);\
+    maxPageCount = assignments.assignmentCount;
+  }
+  var groupBy = req.body.groupBy;\
   let config = getRequest(queryString);
   var studentEnrollment = JSON.parse(JSON.stringify(findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)))
   axios(config)
       .then(function (response) {
         let newData = (response.data)
+        var hasMaxPage = false;
         newData['documents'].forEach((student, index) => {
+          if ((groupBy === "objectCount") && student._id === maxPageCount) {
+            hasMaxPage = true
+          }
           var allStudents = JSON.parse(JSON.stringify(student.students))
           var encryptedStudents = JSON.parse(JSON.stringify(student.students))
           student.students.forEach((s, i) => {
@@ -427,6 +461,9 @@ app.post('/studentchart', (req,res,next) => {
           newData['documents'][index].students = allStudents
           newData['documents'][index]["displayModeStudents"] = encryptedStudents
         })
+        if (!hasMaxPage && groupBy === "objectCount") {
+          newData['documents'].push({_id: maxPageCount, count: 0})
+        }
         newData['studentChart'] = newData['documents']
         delete newData['documents']
         newData = JSON.stringify(newData)
