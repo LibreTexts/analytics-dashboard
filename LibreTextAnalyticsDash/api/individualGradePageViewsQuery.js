@@ -91,6 +91,29 @@ function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
       }
     ]
   }
+
+  var filterMatch = {
+    "$match": {
+      '$expr': {
+        '$and': []
+      }
+    }
+  }
+
+  var matchesUsed = false
+  if (params.start) {
+    filterMatch['$match']['$expr']['$and'].push({'$gte': [{'$dateFromString': {'dateString': '$time'}}, {'$dateFromString': {'dateString': params.start}}]})
+    matchesUsed = true
+  }
+  if (params.end) {
+    filterMatch['$match']['$expr']['$and'].push({'$lte': [{'$dateFromString': {'dateString': '$time'}}, {'$dateFromString': {'dateString': params.end}}]})
+    matchesUsed = true
+  }
+
+  if (matchesUsed && params.courseId) {
+    data['pipeline'].splice(1, 0, filterMatch)
+  }
+
   console.log(data)
   return data;
 }

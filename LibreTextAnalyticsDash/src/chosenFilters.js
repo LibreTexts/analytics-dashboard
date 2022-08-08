@@ -3,6 +3,7 @@ import {
   filterReset,
   applyReset
 } from "./filterFunctions.js";
+import moment from "moment";
 
 export default function ChosenFilters({
   state,
@@ -29,12 +30,12 @@ export default function ChosenFilters({
         )}
         {state.start && (
           <Text margin="small">
-            Start Date: {new Date(state.start.split("T")[0]).toString()}
+            Start Date: {moment(state.start).format("MMM Do YYYY")}
           </Text>
         )}
         {state.end && (
-          <Text margin="small">
-            End Date: {new Date(state.end.split("T")[0]).toString()}
+          <Text margin={{horizontal: "small", bottom: "small"}}>
+            End Date: {moment(state.end).format("MMM Do YYYY")}
           </Text>
         )}
         {!state.reset && (

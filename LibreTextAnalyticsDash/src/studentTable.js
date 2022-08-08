@@ -40,6 +40,7 @@ export default class StudentTable extends React.Component {
       { label: "LT Total Page Views", key: "viewCount" },
       { label: "LT Most Recent Page Load", key: "max" },
       { label: "LT Unique Interaction Days", key: "dateCount" },
+      { label: "LT Total Hours Studied", key: "timeStudied" }
     ];
 
     var columns = [
@@ -122,6 +123,24 @@ export default class StudentTable extends React.Component {
           matchSorter(rows, filter.value, { keys: ["dateCount"] }),
         filterAll: true,
       },
+      {
+        Header: (
+          <Tip content="Total Hours Studied">Total Hours Studied</Tip>
+        ),
+        headerClassName: "lt-data",
+        accessor: "timeStudied",
+        show: this.props.showColumns["LT Total Hours Studied"],
+        getProps: (state, rowInfo, column) => {
+          return {
+            style: {
+              background: "rgb(255, 255, 158, .5)",
+            },
+          };
+        },
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["timeStudied"] }),
+        filterAll: true,
+      },
     ];
 
     if (this.props.hasAdapt) {
@@ -131,7 +150,9 @@ export default class StudentTable extends React.Component {
           key: "adaptUniqueInteractionDays",
         },
         { label: "Adapt Unique Assignments", key: "adaptUniqueAssignments" },
-        { label: "Adapt Most Recent Page Load", key: "mostRecentAdaptLoad" }
+        { label: "Adapt Most Recent Page Load", key: "mostRecentAdaptLoad" },
+        { label: "Adapt Average Percent Per Assignment", key: "adaptAvgPercentScore" },
+        { label: "Adapt Average Attempts Per Assignment", key: "adaptAvgAttempts" }
       );
       columns.push(
         {
@@ -189,6 +210,42 @@ export default class StudentTable extends React.Component {
           },
           filterMethod: (filter, rows) =>
             matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
+          filterAll: true,
+        },
+        {
+          Header: (
+            <Tip content="Average Percent Per Assignment">Average Percent Per Assignment</Tip>
+          ),
+          headerClassName: "adapt-data",
+          accessor: "adaptAvgPercentScore",
+          //show: this.props.showColumns["Adapt Most Recent Page Load"],
+          getProps: (state, rowInfo, column) => {
+            return {
+              style: {
+                background: "rgb(171, 247, 177, .5)",
+              },
+            };
+          },
+          filterMethod: (filter, rows) =>
+            matchSorter(rows, filter.value, { keys: ["adaptAvgPercentScore"] }),
+          filterAll: true,
+        },
+        {
+          Header: (
+            <Tip content="Average Attempts Per Assignment">Average Attempts Per Assignment</Tip>
+          ),
+          headerClassName: "adapt-data",
+          accessor: "adaptAvgAttempts",
+          //show: this.props.showColumns["Adapt Most Recent Page Load"],
+          getProps: (state, rowInfo, column) => {
+            return {
+              style: {
+                background: "rgb(171, 247, 177, .5)",
+              },
+            };
+          },
+          filterMethod: (filter, rows) =>
+            matchSorter(rows, filter.value, { keys: ["adaptAvgAttempts"] }),
           filterAll: true,
         }
       );

@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { Box, Notification } from "grommet";
 import { infoText } from "./allInfoText.js";
+import moment from "moment";
 
 export default class BarGraph extends React.Component {
   constructor(props) {
@@ -31,12 +32,27 @@ export default class BarGraph extends React.Component {
     // this.props.data.sort(function (a, b) {
     //   return a[xaxis] - b[xaxis];
     // });
+    if (this.props.data) {
+      var student = this.props.data[0]['_id']['student']
+    }
 
-    this.props.data.forEach((d, index) => {
-      if (d['level_name'].length > 10 && d['level_name'].includes(":")) {
-        this.props.data[index]['level_name'] = d['level_name'].split(":")[0]
-      } else if (d['level_name'].length > 10 && d['level_name'].includes("(")) {
-        this.props.data[index]['level_name'] = d['level_name'].split("(")[0]
+    this.props.allData.forEach((d, index) => {
+      if (this.props.data) {
+        var match = this.props.data.find(o => o['level_name'] === d['_id'])
+        if (match) {
+          d['indivPercent'] = match['percent']
+          d['submitted'] = moment(match['submitted']).format("MMM Do YYYY h:mm a")
+          d['student'] = match['_id']['student']
+        } else {
+          d['indivPercent'] = 0
+          d['submitted'] = "N/A"
+          d['student'] = student
+        }
+      }
+      if (d['_id'].length > 10 && d['_id'].includes(":")) {
+        this.props.allData[index]['_id'] = d['_id'].split(":")[0]
+      } else if (d['_id'].length > 10 && d['_id'].includes("(")) {
+        this.props.allData[index]['_id'] = d['_id'].split("(")[0]
       }
     })
 
@@ -44,43 +60,50 @@ export default class BarGraph extends React.Component {
       if (props.payload[0] != null) {
         const newPayload = [
           {
-            name: "Percent Earned",
+            name: "Assignment",
+            value: props.payload[0].payload._id,
+          },
+          {
+            name: "Class Average",
             value: props.payload[0].payload.percent+"%",
           },
           {
-            name: "Assignment",
-            value: props.payload[0].payload.level_name,
-          },
-          {
             name: "Due Date",
-            value: props.payload[0].payload.due,
-          },
+            value: moment(props.payload[0].payload.due).format("MMM Do YYYY h:mm a"),
+          }
         ];
-        if (
-          this.props.tab === "page" &&
-          props.payload[0].payload.pageTitle !== undefined
-        ) {
-          var id = {
-            name: name,
-            value: props.payload[0].payload.pageTitle,
-          };
-          newPayload.splice(0, 1, id);
+        if (this.props.data) {
+          var studentData = [
+            {
+              name: "Student",
+              value: props.payload[0].payload.student
+            },
+            {
+              name: "Submitted",
+              value: props.payload[0].payload.submitted
+            },
+            {
+              name: "Student Percent Earned",
+              value: props.payload[0].payload.indivPercent+"%",
+            }
+          ]
+          newPayload.splice(3, 0, ...studentData)
         }
         return <DefaultTooltipContent payload={newPayload} />;
       }
       return <DefaultTooltipContent {...props} />;
     };
-    if (this.props.data && this.props.data.length > 0) {
+    if (this.props.allData && this.props.allData.length > 0) {
       return (
-        <ResponsiveContainer width="99%" aspect={3}>
+        <ResponsiveContainer width="96%" aspect={3}>
           <BarChart
             width={550}
             height={375}
             margin={{ top: 25, right: 20, bottom: 110, left: 30 }}
-            data={this.props.data}
+            data={this.props.allData}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={this.props.xaxis}
+            <XAxis dataKey="_id"
               interval={0}
               angle={35}
               tickMargin={30}
@@ -88,7 +111,7 @@ export default class BarGraph extends React.Component {
               >
               <Label value={this.props.xaxisLabel} position="bottom" offset={50}/>
             </XAxis>
-            <YAxis dataKey={this.props.yaxis}>
+            <YAxis dataKey="percent">
               <Label
                 value={this.props.yaxisLabel}
                 position="insideBottomLeft"
@@ -100,6 +123,7 @@ export default class BarGraph extends React.Component {
               content={<CustomTooltip />}
             />
             <Bar dataKey={this.props.yaxis} fill="#0047BA" />
+            {this.props.data && <Bar dataKey="indivPercent" fill="#F93549" />}
           </BarChart>
         </ResponsiveContainer>
       );

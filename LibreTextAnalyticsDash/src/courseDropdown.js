@@ -1,14 +1,12 @@
 import { Box, Button } from "grommet";
-import InfoBox from "./collapsible_info_box.js";
+import InfoBox from "./infoBox.js";
 import SelectWithApply from "./selectWithApply.js";
+import { handleChange, handleClick } from "./filterFunctions.js";
+import { infoText } from "./allInfoText.js";
 
 export default function CourseDropdown({
   state,
   setState,
-  infoText,
-  realCourses,
-  handleChange,
-  handleClick,
   queryVariables,
   initPage=false
 }) {
@@ -35,17 +33,17 @@ export default function CourseDropdown({
         >
           <Box direction="row">
             <SelectWithApply
-              selectOptions={Object.keys(realCourses)}
+              selectOptions={Object.keys(queryVariables.realCourses)}
               value={state.courseName}
               dropdownFunction={handleChange}
               clickFunction={handleClick}
+              queryVariables={queryVariables}
               state={state}
               setState={setState}
               type="courseId"
               disable={state.disableCourse}
               width="300px"
               dropSize="medium"
-              realCourses={realCourses}
               queryVariables={queryVariables}
             />
             {!initPage &&

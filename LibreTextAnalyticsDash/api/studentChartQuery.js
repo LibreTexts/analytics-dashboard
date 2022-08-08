@@ -12,7 +12,10 @@ function studentChartQuery(params, dbInfo) {
       {
         "$match": {
           '$expr': {
-            '$and': [{'$eq': ["$verb", "read"]}]
+            '$and': [
+              {'$eq': ["$verb", "read"]},
+              {'$eq': ["$actor.courseName", params.courseId]}
+            ]
           }
         }
       },
@@ -35,12 +38,14 @@ function studentChartQuery(params, dbInfo) {
           "timestamp": {'$addToSet':'$object.timestamp'},
           "max": { '$max': "$newDate" },
           "uniqueDates": {'$addToSet': '$date'},
-          "objects": {"$addToSet": '$object.id'}
+          "objects": {"$addToSet": '$object.id'},
+          "timeStudied": {'$sum': "$object.timeMe"},
         }
       },
       {
         "$addFields": {
           "durationInMinutes": {'$trunc': [{'$divide': ['$durationInSeconds', 60]}, 1]},
+          "timeStudied": {'$trunc': [{'$divide': ['$timeStudied', 3600]}, 1]},
           "objectCount": {'$size': "$objects"},
           "viewCount": {'$size': "$timestamp"},
           "percentAvg": {'$trunc': [{'$avg': "$percent"}, 1]},
@@ -143,10 +148,10 @@ function studentChartQuery(params, dbInfo) {
     data['pipeline'].splice(4, 0, addFields)
     data['pipeline'].splice(5, 0, courseMatch)
   }
-  if (params.courseId) {
-    match['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', params.courseId]})
-    data['pipeline'].splice(0, 0, match)
-  }
+  // if (params.courseId) {
+  //   match['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', params.courseId]})
+  //   data['pipeline'].splice(0, 0, match)
+  // }
   if (params.path) {
     pathMatch['$match']['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]})
     data['pipeline'].splice(4, 0, pathMatch)

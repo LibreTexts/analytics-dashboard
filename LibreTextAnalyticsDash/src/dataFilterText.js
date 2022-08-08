@@ -1,6 +1,7 @@
 import { Text, Box } from "grommet";
-export default function DataFilterText({ 
-    data
+export default function DataFilterText({
+    data,
+    noEnrollmentData
 }) {
     let s_with_data = 0;
     let s_without_data = 0;
@@ -13,7 +14,6 @@ export default function DataFilterText({
         }
     })
 
-    console.log(data)
     return(
         <Box
             border={true}
@@ -29,6 +29,11 @@ export default function DataFilterText({
             <Text>
                 Number of Students without Data: {s_without_data}
             </Text>
+            {noEnrollmentData &&
+              <Text weight="bold">
+                This course has no enrollment data available.
+              </Text>
+            }
         </Box>
     )
 }

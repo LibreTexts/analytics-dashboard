@@ -14,7 +14,6 @@ export default function SelectWithApply({
   renderSelect,
   width,
   dropSize,
-  realCourses,
   queryVariables
 }) {
   var dropHeight = "small"
@@ -37,7 +36,7 @@ export default function SelectWithApply({
         dropHeight={dropHeight}
         value={value}
         onChange={({ option }) =>
-          dropdownFunction(type, option, state, setState, realCourses, queryVariables)
+          dropdownFunction(type, option, state, setState, queryVariables.realCourses, queryVariables)
         }
         style={{width: width}}
       />
@@ -53,6 +52,19 @@ export default function SelectWithApply({
         right: "medium",
       }}
     />
+    {type === "studentAssignments" &&
+      <Button
+        secondary
+        size="small"
+        label="Clear Student"
+        onClick={() => setState({...state, student: null, studentAssignments: null})}
+        margin={{
+          bottom: "small",
+          top: "small",
+          right: "medium",
+        }}
+      />
+    }
   </Box>
   );
 }

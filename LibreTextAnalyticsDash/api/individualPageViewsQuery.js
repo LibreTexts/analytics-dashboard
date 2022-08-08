@@ -67,7 +67,8 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
         {
           "$addFields": {
             'count': {'$size': '$students'},
-            'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]}
+            'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]},
+            'uniqueStudents' : {'$setUnion' : ['$students', []]}
           }
         },
         {
@@ -117,7 +118,8 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
           {
             "$addFields": {
               'count': {'$size': '$students'},
-              'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]}
+              'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]},
+              'uniqueStudents' : {'$setUnion' : ['$students', []]}
             }
           },
           {
@@ -153,11 +155,11 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
 
   var matchesUsed = false
   if (params.start) {
-    filterMatch['$match']['$expr']['$and'].push({'$gte': ['$date', {'$dateFromString': {'dateString': params.start}}]})
+    filterMatch['$match']['$expr']['$and'].push({'$gte': ['$_id', {'$dateFromString': {'dateString': params.start}}]})
     matchesUsed = true
   }
   if (params.end) {
-    filterMatch['$match']['$expr']['$and'].push({'$lte': ['$date', {'$dateFromString': {'dateString': params.end}}]})
+    filterMatch['$match']['$expr']['$and'].push({'$lte': ['$_id', {'$dateFromString': {'dateString': params.end}}]})
     matchesUsed = true
   }
   if (params.path) {
@@ -167,6 +169,7 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
   if (matchesUsed && params.courseId) {
     data['pipeline'].splice(6, 0, filterMatch)
   }
+  // console.log(data['pipeline'])
   return data;
 }
 

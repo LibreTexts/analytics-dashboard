@@ -4,9 +4,7 @@ import "./index.css";
 
 export default function Tabs({
   state,
-  setState,
-  hasAdapt,
-  ltCourse
+  setState
 }) {
 
   function activeTab(event, tab, state, setState) {
@@ -27,10 +25,10 @@ export default function Tabs({
     <div className="bar blue">
       <button className={state.index === 3 ? "bar-item button white" : "bar-item button filter-button"} onClick={(event) => activeTab(event, "filters", state, setState)}>Filters</button>
       <button className={state.index === 0 ? "bar-item button white" : "bar-item button"} onClick={(event) => activeTab(event, "student", state, setState)}>By Student</button>
-      {ltCourse &&
+      {state.ltCourse &&
         <button className={state.index === 1 ? "bar-item button white" : "bar-item button"} onClick={(event) => activeTab(event, "page", state, setState)}>Textbook Engagement</button>
       }
-      {hasAdapt &&
+      {state.hasAdapt &&
         <button className={state.index === 2 ? "bar-item button white" : "bar-item button"} onClick={(event) => activeTab(event, "assignment", state, setState)}>Homework Engagement</button>
       }
     </div>

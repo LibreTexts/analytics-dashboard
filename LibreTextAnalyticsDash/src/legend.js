@@ -1,9 +1,9 @@
 import { Box, CheckBox, Text, Button } from "grommet";
+import { handleClick } from "./filterFunctions.js";
 
 export default function Legend({
   state,
   setState,
-  handleClick,
   queryVariables
 }) {
   return (

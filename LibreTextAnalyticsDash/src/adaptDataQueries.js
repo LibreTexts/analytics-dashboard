@@ -57,7 +57,8 @@ export function getStudentAssignments(state, setState) {
   })
   tempState["studentAssignments"] = null
   var courseData = JSON.parse(localStorage.getItem(state.courseId))
-  console.log(courseData)
+  console.log("courseData", courseData)
+  console.log("state", state)
   if (!Object.keys(courseData).includes(state.student)) {
     axios({
       method: "post",
@@ -67,24 +68,38 @@ export function getStudentAssignments(state, setState) {
       },
       data: {
         courseId: state.courseId,
-        individual: state.student
+        individual: state.student,
+        start: state.start,
+        end: state.end
       },
     }).then((response) => {
       var d = JSON.parse(response.data)
       var key = Object.keys(d)[0]
       var value = d[key]
-      tempState[key] = value
-      courseData[state.student] = value
-      localStorage.setItem(state.courseId, JSON.stringify(courseData))
+      if (value) {
+        tempState[key] = value
+        courseData[state.student] = value
+        localStorage.setItem(state.courseId, JSON.stringify(courseData))
+        setState({
+          ...tempState,
+          noChartData: false,
+          disableStudent: false
+        })
+      } else {
+        setState({
+          ...tempState,
+          noChartData: true,
+          disableStudent: false
+        })
+      }
       //console.log(tempState)
-      setState({
-        ...tempState
-      })
     });
   } else {
     tempState["studentAssignments"] = courseData[state.student]
     setState({
-      ...tempState
+      ...tempState,
+      noChartData: false,
+      disableStudent: false
     })
   }
   return tempState;
@@ -113,22 +128,39 @@ export function getGradesPageViewData(state, setState) {
       data: {
         courseId: state.courseId,
         levelGroup: state.gradeLevelGroup,
-        levelName: state.gradeLevelName
+        levelName: state.gradeLevelName,
+        start: state.start,
+        end: state.end
       },
     })
     .then(response => {
-      tempState = {
-        ...tempState,
-        gradesPageView: JSON.parse(response.data)["documents"]
+      let grades = JSON.parse(response.data)["documents"]
+      // console.log("grades", grades)
+      if (grades.length == 0) {
+        tempState = {
+          ...tempState,
+          noChartData: true
+        }
+      } else {
+        tempState = {
+          ...tempState,
+          noChartData: false,
+          gradesPageView: JSON.parse(response.data)["documents"]
+        }
+        courseData["grades"+state.gradeLevelGroup+state.gradeLevelName] = JSON.parse(response.data)["documents"]
+        localStorage.setItem(state.courseId, JSON.stringify(courseData))
       }
-      setState(tempState);
-      courseData["grades"+state.gradeLevelGroup+state.gradeLevelName] = JSON.parse(response.data)["documents"]
-      localStorage.setItem(state.courseId, JSON.stringify(courseData))
+      setState({
+        ...tempState,
+        disableGradesAssignment: false
+      });
     });
   } else {
     tempState["gradesPageView"] = courseData["grades"+state.gradeLevelGroup+state.gradeLevelName]
     setState({
-      ...tempState
+      ...tempState,
+      noChartData: false,
+      disableGradesAssignment: false
     })
   }
 }

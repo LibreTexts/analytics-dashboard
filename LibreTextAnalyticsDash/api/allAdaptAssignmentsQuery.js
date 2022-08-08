@@ -1,6 +1,6 @@
 //query to get student grades for each adapt assignment, on the student tab
 
-function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent) {
+function allAdaptAssignmentsQuery(params, adaptCodes, dbInfo, encryptStudent) {
   //find the adapt code for the lt course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   var course = codeFound;
@@ -8,13 +8,6 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
     course = params.courseId
   } else {
     course = codeFound.code
-  }
-  //student on the front end is unencrypted, is encrypted in the database
-  //need to encrypt to be able to match
-  if (params.individual.includes("@")) {
-    var student = encryptStudent(params.individual)
-  } else {
-    var student = params.individual
   }
 
   //grab data from the adapt collection
@@ -28,8 +21,7 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
           "$match": {
             '$expr': {
               '$and': [
-                {'$eq': ["$class", course]},
-                {'$eq': ["$anon_student_id", student]}
+                {'$eq': ["$class", course]}
               ]
             }
           }
@@ -116,11 +108,25 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
         {
           "$addFields": {
             'percent': {
-              '$round': [{
               '$multiply': ['$score', 100]
-            }, 2]
             },
             'level_name': '$_id.level'
+          }
+        },
+        {
+          "$group": {
+            '_id': '$_id.level',
+            'percent': {
+              '$avg': '$percent'
+            },
+            'due': {'$first': '$due'}
+          }
+        },
+        {
+          "$addFields": {
+            'percent': {
+              '$round': ['$percent', 2]
+            }
           }
         },
         {
@@ -155,4 +161,4 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
     return data;
 }
 
-module.exports = { studentAdaptAssignmentQuery }
+module.exports = { allAdaptAssignmentsQuery }

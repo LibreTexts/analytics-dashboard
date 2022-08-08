@@ -55,7 +55,8 @@ function aggregatePageViewsQuery(params, dbInfo) {
       {
         "$addFields": {
           'count': {'$size': '$pages'},
-          'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]}
+          'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]},
+          'uniquePages' : {'$setUnion' : ['$pages', []]}
         }
       },
       {

@@ -28,6 +28,7 @@ function allCoursesQuery(dbInfo) {
       {
         '$project': {
           'actor': '$actor',
+          'date': {'$dateFromString': {'dateString': '$object.timestamp'}},
           'course':
             {'$cond': {
               'if': {
@@ -50,7 +51,8 @@ function allCoursesQuery(dbInfo) {
       {
         '$group': {
           '_id': '$actor.courseName',
-          'courseId': {'$addToSet': '$course'}
+          'courseId': {'$addToSet': '$course'},
+          'date': {'$min': '$date'}
         }
       },
       //replace the courses that have hashes or have changed a colon to 3A
@@ -69,7 +71,8 @@ function allCoursesQuery(dbInfo) {
                     }
                   }
               }
-          }
+          },
+          'date': '$date'
       }
     },
     //replace all underscores with spaces to get readable course names

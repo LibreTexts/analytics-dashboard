@@ -1,17 +1,17 @@
-
-function adaptDataTableQuery(params, dbInfo) {
-
-  var data = {
+function adaptLookupSubQuery(codeFound, params) {
+  var adaptLookup = {
     //getting adapt variables
-    "collection": dbInfo.adaptColl,
-    "database": dbInfo.db,
-    "dataSource": dbInfo.dataSource,
+    "$lookup": {
+      "from": "adapt",
+      "localField": "_id",
+      "foreignField": "anon_student_id",
+      "as": "adapt",
       "pipeline": [
         {
           '$match': {
             '$expr': {
               '$and': [
-                {'$eq': ["$class", params.courseId]}
+                { '$eq': ["$class", codeFound.code] }
               ]
             }
           }
@@ -19,9 +19,11 @@ function adaptDataTableQuery(params, dbInfo) {
         //reformatting the date to be able to use it in a table
         {
           '$addFields': {
-            'day': {'$replaceAll': {
-              'input': '$time', 'find': '"', 'replacement': ''
-            }}
+            'day': {
+              '$replaceAll': {
+                'input': '$time', 'find': '"', 'replacement': ''
+              }
+            }
           }
         },
         {
@@ -50,9 +52,7 @@ function adaptDataTableQuery(params, dbInfo) {
                 'then': {
                   '$convert': {
                     'input': '$problem_points',
-                    'to': 'double',
-                    'onError': 0,
-                    'onNull': 0
+                    'to': 'double'
                   }
                 },
                 'else': 0
@@ -106,9 +106,7 @@ function adaptDataTableQuery(params, dbInfo) {
               '$first': {
                 '$convert': {
                   'input': '$levelpoints',
-                  'to': 'double',
-                  'onError': 1,
-                  'onNull': 1
+                  'to': 'double'
                 }
               }
             }
@@ -158,19 +156,16 @@ function adaptDataTableQuery(params, dbInfo) {
             'attemptsOverall': {
               '$push': '$attemptsPerLevel'
             },
-            'assignments': {
-              '$addToSet': '$_id.level'
-            }
           }
         },
         {
           '$addFields': {
             'adaptAvgPercentScore': {
-              '$round': [{'$multiply': [{'$avg': '$scoresArray'}, 100]}, 1]
+              '$avg': '$scoresArray'
             },
 
             'adaptAvgAttempts': {
-              '$round': [{'$avg': '$attemptsOverall'}, 1]
+              '$avg': '$attemptsOverall'
             },
 
             'dates': {
@@ -199,17 +194,8 @@ function adaptDataTableQuery(params, dbInfo) {
               '$size': '$dates'
             },
             'adaptUniqueAssignments': {
-              '$size': '$assignments'
-            },
-            'student': '$_id.student'
-          }
-        },
-        {
-          '$unset': '_id'
-        },
-        {
-          '$addFields': {
-            '_id': '$student'
+              '$size': '$page_ids'
+            }
           }
         },
         {
@@ -224,29 +210,20 @@ function adaptDataTableQuery(params, dbInfo) {
         }
       ]
     }
+  }
+  //for filtering data by adapt assignment
+  if (params.adaptLevelGroup) {
+    adaptLookup['$lookup']['pipeline'][0]['$match']['$expr']['$and'].push({
+      '$eq': ['$level_group', params.adaptLevelGroup]
+    })
+  }
+  if (params.adaptLevelName) {
+    adaptLookup['$lookup']['pipeline'][0]['$match']['$expr']['$and'].push({
+      '$eq': ['$level_name', params.adaptLevelName]
+    })
+  }
 
-    var filterMatch = {
-      '$match': {
-        '$expr': {
-          '$and': []
-        }
-      }
-    }
-
-    var matchesUsed = false
-    if (params.startDate) {
-      filterMatch['$match']['$expr']['$and'].push({'$gte': ['$date', {'$dateFromString': {'dateString': params.startDate}}]})
-      matchesUsed = true
-    }
-    if (params.endDate) {
-      filterMatch['$match']['$expr']['$and'].push({'$lte': ['$date', {'$dateFromString': {'dateString': params.endDate}}]})
-      matchesUsed = true
-    }
-    if (matchesUsed) {
-      data['pipeline'].splice(3, 0, filterMatch)
-    }
-    
-    return data;
+  return adaptLookup
 }
 
-module.exports = { adaptDataTableQuery }
+module.exports = { adaptLookupSubQuery }
