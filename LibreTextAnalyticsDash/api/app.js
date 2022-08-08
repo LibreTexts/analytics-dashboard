@@ -665,6 +665,7 @@ app.post("/studentassignments", (req, res, next) => {
     .then(function (response) {
       let newData = response.data;
       newData["documents"].forEach((d, index) => {
+        newData["documents"][index]["displayModeStudent"] = d["_id"]["student"];
         newData["documents"][index]["_id"]["student"] = decryptStudent(
           d["_id"]["student"]
         );
