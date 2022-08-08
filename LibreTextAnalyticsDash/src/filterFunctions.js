@@ -338,8 +338,6 @@ export function getStudentChartFilters(state) {
     filters.push("Adapt Unique Interaction Days");
     filters.push("Adapt Unique Assignments");
     filters.push("Adapt Most Recent Page Load");
-    filters.push("Adapt Average Percent Per Assignment");
-    filters.push("Adapt Average Attempts Per Assignment");
   }
   return filters;
 }
