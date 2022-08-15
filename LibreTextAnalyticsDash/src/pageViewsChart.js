@@ -24,12 +24,23 @@ export default class PageViewsChart extends React.Component {
       height = this.props.height;
     }
     var type = this.props.type;
-    var label = "Pages Viewed";
-    var aspect = 4;
+    var label = "Total Views on All Pages";
+    var aspect = 3;
     if (type === "individual") {
       label = "Total Views";
       aspect = 3;
     }
+
+    this.props.data.forEach((d, index) => {
+      if (this.props.individualData) {
+        var match = this.props.individualData.find((o) => o["dateString"] === d["dateString"]);
+        if (match) {
+          d["indivCount"] = match["count"];
+        } else {
+          d["indivCount"] = 0;
+        }
+      }
+    });
 
     const CustomTooltip = (props) => {
       if (props.payload[0] != null) {
@@ -43,6 +54,19 @@ export default class PageViewsChart extends React.Component {
             value: props.payload[0].payload.count,
           },
         ];
+        if (this.props.individualData) {
+          var pageData = [
+            {
+              name: "Page",
+              value: this.props.page
+            },
+            {
+              name: "Individual Page Views",
+              value: props.payload[0].payload.indivCount
+            }
+          ]
+          newPayload.splice(2, 0, ...pageData)
+        }
         return <DefaultTooltipContent payload={newPayload} />;
       }
       return <DefaultTooltipContent {...props} />;
@@ -71,11 +95,17 @@ export default class PageViewsChart extends React.Component {
               dy={50}
             />
           </XAxis>
-          <YAxis dataKey={this.props.yaxis}>
+          <YAxis dataKey={this.props.yaxis} yAxisId="left">
             <Label value={label} position="insideBottomLeft" angle="-90" />
           </YAxis>
+          {this.props.individualData &&
+            <YAxis dataKey="indivCount" yAxisId="right" orientation="right">
+              <Label value="Total Views on Individual Page" position="insideBottomRight" angle="90" />
+            </YAxis>
+          }
           <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />}/>
-          <Bar dataKey={this.props.yaxis} fill="#0047BA" />
+          <Bar dataKey={this.props.yaxis} fill="#0047BA" yAxisId="left"/>
+          {this.props.individualData && <Bar dataKey="indivCount" fill="#F93549" yAxisId="right"/>}
         </BarChart>
       </ResponsiveContainer>
     );

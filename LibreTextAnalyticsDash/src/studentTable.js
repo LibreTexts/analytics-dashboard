@@ -40,7 +40,7 @@ export default class StudentTable extends React.Component {
       { label: "LT Total Page Views", key: "viewCount" },
       { label: "LT Most Recent Page Load", key: "max" },
       { label: "LT Unique Interaction Days", key: "dateCount" },
-      { label: "LT Total Hours Studied", key: "timeStudied" }
+      { label: "LT Hours on Site", key: "timeStudied" }
     ];
 
     var columns = [
@@ -125,11 +125,11 @@ export default class StudentTable extends React.Component {
       },
       {
         Header: (
-          <Tip content="Total Hours Studied">Total Hours Studied</Tip>
+          <Tip content="Hours on Site">Hours on Site</Tip>
         ),
         headerClassName: "lt-data",
         accessor: "timeStudied",
-        show: this.props.showColumns["LT Total Hours Studied"],
+        show: this.props.showColumns["LT Hours on Site"],
         getProps: (state, rowInfo, column) => {
           return {
             style: {

@@ -74,11 +74,16 @@ export default function LayeredComponent({
   if (title === "Student Metrics" || !data) {
     chartHeight = "";
   }
+  if (type === "chapterData") {
+    chartHeight = "700px"
+  }
 
   var option = "";
   if (filterType === "slider") {
     option = state.sliderValue;
   }
+
+  var hasLegend = (type === "studentAssignments" || type === "aggregatePageViews" || type === "chapterData") ? true : false
 
   function closeFilter(
     state,
@@ -159,27 +164,27 @@ export default function LayeredComponent({
       >
         <Box
           align="center"
-          direction={type === "studentAssignments" ? "row" : "column"}
+          direction={hasLegend ? "row" : "column"}
           gridArea="title"
           overflowY="scroll"
           responsive={true}
           height={height}
           border={border}
-          justify={type === "studentAssignments" ? "center" : "stretch"}
+          justify={hasLegend ? "center" : "stretch"}
         >
-          {type === "studentAssignments" && (
-            <Box direction="column" margin={{ left: "xlarge" }}>
+          {hasLegend && (
+            <Box direction="column" margin={{ left: "xlarge" }} align="center">
               <TitleText title={title} text={infoText} topMargin="small" />
               {selectComponent}
             </Box>
           )}
-          {type !== "studentAssignments" && (
+          {!hasLegend && (
             <>
               <TitleText title={title} text={infoText} topMargin="small" />
               {selectComponent}
             </>
           )}
-          {type === "studentAssignments" && (
+          {hasLegend && (
             <Box
               border={true}
               height="100px"
@@ -196,7 +201,7 @@ export default function LayeredComponent({
                   background="#0047BA"
                 />
                 <Text margin={{ left: "small", bottom: "small", top: "small" }}>
-                  Class Performance
+                  {type === "aggregatePageViews" ? "Aggregate Pages" : "Class Performance"}
                 </Text>
               </Box>
               <Box direction="row">
@@ -208,7 +213,7 @@ export default function LayeredComponent({
                   background="#F93549"
                 />
                 <Text margin={{ left: "small", bottom: "small", top: "small" }}>
-                  Individual Performance
+                  {type === "aggregatePageViews" ? "Individual Page" : "Individual Performance"}
                 </Text>
               </Box>
             </Box>
@@ -223,7 +228,7 @@ export default function LayeredComponent({
           border={border && data ? true : false}
           height={chartHeight}
         >
-          {data && (
+          {data && (type !== "chapterData") && (
             <Button
               alignSelf="start"
               secondary

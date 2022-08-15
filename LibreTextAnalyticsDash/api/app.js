@@ -18,6 +18,7 @@ const allStudents = require("./allStudentsQuery.js");
 const pageCount = require("./pageCountQuery.js");
 const assignmentCount = require("./assignmentCountQuery.js");
 const allAdaptAssignments = require("./allAdaptAssignmentsQuery.js");
+const chapterChart = require("./chapterChartQuery.js");
 
 var axios = require("axios");
 const express = require("express");
@@ -717,7 +718,7 @@ app.post("/alladaptassignments", (req, res, next) => {
 // });
 
 app.post("/adaptlevels", (req, res, next) => {
-  let queryString = adaptLevel.adaptLevelQuery(req.body, adaptCodes, dbInfo);
+  let queryString = adaptLevel.adaptLevelQuery(req.body, adaptCodes, dbInfo, encryptStudent);
   let config = getRequest(queryString);
   axios(config)
     .then(function (response) {
@@ -747,6 +748,38 @@ app.post("/adaptlevels", (req, res, next) => {
 //       });
 //
 // });
+
+app.post("/aggregatechapterdata", (req, res, next) => {
+  let queryString = chapterChart.chapterChartQuery(req.body, dbInfo);
+  let config = getRequest(queryString);
+  axios(config)
+    .then(function (response) {
+      let newData = response.data;
+      newData["aggregateChapterData"] = newData["documents"];
+      delete newData["documents"];
+      newData = JSON.stringify(newData);
+      res.json(newData);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+});
+
+app.post("/individualchapterdata", (req, res, next) => {
+  let queryString = chapterChart.chapterChartQuery(req.body, dbInfo, encryptStudent, decryptStudent);
+  let config = getRequest(queryString);
+  axios(config)
+    .then(function (response) {
+      let newData = response.data;
+      newData["individualChapterData"] = newData["documents"];
+      delete newData["documents"];
+      newData = JSON.stringify(newData);
+      res.json(newData);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+});
 
 app.post("/chapters", (req, res, next) => {
   let queryString = courseUnits.courseUnitsQuery(req.body, dbInfo);

@@ -104,7 +104,7 @@ function App() {
       "LT Total Page Views": true,
       "LT Most Recent Page Load": true,
       "LT Unique Interaction Days": true,
-      "LT Total Hours Studied": true
+      "LT Hours on Site": true
     },
     gridHeight: "small",
     homepage: "/analytics/api",
@@ -114,7 +114,10 @@ function App() {
     displayMode: false,
     filters: [],
     adaptStudentChartVal: false,
-    noChartData: false
+    noChartData: false,
+    chosenChapter: null,
+    disableCourseStructureButton: false,
+    disableFilterReset: false
   });
 
   const [click, setClick] = useState(false);

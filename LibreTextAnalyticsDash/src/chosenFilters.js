@@ -58,6 +58,7 @@ export default function ChosenFilters({
             <Button
               primary
               label="Apply"
+              disabled={state.disableFilterReset}
               onClick={() => applyReset(state, setState)}
               color="#022851"
               margin={{

@@ -128,6 +128,7 @@ export default function MultiSelect({
 
   async function handleClick(event, state, setState) {
     //console.log(event.key)
+    // setState({...state, disableCourseStructureButton: false})
     setChosenPath(event.key);
     //console.log(chosenPath)
     //filterClick(event)
@@ -155,7 +156,7 @@ export default function MultiSelect({
           <Button
             secondary
             label="Clear Current Path"
-            color="#022851"
+            color="#0047BA"
             onClick={clearPath}
             margin={{ bottom: "small", horizontal: "large" }}
           />
@@ -164,8 +165,9 @@ export default function MultiSelect({
       <Button
         primary
         label="Apply"
-        color="#022851"
+        color="#0047BA"
         margin={{ horizontal: "large" }}
+        disabled={state.disableCourseStructureButton}
         onClick={(event) => {
           filterClick(state, setState, chosenPath);
         }}

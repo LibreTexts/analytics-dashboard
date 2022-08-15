@@ -17,7 +17,8 @@ import {
   courseStructureDropdown,
   adaptStudentsQuery,
   allStudentsQuery,
-  allAssignmentsChartQuery
+  allAssignmentsChartQuery,
+  chapterChartQuery
 } from "./ltDataQueries.js";
 import {
   getAdaptLevels,
@@ -137,6 +138,7 @@ export async function handleClick(state, setState, type, queryVariables) {
       studentResult: null,
       pageResult: null,
       student: null,
+      studentForChapterChart: null,
       page: null,
       individualPageViews: null,
       adaptLevels: null,
@@ -167,6 +169,8 @@ export async function handleClick(state, setState, type, queryVariables) {
       barXAxisLabel: "LT Unique Interaction Days",
       adaptStudentChartVal: false,
       studentChart: null,
+      aggregateChapterData: null,
+      individualChapterData: null
     };
 
     setState(tempState);
@@ -186,6 +190,7 @@ export async function handleClick(state, setState, type, queryVariables) {
         configs.push(getAllDataQuery(tempState, setState, "page"));
         configs.push(getObjects(tempState, setState, "page"));
         configs.push(studentChartQuery(tempState, setState));
+        configs.push(chapterChartQuery(tempState, setState));
       }
       if (state.adaptCourse) {
         configs.push(allAssignmentsChartQuery(tempState, setState));
@@ -225,26 +230,36 @@ export async function handleFilterClick(state, setState, path = false) {
     page: null,
     disablePage: false,
     individualPageViews: null,
+    disableCourseStructureButton: true
   };
   if (path) {
     tempState["chosenPath"] = path;
   }
   setState(tempState);
 
-  var courseData = JSON.parse(localStorage.getItem(state.courseId));
-
   var configs = [];
   configs.push(getAllDataQuery(tempState, setState, "student"));
   if (state.ltCourse) {
     configs.push(getAllDataQuery(tempState, setState, "page"));
     configs.push(getObjects(tempState, setState, "page"));
+    configs.push(studentChartQuery(tempState, setState));
+    configs.push(chapterChartQuery(tempState, setState));
   }
-  configs.push(studentChartQuery(tempState, setState));
+  if (state.adaptCourse) {
+    configs.push(allAssignmentsChartQuery(tempState, setState));
+  }
   configs.push(allStudentsQuery(tempState, setState));
   configs.push(pageViewQuery(tempState, setState));
   configs.push(adaptLevels(tempState, setState));
   configs.push(courseStructureDropdown(tempState, setState));
   await getData(configs, tempState, setState);
+
+  var courseData = JSON.parse(localStorage.getItem(state.courseId));
+  if (path && courseData) {
+    courseData['dataPath'] = path;
+    courseData['chosenPath'] = path;
+    localStorage.setItem(state.courseId, JSON.stringify(courseData));
+  }
 }
 
 export function handleIndividual(state, setState, type) {
@@ -296,7 +311,7 @@ export function changeBarXAxis(option, state, setState) {
       barXAxis: "lastDate",
       adaptStudentChartVal: false,
     });
-  } else if (option === "LT Total Hours Studied") {
+  } else if (option === "LT Hours on Site") {
     setState({
       ...state,
       barXAxisLabel: option,
@@ -332,7 +347,7 @@ export function getStudentChartFilters(state) {
     "LT Unique Pages Accessed",
     "LT Unique Interaction Days",
     "LT Most Recent Page Load",
-    "LT Total Hours Studied"
+    "LT Hours on Site"
   ];
   if (state.hasAdapt) {
     filters.push("Adapt Unique Interaction Days");
@@ -483,6 +498,13 @@ export function handleChange(
       student: value,
     });
   }
+  if (type === "studentForChapterChart") {
+    setState({
+      ...state,
+      studentForChapterChart: value,
+      disablePage: false
+    })
+  }
   if (type === "studentAssignments") {
     setState({
       ...state,
@@ -549,13 +571,14 @@ export function handleChange(
   if (type === "chapter") {
     setState({
       ...state,
-      disable: false,
+      disable: false
     });
   }
   if (type === "path") {
     setState({
       ...state,
       dataPath: value,
+      disableCourseStructureButton: false
     });
   }
   return (
@@ -600,36 +623,53 @@ export function filterReset(state, setState) {
     dataPath: null,
     start: null,
     end: null,
+    disableFilterReset: false
   });
+  var courseData = JSON.parse(localStorage.getItem(state.courseId))
+  courseData["chosenPath"] = null;
+  courseData["dataPath"] = null;
+  courseData["start"] = null;
+  courseData["end"] = null;
+  localStorage.setItem(state.courseId, JSON.stringify(courseData));
 }
 
 export async function applyReset(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state));
   setState({
     ...state,
+    disableFilterReset: true
+  })
+  tempState = ({
+    ...tempState,
     openFilter: false,
     disableCourse: true,
     studentResult: null,
     pageResult: null,
+    studentData: null,
+    pageData: null,
     student: null,
     page: null,
+    reset: false
   });
+  setState({
+    ...tempState
+  })
   var configs = [];
   configs.push(getAllDataQuery(tempState, setState, "student"));
   if (state.ltCourse) {
     configs.push(getAllDataQuery(tempState, setState, "page"));
     configs.push(getObjects(tempState, setState, "page"));
     configs.push(studentChartQuery(tempState, setState));
+    configs.push(chapterChartQuery(tempState, setState));
+  }
+  if (state.adaptCourse) {
+    configs.push(allAssignmentsChartQuery(tempState, setState));
   }
   configs.push(allStudentsQuery(tempState, setState));
   configs.push(pageViewQuery(tempState, setState));
   configs.push(adaptLevels(tempState, setState));
   configs.push(courseStructureDropdown(tempState, setState));
   await getData(configs, tempState, setState);
-  setState({
-    ...tempState,
-    reset: false,
-  });
 }
 
 export function changeColumns(event, label, state, setState) {

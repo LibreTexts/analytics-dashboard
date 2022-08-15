@@ -25,19 +25,19 @@ export default function DataTable({
     var column3Label = "Total Page Views";
     var idAccessor = "_id";
     var filename = "student-data.csv";
-    var pageLength = 8;
+    var pageLength = 10;
   } else if (tab === "student" && displayMode) {
     var column2Label = "Unique Pages Accessed";
     var column3Label = "Total Page Views";
     var idAccessor = "displayModeStudent";
     var filename = "student-data.csv";
-    var pageLength = 8;
+    var pageLength = 10;
   } else if (tab === "page") {
     var column3Label = "Number of Times Viewed";
     var column2Label = "Total Students Who Viewed";
     var idAccessor = "pageTitle";
     var filename = "page-data.csv";
-    var pageLength = 9;
+    var pageLength = 10;
   }
 
   if (tab === "student") {
@@ -188,7 +188,7 @@ export default function DataTable({
       { label: "LT " + column3Label, key: "viewCount" },
       { label: "LT Most Recent Page Load", key: "max" },
       { label: "LT Unique Interaction Days", key: "dateCount" },
-      { label: "LT Total Hours Studied", key: "timeStudied" }
+      { label: "LT Hours on Site", key: "timeStudied" }
     );
     columns.push(
       {
@@ -264,11 +264,11 @@ export default function DataTable({
       },
       {
         Header: (
-          <Tip content="Total Hours Studied">Total Hours Studied</Tip>
+          <Tip content="Hours on Site">Hours on Site</Tip>
         ),
         headerClassName: "lt-data wordwrap",
         accessor: "timeStudied",
-        show: showColumns["LT Total Hours Studied"],
+        show: showColumns["LT Hours on Site"],
         getProps: (state, rowInfo, column) => {
           return {
             style: {

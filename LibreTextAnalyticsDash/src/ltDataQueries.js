@@ -37,7 +37,7 @@ export async function getData(data, state, setState) {
                 "LT Total Page Views": true,
                 "LT Most Recent Page Load": true,
                 "LT Unique Interaction Days": true,
-                "LT Total Hours Studied": true,
+                "LT Hours on Site": true,
                 "Adapt Unique Interaction Days": true,
                 "Adapt Unique Assignments": true,
                 "Adapt Most Recent Page Load": true,
@@ -56,7 +56,7 @@ export async function getData(data, state, setState) {
                 "LT Total Page Views": true,
                 "LT Most Recent Page Load": true,
                 "LT Unique Interaction Days": true,
-                "LT Total Hours Studied": true
+                "LT Hours on Site": true
               };
               var checks = Object.keys(columns);
               tempState["tableColumns"] = columns;
@@ -217,6 +217,14 @@ export function adaptStudentsQuery(state, setState) {
     courseId: state.courseId,
   };
   var config = getAxiosCall("/adaptstudents", data, state);
+  return config;
+}
+
+export function chapterChartQuery(state, setState) {
+  var data = {
+    courseId: state.courseId,
+  };
+  var config = getAxiosCall("/aggregatechapterdata", data, state);
   return config;
 }
 
@@ -427,8 +435,8 @@ export function getIndividualPageViewData(state, setState) {
     var p = state.page;
     var lgroup = null;
     var lname = null;
-    var bin = state.individualPageBin;
-    var unit = state.individualPageUnit;
+    var bin = state.bin;
+    var unit = state.unit;
   } else if (state.tab === "assignment") {
     setState({
       ...state,
@@ -515,7 +523,7 @@ export function getIndividualPageViewData(state, setState) {
     }
     if (state.tab === "page") {
       tempState["disablePage"] = false
-    }else if (state.tab === "assignment") {
+    } else if (state.tab === "assignment") {
       tempState["disableAssignment"] = false
     }
     setState({
@@ -528,6 +536,52 @@ export function getIndividualPageViewData(state, setState) {
   // })
   // console.log(tempState)
   // return tempState;
+}
+
+
+export function getAggregateChapterData(state, setState) {
+  var tempState = JSON.parse(JSON.stringify(state));
+  axios({
+    method: "post",
+    url: state.homepage + "/aggregatechapterdata",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      courseId: state.courseId
+    }
+  }).then((response) => {
+    setState({
+      ...state,
+      aggregateChapterData: JSON.parse(response.data)['aggregateChapterData']
+    })
+    console.log(response.data)
+  })
+}
+
+export function getIndividualChapterData(state, setState) {
+  setState({
+    ...state,
+    disablePage: true
+  })
+  axios({
+    method: "post",
+    url: state.homepage + "/individualchapterdata",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      courseId: state.courseId,
+      //path: state.dataPath,
+      individual: state.studentForChapterChart,
+    },
+  }).then((response) => {
+    setState({
+      ...state,
+      individualChapterData: JSON.parse(response.data)['individualChapterData'],
+      disablePage: true
+    })
+  })
 }
 
 function calculateCourseStructure(data) {

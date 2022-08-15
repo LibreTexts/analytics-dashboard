@@ -24,5 +24,7 @@
       noDataMessage:
         "No data to display.",
       toggleText:
-        "Toggle the following options.  The changes will take effect immediately without hitting apply."
+        "Toggle the following options.  The changes will take effect immediately without hitting apply.",
+      textbookChapterChart:
+        "This graph shows textbook chapter activity for an entire class. Choose a student to see individual activity."
     }

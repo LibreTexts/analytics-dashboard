@@ -1,7 +1,7 @@
 import HeaderGrid from "./headerGrid.js";
 import { Grid, Box, Spinner } from "grommet";
 import SelectWithApply from "./selectWithApply.js";
-import BarGraph from "./bargraph.js";
+import AllAdaptAssignmentsChart from "./allAdaptAssignmentsChart.js";
 import DataTable from "./dataTable.js";
 import LayeredComponent from "./layeredComponent.js";
 import StudentChart from "./studentChart.js";
@@ -141,7 +141,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                   csvName={state.student + "-adapt-assignments.csv"}
                   csvHeaders={generateHeaders("studentAssignments")}
                   component={
-                    <BarGraph
+                    <AllAdaptAssignmentsChart
                       tab={state.tab}
                       xaxis="level_name"
                       xaxisLabel="Assignment"

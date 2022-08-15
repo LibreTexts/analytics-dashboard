@@ -8,6 +8,7 @@
     "express": "^4.17.3",
     "express-basic-auth": "^1.2.1",
     "fast-csv": "^4.3.6",
+    "moment": "^2.29.4",
     "nodemon": "^2.0.15",
     "prettier": "^2.6.2",
     "react-scripts": "^5.0.0",

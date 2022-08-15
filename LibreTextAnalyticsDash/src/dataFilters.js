@@ -26,11 +26,13 @@ import "./index.css";
 export default function DataFilters({ state, setState, queryVariables }) {
   let noEnrollmentData = false;
 
-  state.studentData.forEach(student => {
-    if (student.isEnrolled === "N/A") {
-      noEnrollmentData = true;
-    }
-  })
+  if (state.studentData) {
+    state.studentData.forEach(student => {
+      if (student.isEnrolled === "N/A") {
+        noEnrollmentData = true;
+      }
+    })
+  }
 
   return (
     <Box gridArea="filters" direction="column">
@@ -114,7 +116,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
                     }}
                     label="Clear Dates"
                     onClick={() => clearDates(state, setState)}
-                    color="#022851"
+                    color="#0047BA"
                   />
                   <Button
                     label="Apply"
