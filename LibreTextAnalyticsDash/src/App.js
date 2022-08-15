@@ -108,7 +108,7 @@ function App() {
     },
     gridHeight: "small",
     homepage: "/analytics/api",
-    showNonEnrolledStudents: true,
+    showNonEnrolledStudents: false,
     ltCourse: false,
     adaptCourse: false,
     displayMode: false,

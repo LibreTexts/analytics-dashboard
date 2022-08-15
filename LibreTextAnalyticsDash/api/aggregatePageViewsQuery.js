@@ -73,10 +73,6 @@ function aggregatePageViewsQuery(params, dbInfo) {
       }
     }
   }
-  if (!params.courseId) {
-    data['pipeline'].splice(1, 0, initMatch)
-    data['pipeline'].splice(5, 0, courseMatch)
-  }
 
   var match = {
     "$match": {
@@ -119,10 +115,10 @@ function aggregatePageViewsQuery(params, dbInfo) {
     pathMatch['$match']['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]})
     data['pipeline'].splice(5, 0, pathMatch)
   }
-  if (matchesUsed && params.courseId) {
-    data['pipeline'].splice(6, 0, filterMatch)
-  } else if (matchesUsed && !params.courseId) {
+  if (matchesUsed && params.path) {
     data['pipeline'].splice(7, 0, filterMatch)
+  } else if (matchesUsed && !params.path) {
+    data['pipeline'].splice(6, 0, filterMatch)
   }
   return data;
 }

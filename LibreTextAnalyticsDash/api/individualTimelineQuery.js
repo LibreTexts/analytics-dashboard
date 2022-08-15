@@ -125,7 +125,7 @@ function individualTimelineQuery(params, dbInfo) {
       }
     }
     if (params.path) {
-      data['pipeline'].splice(6, 0, unitLookup)
+      data['pipeline'].splice(5, 0, unitLookup)
     }
     return data;
 }

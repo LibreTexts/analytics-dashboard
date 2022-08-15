@@ -66,10 +66,12 @@ export default function FilterView({ state, setState, queryVariables }) {
                   pathLength={state.pathLength}
                   data={state.allChapters}
                   levels={state.courseLevel}
-                  handleChange={() => handleChange(state, setState)}
-                  filterClick={() => handleFilterClick(state, setState)}
+                  handleChange={handleChange}
+                  filterClick={handleFilterClick}
                   init={state.dataPath}
                   clearPath={state.clearPath}
+                  state={state}
+                  setState={setState}
                 />
               </Box>
             )}

@@ -89,12 +89,11 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
     data = setDataPipeline(params, isPage, data, codeFound, dbInfo)
 
     // Add date filtering into pipeline if needed
-    data = setDateFilterAggregation(params, isPage, data)
+    data = setDateFilterAggregation(params, isPage, data, dbInfo)
 
     // Adds tag aggregations if needed
     data = setTagMatchAggregation(params, data)
 
-    //console.log(data['pipeline'])
     return data;
 }
 
@@ -160,20 +159,11 @@ function setDataPipeline(params, isPage, data, codeFound, dbInfo) {
     data['pipeline'].splice(8, 0, pageTitle)
   }
 
-  if (params.path && !isPage) {
-    data['pipeline'].splice(2, 0, lookup)
-    data['pipeline'].splice(3, 0, unwind)
-    data['pipeline'].splice(4, 0, unitLookup)
-    data['pipeline'].splice(6, 0, unset)
-  } else if (params.path) {
-    data['pipeline'].splice(3, 0, unitLookup)
-  }
-
   return data
 }
 
 // Makes boilerplates for date filtering, and checks params to decide whether to add
-function setDateFilterAggregation(params, isPage, data) {
+function setDateFilterAggregation(params, isPage, data, dbInfo) {
   var matchesUsed = false
   var filterMatch = {
     "$match": {
@@ -182,6 +172,34 @@ function setDateFilterAggregation(params, isPage, data) {
       }
     }
   }
+  //page info lookup for the page data table
+  var lookup = {
+    "$lookup": {
+      "from": dbInfo.pageColl,
+      "localField": "object.id",
+      "foreignField": "id",
+      "as": "pageInfo"
+    }
+  }
+  //filter by course unit
+  var unitLookup = {
+    "$match": {
+      '$expr': {
+        '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
+      }
+    }
+  }
+
+    var unwind = {
+      '$unwind': {
+        'path': '$pageInfo'
+      }
+    }
+
+    var unset = {
+      "$unset": ["pageTitle", "pageURL"]
+    }
+
 
   if (params.startDate) {
     filterMatch['$match']['$expr']['$and'].push({'$gte': ['$newDate', {'$dateFromString': {'dateString': params.startDate}}]})
@@ -199,6 +217,15 @@ function setDateFilterAggregation(params, isPage, data) {
   } else if (matchesUsed && isPage) {
     data['pipeline'].splice(4, 0, filterMatch)
     // console.log(data['pipeline'])
+  }
+
+  if (params.path && !isPage) {
+    data['pipeline'].splice(2, 0, lookup)
+    data['pipeline'].splice(3, 0, unwind)
+    data['pipeline'].splice(4, 0, unitLookup)
+    data['pipeline'].splice(6, 0, unset)
+  } else if (params.path) {
+    data['pipeline'].splice(3, 0, unitLookup)
   }
   return data
 }

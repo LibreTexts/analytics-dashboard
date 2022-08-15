@@ -20,7 +20,9 @@
       dataFilter:
         "Click on the button to the left to filter the data by date and course unit.",
       courseStructureDropdown:
-        "Choose a unit from the course to focus on.",
+        "Choose a unit from the course to focus on. This filter only affects the LibreText data.",
       noDataMessage:
-        "No data to display."
+        "No data to display.",
+      toggleText:
+        "Toggle the following options.  The changes will take effect immediately without hitting apply."
     }

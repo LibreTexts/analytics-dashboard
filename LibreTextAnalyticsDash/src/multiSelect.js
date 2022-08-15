@@ -126,7 +126,7 @@ export default function MultiSelect({
     return <div className="collapsible"> {allData} </div>;
   }
 
-  async function handleClick(event) {
+  async function handleClick(event, state, setState) {
     //console.log(event.key)
     setChosenPath(event.key);
     //console.log(chosenPath)
@@ -147,7 +147,7 @@ export default function MultiSelect({
           <TreeMenu
             data={treeMap(data)}
             onClickItem={(event) => {
-              handleClick(event);
+              handleClick(event, state, setState);
             }}
             hasSearch={false}
             initialActiveKey={init}

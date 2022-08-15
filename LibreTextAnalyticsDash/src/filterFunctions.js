@@ -401,7 +401,7 @@ export function handleChange(
   realCourses,
   queryVariables
 ) {
-  console.log("handleChange", state);
+  console.log(state);
   var courseData = JSON.parse(localStorage.getItem(state.courseId));
   if (type === "start") {
     if (state.startDate && (value < state.startDate || value > state.endDate)) {

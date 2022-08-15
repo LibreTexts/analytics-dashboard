@@ -48,9 +48,8 @@ export default function DataFilters({ state, setState, queryVariables }) {
       <>
         <Box direction="column">
           <Box
-            border={true}
             direction="column"
-            height="500px"
+            height="550px"
             width="600px"
             margin={{ left: "xlarge" }}
           >
@@ -58,6 +57,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
               <Box
                 margin={{ bottom: "medium", top: "xsmall" }}
                 direction="column"
+                border={true}
               >
                 <Box>
                   <Text
@@ -127,10 +127,16 @@ export default function DataFilters({ state, setState, queryVariables }) {
                   />
                 </Box>
               </Box>
+              <Box border={true}>
+              <InfoBox
+                infoText={infoText.toggleText}
+                color="#b0e0e6"
+              />
               <CheckBox
                 label="Include Non-enrolled Students"
                 checked={state.showNonEnrolledStudents}
                 pad={{ left: "large", bottom: "small" }}
+                toggle={true}
                 onClick={() =>
                   setState({
                     ...state,
@@ -159,6 +165,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
                   {state.display && <DataFilterText data={state.studentData} noEnrollmentData={noEnrollmentData}/>}
                 </Box>
               )}
+              </Box>
             </Box>
           </Box>
         </Box>
