@@ -95,12 +95,12 @@ export default class PageViewsChart extends React.Component {
               dy={50}
             />
           </XAxis>
-          <YAxis dataKey={this.props.yaxis} yAxisId="left">
-            <Label value={label} position="insideBottomLeft" angle="-90" />
+          <YAxis dataKey={this.props.yaxis} yAxisId="left" stroke="#0047BA">
+            <Label value={label} position="insideBottomLeft" angle="-90" style={{ fill: "#0047BA" }}/>
           </YAxis>
           {this.props.individualData &&
-            <YAxis dataKey="indivCount" yAxisId="right" orientation="right">
-              <Label value="Total Views on Individual Page" position="insideBottomRight" angle="90" />
+            <YAxis dataKey="indivCount" yAxisId="right" orientation="right" stroke="#F93549">
+              <Label value="Total Views on Individual Page" position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
             </YAxis>
           }
           <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />}/>

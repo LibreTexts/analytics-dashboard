@@ -30,14 +30,12 @@ export default function StudentChart({
   const [newWidth, setNewWidth] = React.useState(width);
   const [leftMargin, setLeftMargin] = React.useState(30);
   const [activeIndex, setActiveIndex] = React.useState(-1);
-  
+
   //console.log(data)
   if (xaxisLabel === "LT Most Recent Page Load" || xaxisLabel === "Adapt Most Recent Page Load") {
     data.forEach((student) => {
       student["_id"] = String(student["_id"]).split("T")[0];
     });
-  } else if (xaxisLabel === "LT Hours on Site") {
-
   }
 
   function getStudents(val, allData, original, displayMode) {

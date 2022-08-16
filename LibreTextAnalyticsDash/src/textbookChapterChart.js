@@ -168,12 +168,12 @@ export default function TextbookChapterChart({
               //<Label value="Textbook Chapters" position="bottom" />
             }
           </XAxis>
-          <YAxis dataKey="viewCount" yAxisId="left">
-            <Label value="View Count" position="insideBottomLeft" angle="-90" />
+          <YAxis dataKey="viewCount" yAxisId="left" stroke="#0047BA">
+            <Label value="View Count" position="insideBottomLeft" angle="-90" style={{ fill: "#0047BA" }}/>
           </YAxis>
           {data &&
-            <YAxis dataKey="indivCount" yAxisId="right" orientation="right">
-              <Label value="Individual Count" position="insideBottomRight" angle="90" />
+            <YAxis dataKey="indivCount" yAxisId="right" orientation="right" stroke="#F93549">
+              <Label value="Individual Count" position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
             </YAxis>
           }
           <Tooltip

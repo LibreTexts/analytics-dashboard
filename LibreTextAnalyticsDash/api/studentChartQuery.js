@@ -45,7 +45,7 @@ function studentChartQuery(params, dbInfo) {
       {
         "$addFields": {
           "durationInMinutes": {'$trunc': [{'$divide': ['$durationInSeconds', 60]}, 1]},
-          "timeStudied": {'$trunc': [{'$divide': ['$timeStudied', 3600]}, 1]},
+          "timeStudied": {'$trunc': [{'$divide': ['$timeStudied', 3600]}, 0]},
           "objectCount": {'$size': "$objects"},
           "viewCount": {'$size': "$timestamp"},
           "percentAvg": {'$trunc': [{'$avg': "$percent"}, 1]},
