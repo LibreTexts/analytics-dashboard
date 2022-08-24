@@ -3,23 +3,21 @@ import {
   Button,
   Text,
   DateInput,
-  Collapsible,
   CheckBox,
   Spinner,
+  Select,
 } from "grommet";
 import InfoBox from "./infoBox.js";
-import MultiSelect from "./multiSelect.js";
-import TitleText from "./titleText.js";
 import DataFilterText from "./dataFilterText.js";
+import SelectWithApply from "./selectWithApply.js";
 import {
-  filterReset,
-  applyReset,
   handleClick,
-  handleChange,
-  handleFilterClick,
-  menuCollapsible,
+} from "./dataFetchingFunctions.js";
+import { handleChange } from "./handleChangeFunction.js";
+import {
   clearDates,
-} from "./filterFunctions.js";
+  clearTags
+} from "./helperFunctions.js";
 import { infoText } from "./allInfoText.js";
 import "./index.css";
 
@@ -51,7 +49,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
         <Box direction="column">
           <Box
             direction="column"
-            height="550px"
+            height="625px"
             width="600px"
             margin={{ left: "xlarge" }}
           >
@@ -75,8 +73,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
                 <Box
                   pad="small"
                   direction="row"
-                  margin={{ top: "small" }}
-                  width="500px"
+                  width="550px"
                   alignSelf="center"
                 >
                   <Text margin={{ vertical: "small", right: "xsmall" }}>
@@ -105,27 +102,67 @@ export default function DataFilters({ state, setState, queryVariables }) {
                       handleChange("end", value, state, setState);
                     }}
                   />
-                </Box>
-                <Box direction="row" alignSelf="center" pad="small">
                   <Button
                     size="small"
                     margin={{
-                      bottom: "small",
-                      top: "medium",
-                      horizontal: "medium",
+                      left: "medium",
                     }}
-                    label="Clear Dates"
+                    style={{ height: 50, width: 75 }}
+                    label="Reset Dates"
                     onClick={() => clearDates(state, setState)}
                     color="#0047BA"
                   />
+                </Box>
+                <Box>
+                  <Text
+                    size="medium"
+                    weight="bold"
+                    textAlign="center"
+                    margin={{ top: "small" }}
+                  >
+                    Metatag Filters
+                  </Text>
+                </Box>
+                <Box
+                  pad="small"
+                  direction="row"
+                  width="550px"
+                  justify="center"
+                >
+                  {state.tagData &&
+                    <Box direction="row">
+                      <Select
+                        style={{ height: 45 }}
+                        margin={{ vertical: "small" }}
+                        options={state.tagData}
+                        value={state.chosenTag}
+                        onChange={({ value }) =>
+                          handleChange("chosenTag", value, state, setState)
+                        }
+                      />
+                      <Button
+                        size="small"
+                        margin={{
+                          left: "medium",
+                          vertical: "small"
+                        }}
+                        label="Clear Tag Filter"
+                        onClick={() => clearTags(state, setState)}
+                        color="#022851"
+                      />
+                    </Box>
+
+                  }
+                </Box>
+                <Box direction="row" alignSelf="center" pad="small">
                   <Button
                     label="Apply"
                     margin={{ top: "small" }}
-                    style={{ height: 45 }}
+                    style={{ height: 35, width: 120 }}
                     primary
                     color="#0047BA"
                     disabled={state.disable}
-                    onClick={() => handleFilterClick(state, setState)}
+                    onClick={() => handleClick(state, setState, "filters", queryVariables, false, true)}
                   />
                 </Box>
               </Box>
@@ -164,7 +201,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
                       icon={<Spinner />}
                     />
                   )}
-                  {state.display && <DataFilterText data={state.studentData} noEnrollmentData={noEnrollmentData}/>}
+                  {state.display && <DataFilterText data={state.studentData} noEnrollmentData={noEnrollmentData} />}
                 </Box>
               )}
               </Box>

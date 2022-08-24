@@ -1,15 +1,19 @@
-import { Box, Text, Button } from "grommet";
+import { Box, Text, Button, Spinner } from "grommet";
 import {
-  filterReset,
-  applyReset
-} from "./filterFunctions.js";
+  filterReset
+} from "./helperFunctions.js";
+import { handleClick } from "./dataFetchingFunctions.js";
+import InfoBox from "./infoBox.js";
+import { infoText } from "./allInfoText.js";
 import moment from "moment";
 
 export default function ChosenFilters({
   state,
   setState,
-  gridArea
+  gridArea,
+  queryVariables
 }) {
+  var hasFilter = state.chosenPath || state.start || state.end || state.chosenTag
 
   return (
       <Box
@@ -20,6 +24,8 @@ export default function ChosenFilters({
         height={{min: "150px"}}
         margin={{right: "xlarge"}}
       >
+      {state.studentData &&
+        <>
         {state.chosenPath && (
           <Text margin="small">
             Current chosen path:{" "}
@@ -38,7 +44,17 @@ export default function ChosenFilters({
             End Date: {moment(state.end).format("MMM Do YYYY")}
           </Text>
         )}
-        {!state.reset && (
+        {state.chosenTag && (
+          <Text margin={{horizontal: "small", bottom: "small"}}>
+            Metatag: {state.chosenTag}
+          </Text>
+        )}
+        {!hasFilter &&
+          <Text alignSelf="center" margin={{top: "large"}} size="medium">
+            No filters have been chosen.
+          </Text>
+        }
+        {!state.reset && hasFilter && (
           <Button
             secondary
             size="small"
@@ -59,7 +75,7 @@ export default function ChosenFilters({
               primary
               label="Apply"
               disabled={state.disableFilterReset}
-              onClick={() => applyReset(state, setState)}
+              onClick={() => handleClick(state, setState, "filterReset", queryVariables)}
               color="#022851"
               margin={{
                 bottom: "small",
@@ -68,6 +84,15 @@ export default function ChosenFilters({
               }}
             />
           </Box>
+        )}
+        </>
+      }
+        {state.disable && (!state.studentData || !state.display) && (
+          <InfoBox
+            infoText={infoText.loadingMessage}
+            showIcon={true}
+            icon={<Spinner />}
+          />
         )}
       </Box>
     )

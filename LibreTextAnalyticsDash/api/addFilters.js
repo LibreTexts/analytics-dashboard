@@ -1,0 +1,113 @@
+function splicePathFilter(index, params, data, addPageLookup=false) {
+  if (params.path && !addPageLookup) {
+    data['pipeline'].splice(index, 0, {
+      '$match': {
+        '$expr': {
+          '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
+        }
+      }
+    })
+    index = index + 1;
+  } else if (params.path && addPageLookup) {
+    var lookup = {
+      '$lookup': {
+        "from": "pageinfo",
+        "localField": "object.id",
+        "foreignField": "id",
+        "as": "pageInfo"
+      }
+    }
+    var unwind = {
+      '$unwind': {
+        'path': '$pageInfo'
+      }
+    }
+    data['pipeline'].splice(index, 0, lookup)
+    data['pipeline'].splice(index+1, 0, unwind)
+    data['pipeline'].splice(index+2, 0, {
+      '$match': {
+        '$expr': {
+          '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
+        }
+      }
+    })
+    index = index + 3
+  }
+  return index;
+}
+
+function spliceDateFilter(index, params, data) {
+  if (params.startDate || params.endDate) {
+    var addFields = {
+    "$addFields": {
+        "newDate": {'$dateFromString': {'dateString': '$object.timestamp'}}
+      }
+    }
+    var match = {
+      '$match': {
+        '$expr': {
+          '$and': []
+        }
+      }
+    }
+    if (params.startDate) {
+      match['$match']['$expr']['$and'].push({'$gte': ['$newDate', {'$dateFromString': {'dateString': params.startDate}}]})
+    }
+    if (params.endDate) {
+      match['$match']['$expr']['$and'].push({'$lte': ['$newDate', {'$dateFromString': {'dateString': params.endDate}}]})
+    }
+    data['pipeline'].splice(index, 0, addFields)
+    data['pipeline'].splice(index + 1, 0, match);
+    index = index + 2;
+  }
+  return index;
+}
+
+function spliceTagFilter(index, params, data, addPageLookup=false) {
+  var lookup = {
+    '$lookup': {
+      "from": "metatags",
+      "localField": "pageInfo.id",
+      "foreignField": "pageId",
+      "as": "tags"
+    }
+  }
+  var unwind = {
+    '$unwind': {
+      'path': '$tags'
+    }
+  }
+  var match = {
+    '$match': {
+      'tags.value': params.tagFilter
+    }
+  }
+  if (params.tagFilter && !addPageLookup) {
+    data['pipeline'].splice(index, 0, lookup)
+    data['pipeline'].splice(index+1, 0, unwind)
+    data['pipeline'].splice(index+2, 0, match)
+    //index = index + 3
+  } else if (params.tagFilter && addPageLookup) {
+    var pageLookup = {
+      '$lookup': {
+        "from": "pageinfo",
+        "localField": "object.id",
+        "foreignField": "id",
+        "as": "pageInfo"
+      }
+    }
+    var pageUnwind = {
+      '$unwind': {
+        'path': '$pageInfo'
+      }
+    }
+    data['pipeline'].splice(index, 0, pageLookup)
+    data['pipeline'].splice(index+1, 0, pageUnwind)
+    data['pipeline'].splice(index+2, 0, lookup)
+    data['pipeline'].splice(index+3, 0, unwind)
+    data['pipeline'].splice(index+4, 0, match)
+  }
+  //return index;
+}
+
+module.exports = { spliceTagFilter, spliceDateFilter, splicePathFilter }

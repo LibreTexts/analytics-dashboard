@@ -1,7 +1,8 @@
 import { Box, Button } from "grommet";
 import InfoBox from "./infoBox.js";
 import SelectWithApply from "./selectWithApply.js";
-import { handleChange, handleClick } from "./filterFunctions.js";
+import { handleChange } from "./handleChangeFunction.js";
+import { handleClick } from "./dataFetchingFunctions.js";
 import { infoText } from "./allInfoText.js";
 
 export default function CourseDropdown({

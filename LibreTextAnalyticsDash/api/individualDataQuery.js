@@ -29,6 +29,28 @@ function individualDataQuery(params, dbInfo) {
               'path': '$pageInfo'
             }
           },
+          //
+          {
+            '$lookup': {
+              "from": dbInfo.metaColl,
+              "localField": "pageInfo.id",
+              "foreignField": "pageId",
+              "as": "metaTags"
+            }
+          },
+          {
+            '$unwind': {
+              'path': '$metaTags'
+            }
+          },
+          {
+            "$match": {
+              '$expr': {
+                '$eq': ['$metaTags.value', params.tagFilter]
+              }
+            }
+          },
+          //
           {
             '$addFields': {
               'course': '$pageInfo.courseName'

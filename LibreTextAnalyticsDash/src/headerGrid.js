@@ -40,16 +40,16 @@ export default function HeaderGrid({
     gridAreas = [{ name: "courses", start: [0, 0], end: [2, 0] }];
     rows = ["small"];
   }
-  if (
-    state.tab === "filters" &&
-    !(state.chosenPath || state.start || state.end || state.reset)
-  ) {
-    columns = ["65%", "35%"];
-    gridAreas = [{ name: "courses", start: [0, 0], end: [2, 0] }];
-    rows = ["xsmall"];
-  } else if (
-    state.tab === "filters" &&
-    (state.chosenPath || state.start || state.end || state.reset)
+  // if (
+  //   state.tab === "filters" &&
+  //   !(state.chosenPath || state.start || state.end || state.reset || state.chosenTag)
+  // ) {
+  //   columns = ["65%", "35%"];
+  //   gridAreas = [{ name: "courses", start: [0, 0], end: [2, 0] }];
+  //   rows = ["xsmall"];
+  // } else
+   if (
+    state.tab === "filters"
   ) {
     columns = ["65%", "35%"];
   }
@@ -81,12 +81,12 @@ export default function HeaderGrid({
             />
           )}
           {!initPage &&
-            state.tab === "filters" &&
-            (state.chosenPath || state.start || state.end || state.reset) && (
+            state.tab === "filters" && (
               <ChosenFilters
                 state={state}
                 setState={setState}
                 gridArea="legend"
+                queryVariables={queryVariables}
               />
             )}
           {!initPage &&
@@ -131,7 +131,7 @@ export default function HeaderGrid({
               </>
             )}
         </Grid>
-        {!state.disableCourse && state.courseId && initPage && (
+        {!state.disableCourse && state.courseId && (
           <Box
             width="30%"
             alignSelf="center"

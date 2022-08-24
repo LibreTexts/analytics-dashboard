@@ -7,14 +7,30 @@ import GradesPageView from "./gradesPageViewsChart.js";
 import { infoText } from "./allInfoText.js";
 import DataToCSV from "./dataToCSV.js";
 import {
-  handleIndividual,
-  handleGrade,
   changeBinVal,
-  handleChange,
   changePropValue,
 } from "./filterFunctions.js";
+import {
+  handleIndividual,
+  handleGrade
+} from "./dataFetchingFunctions.js";
+import {
+  handleChange
+} from "./handleChangeFunction.js";
 
 export default function AdaptView({ state, setState, queryVariables, theme }) {
+  var height = "1500px";
+  var rows = ["50%", "50%"];
+  if (!state.individualAssignmentViews && !state.gradesPageView) {
+    height = "500px"
+  } else if (!state.individualAssignmentViews && state.gradesPageView) {
+    height = "1000px"
+    rows = ["25%", "75%"]
+  } else if (!state.gradesPageView && state.individualAssignmentViews) {
+    height = "1000px"
+    rows = ["75%", "25%"]
+  }
+
   return (
     <>
       <Grommet theme={theme}>
@@ -28,8 +44,9 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
         )}
         <Grid
           fill={true}
-          rows={["auto", "auto"]}
-          columns={["15%", "79%"]}
+          height={height}
+          rows={rows}
+          columns={["19%", "79%"]}
           gap="small"
           areas={[
             { name: "timeline", start: [0, 0], end: [1, 0] },

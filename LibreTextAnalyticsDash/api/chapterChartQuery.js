@@ -1,4 +1,4 @@
-//TODO: import encrypt student function
+const addFilters =  require("./addFilters.js");
 
 
 function chapterChartQuery(params, dbInfo, encryptStudent, decryptStudent) {
@@ -68,12 +68,16 @@ function chapterChartQuery(params, dbInfo, encryptStudent, decryptStudent) {
       ]
     }
 
+    var index = 1;
+    index = addFilters.spliceDateFilter(index, params, data);
+
     if (params.individual) {
       data['pipeline'].splice(1, 0, {
         '$match': {
           'actor.id': student
         }
       })
+      index = index + 1;
       if (params.individual.includes("@")) {
         data['pipeline'][6]['$addFields']['student'] = params.individual
         data['pipeline'][6]['$addFields']['displayModeStudent'] = encryptStudent(params.individual)
@@ -82,6 +86,8 @@ function chapterChartQuery(params, dbInfo, encryptStudent, decryptStudent) {
         data['pipeline'][6]['$addFields']['displayModeStudent'] = params.individual
       }
     }
+    index = addFilters.splicePathFilter(index+2, params, data)
+    addFilters.spliceTagFilter(index-2, params, data)
 
   return data;
 }

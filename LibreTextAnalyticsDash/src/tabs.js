@@ -1,5 +1,3 @@
-import {useState, useEffect} from "react";
-import {Button} from "grommet";
 import "./index.css";
 
 export default function Tabs({
@@ -9,7 +7,6 @@ export default function Tabs({
 
   function activeTab(event, tab, state, setState) {
     event.preventDefault()
-    var n;
     if (tab === "student") {
       setState({...state, studentTab: true, pageTab: false, assignmentTab: false, filterTab: false, tab: "student", index: 0})
     } else if (tab === "page") {

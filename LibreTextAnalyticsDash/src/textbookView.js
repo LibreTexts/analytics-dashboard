@@ -9,13 +9,13 @@ import { infoText } from "./allInfoText.js";
 import DataToCSV from "./dataToCSV.js";
 import {
   handleIndividual,
-  changeBinVal,
-  handleChange,
   pageViewCharts,
-} from "./filterFunctions.js";
+} from "./dataFetchingFunctions.js";
+import { handleChange } from "./handleChangeFunction.js";
+import { changeBinVal } from "./filterFunctions.js";
 import {
   getIndividualChapterData
-} from "./ltDataQueries.js";
+} from "./ltDataQueries-individual.js";
 import InfoBox from "./infoBox.js";
 
 export default function TextbookView({ state, setState, queryVariables }) {
@@ -31,8 +31,9 @@ export default function TextbookView({ state, setState, queryVariables }) {
       )}
       <Grid
         fill={true}
-        rows={["2/3", "full", "full"]}
-        columns={["15%", "79%"]}
+        height="2250px"
+        rows={["24%", "33%", "45%"]}
+        columns={["19%", "79%"]}
         gap="small"
         areas={[
           { name: "table", start: [0, 0], end: [1, 0] },

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Text } from "grommet";
+import { Box, Button } from "grommet";
 import TreeMenu from "react-simple-tree-menu";
 import "../node_modules/react-simple-tree-menu/dist/main.css";
 
@@ -14,8 +14,8 @@ export default function MultiSelect({
   filterClick,
   handleChange,
   init,
-  clearPath,
   resetPath,
+  queryVariables
 }) {
   const [chosenPath, setChosenPath] = React.useState();
 
@@ -68,65 +68,7 @@ export default function MultiSelect({
     return copyData[allData.length - 1];
   }
 
-  function chosen(val, event) {
-    event.preventDefault();
-    if (chosenPath.length === 0) {
-      var chosen = [];
-    } else {
-      var chosen = [...chosenPath];
-    }
-    chosen.push(<br />);
-    chosen.push(val);
-    setChosenPath(chosen);
-  }
-
-  function makeTree(obj, data, levels) {
-    let allData = [];
-    const visit = (obj, fn) => {
-      const values = Object.values(obj);
-      values.forEach((val) => {
-        if (val && typeof val === "object") {
-          visit(val, fn);
-        } else {
-          fn(val);
-        }
-      });
-    };
-
-    visit(obj, (val) => {
-      var lookup = levels[val];
-      if (lookup === undefined) {
-        lookup = pathLength - 1;
-      }
-      var num = lookup * 20;
-      var tab = String(num) + "px";
-      if (lookup === pathLength - 1) {
-        allData.push(
-          <Box>
-            <Text label={lookup} margin={{ left: tab }}>
-              {val.replaceAll("_", " ")}
-            </Text>
-          </Box>
-        );
-      } else {
-        allData.push(
-          <Box>
-            <Text
-              label={lookup}
-              margin={{ left: tab }}
-              onClick={(e) => chosen(val, e)}
-              style={{ cursor: "pointer" }}
-            >
-              {val.replaceAll("_", " ")}
-            </Text>
-          </Box>
-        );
-      }
-    });
-    return <div className="collapsible"> {allData} </div>;
-  }
-
-  async function handleClick(event, state, setState) {
+  function handleClick(event, state, setState) {
     //console.log(event.key)
     // setState({...state, disableCourseStructureButton: false})
     setChosenPath(event.key);
@@ -135,11 +77,10 @@ export default function MultiSelect({
     handleChange("path", event.key, state, setState);
   }
 
-  // <Box>
-  //   <Box margin={{bottom: 'medium'}}>
-  //     <Text>Chosen Path: {chosenPath}</Text>
-  //   </Box>
-  // </Box>
+  function clearPath(state, setState) {
+    setState({ ...state, chosenPath: null, dataPath: null, resetPath: true })
+    setChosenPath(null)
+  }
 
   return (
     <Box width="100%">
@@ -157,7 +98,7 @@ export default function MultiSelect({
             secondary
             label="Clear Current Path"
             color="#0047BA"
-            onClick={clearPath}
+            onClick={() => clearPath(state, setState)}
             margin={{ bottom: "small", horizontal: "large" }}
           />
         </>
@@ -167,9 +108,8 @@ export default function MultiSelect({
         label="Apply"
         color="#0047BA"
         margin={{ horizontal: "large" }}
-        disabled={state.disableCourseStructureButton}
         onClick={(event) => {
-          filterClick(state, setState, chosenPath);
+          filterClick(state, setState, "", queryVariables, chosenPath, true);
         }}
       />
     </Box>

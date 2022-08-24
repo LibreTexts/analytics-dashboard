@@ -92,8 +92,29 @@ function individualTimelineQuery(params, dbInfo) {
       }
     }
 
+    var tagLookup = {
+      '$lookup': {
+        "from": dbInfo.metaColl,
+        "localField": "pageInfo.id",
+        "foreignField": "pageId",
+        "as": "metaTags"
+      }
+    }
+    var tagUnwind = {
+      '$unwind': {
+        'path': '$metaTags'
+      }
+    }
+    var tagMatch = {
+      "$match": {
+        '$expr': {
+          '$eq': ['$metaTags.value', params.tagFilter]
+        }
+      }
+    }
+
     if (params.groupBy === "$object.id") {
-      data['pipeline'].splice(8, 0, pageTitle)
+      data['pipeline'].push(pageTitle)
       var lookup =
       {
         "$lookup": {
@@ -114,7 +135,7 @@ function individualTimelineQuery(params, dbInfo) {
       '$unset': ["pageTitle", "pageURL"]
     }
     if (params.groupBy === "$actor.id") {
-      data['pipeline'].splice(8, 0, unset)
+      data['pipeline'].push(unset)
       var lookup = {
         '$lookup': {
           "from": dbInfo.pageColl,
@@ -124,8 +145,19 @@ function individualTimelineQuery(params, dbInfo) {
         }
       }
     }
+
+    if (params.tagFilter) {
+      data['pipeline'].splice(3, 0, tagLookup)
+      data['pipeline'].splice(4, 0, tagUnwind)
+      data['pipeline'].splice(5, 0, tagMatch)
+    }
+    
     if (params.path) {
-      data['pipeline'].splice(5, 0, unitLookup)
+      if (params.tagFilter) {
+        data['pipeline'].splice(9, 0, unitLookup)
+      } else{
+        data['pipeline'].splice(6, 0, unitLookup)
+      }
     }
     return data;
 }

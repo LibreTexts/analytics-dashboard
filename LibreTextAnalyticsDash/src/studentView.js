@@ -5,20 +5,26 @@ import AllAdaptAssignmentsChart from "./allAdaptAssignmentsChart.js";
 import DataTable from "./dataTable.js";
 import LayeredComponent from "./layeredComponent.js";
 import StudentChart from "./studentChart.js";
+import PageViewsChart from "./pageViewsChart.js";
 import { infoText } from "./allInfoText.js";
-import { getStudentChartData } from "./ltDataQueries.js";
+import { getStudentChartData, getStudentTextbookEngagementData } from "./ltDataQueries-individual.js";
 import DataToCSV from "./dataToCSV.js";
 import {
-  handleIndividual,
   changeBarXAxis,
-  handleChange,
-  changeActivityFilter,
+  sortData,
+  changeBinVal
+} from "./filterFunctions.js";
+import {
+  handleIndividual,
+  pageViewCharts
+} from "./dataFetchingFunctions.js";
+import { handleChange } from "./handleChangeFunction.js";
+import {
   reactGrids,
   reactRows,
-  sortData,
   getStudentChartFilters,
-  generateHeaders,
-} from "./filterFunctions.js";
+  generateHeaders
+} from "./helperFunctions.js";
 import InfoBox from "./infoBox.js";
 
 export default function StudentView({ state, setState, queryVariables }) {
@@ -33,9 +39,9 @@ export default function StudentView({ state, setState, queryVariables }) {
         />
       )}
       <Grid
-        fill={true}
+        height={state.ltCourse && state.adaptCourse ? "2525px" : "2000px"}
         rows={reactRows(state)}
-        columns={["15%", "79%"]}
+        columns={["19%", "79%"]}
         gap="small"
         areas={reactGrids(state)}
         flex={true}
@@ -110,7 +116,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                       tab={state.tab}
                       data={state.studentChart}
                       xaxisLabel={state.barXAxisLabel}
-                      width="90%"
+                      width="100%"
                       displayMode={state.displayMode}
                     />
                   }
@@ -191,6 +197,66 @@ export default function StudentView({ state, setState, queryVariables }) {
                         {label: "Average Percent Score", key: 'percent'},
                       ]
                     }
+                    />
+                  }
+                />
+              )}
+              {state.pageData && queryVariables.click && state.display && (
+                <LayeredComponent
+                  gridArea="studentTextbookEngagement"
+                  queryVariables={queryVariables}
+                  title="Aggregate Page Views With Individual Student Activity"
+                  infoText={
+                    infoText.aggregatePageViewsChart1 +
+                    state.courseName +
+                    infoText.aggregatePageViewsChart2
+                  }
+                  filterLabel="Bar Chart Display Filters"
+                  state={state}
+                  setState={setState}
+                  loading={infoText.loadingMessage}
+                  component={
+                    <PageViewsChart
+                      data={state.pageViews}
+                      individualData={state.textbookEngagementData}
+                      type="aggregateStudent"
+                      xaxis="_id"
+                      yaxis="count"
+                      binLabel={state.binLabel}
+                      width={980}
+                      student={state.studentForTextbookEngagement}
+                    />
+                  }
+                  data={state.pageViews}
+                  label={state.individualStudentBinLabel}
+                  filterOptions={["Day", "Week", "2 Weeks", "Month"]}
+                  filterSelectLabel="Unit of Time:"
+                  filterFunction={changeBinVal}
+                  clickFunction={pageViewCharts}
+                  type="aggregatePageViews"
+                  axisType="binLabel"
+                  selectComponent={
+                    <SelectWithApply
+                      selectOptions={state.allStudents}
+                      value={state.studentForTextbookEngagement}
+                      dropdownFunction={handleChange}
+                      clickFunction={getStudentTextbookEngagementData}
+                      state={state}
+                      setState={setState}
+                      type="studentForTextbookEngagement"
+                      disable={state.disableStudentTextbookEngagement}
+                      queryVariables={queryVariables}
+                    />
+                  }
+                  downloadComponent={
+                    <DataToCSV
+                      data={state.pageViews}
+                      filename="aggregate-page-views.csv"
+                      headers={[
+                        { label: "Date", key: "dateString" },
+                        { label: "Number of Views", key: "count" },
+                        { label: "Unique Pages", key: "uniquePages" },
+                      ]}
                     />
                   }
                 />

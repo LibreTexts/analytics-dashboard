@@ -114,7 +114,6 @@ function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
     data['pipeline'].splice(1, 0, filterMatch)
   }
 
-  console.log(data)
   return data;
 }
 

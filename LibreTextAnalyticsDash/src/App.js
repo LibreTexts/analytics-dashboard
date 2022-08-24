@@ -1,15 +1,15 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import "react-table-6/react-table.css";
-import { Grommet, Box, Text } from "grommet";
+import { Grommet } from "grommet";
 import "./index.css";
-import { infoText } from "./allInfoText.js";
 import HeaderGrid from "./headerGrid.js";
 import StudentView from "./studentView.js";
 import TextbookView from "./textbookView.js";
 import AdaptView from "./adaptView.js";
 import FilterView from "./filterView.js";
 import axios from "axios";
+import { getTagInfo } from "./ltDataQueries";
 
 const theme = {
   global: {
@@ -40,6 +40,7 @@ function App() {
     disableStudent: false,
     disableAssignment: false,
     disableGradesAssignment: false,
+    disableStudentTextbookEngagement: false,
     course: null,
     courseId: null,
     allPages: null,
@@ -54,6 +55,8 @@ function App() {
     pageResult: null,
     page: null,
     pageId: null,
+    allPageIds: null,
+    chosenTag: null,
     barXAxis: "dateCount",
     barXAxisLabel: "LT Unique Interaction Days",
     index: 0,
@@ -68,6 +71,9 @@ function App() {
     individualAssignmentBinLabel: "Day",
     individualAssignmentUnit: "day",
     individualAssignmentSortLabel: "By Due Date",
+    individualStudentBin: 1,
+    individualStudentBinLabel: "Day",
+    individualStudentUnit: "day",
     sliderValue: 10,
     numBinsGrades: 10,
     allData: {},
@@ -134,16 +140,16 @@ function App() {
   };
 
   useEffect(() => {
-    var courses = JSON.parse(localStorage.getItem("allCourses"));
+    var courses = JSON.parse(sessionStorage.getItem("allCourses"));
     if (courses) {
       var success = Object.keys(courses).find(
         (key) => courses[key].ltCourse === true
       );
     } else {
-      var success = false;
+      success = false;
     }
 
-    if (!localStorage.getItem("allCourses") || !success) {
+    if (!sessionStorage.getItem("allCourses") || !success) {
       let realCourses = {};
       axios(state.homepage + "/realcourses").then((response) => {
         let x = {};
@@ -171,12 +177,12 @@ function App() {
           };
         });
         setRealCourses(x);
-        localStorage.setItem("allCourses", JSON.stringify(x));
+        sessionStorage.setItem("allCourses", JSON.stringify(x));
       });
     } else {
-      setRealCourses(JSON.parse(localStorage.getItem("allCourses")));
+      setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
     }
-  }, []);
+  }, [state]);
 
   return (
     <>

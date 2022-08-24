@@ -150,7 +150,7 @@ export default function TextbookChapterChart({
   };
   return (
     <>
-      <ResponsiveContainer height="99%">
+      <ResponsiveContainer width="99%" aspect={2}>
         <BarChart
           margin={{ top: 25, right: 30, bottom: 250, left: data ? 70 : 55 }}
           data={showData}

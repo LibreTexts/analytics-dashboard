@@ -6,7 +6,7 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
   //gets the adapt course code based on the libretext course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   //todo: make a dropdown on the frontend to choose specific level groups and names to look at
-
+  console.log(params.tagFilter)
   var data = {
       "collection": dbInfo.coll,
       "database": dbInfo.db,
@@ -94,10 +94,12 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
     // Adds tag aggregations if needed
     data = setTagMatchAggregation(params, data)
 
+    // console.log(data['pipeline'])
     return data;
 }
 
 function setDataPipeline(params, isPage, data, codeFound, dbInfo) {
+  console.log(params.tagFilter)
   if (codeFound) {
     var adaptLookup = adaptLookupSubQuery.adaptLookupSubQuery(codeFound, params)
     //preserves students who have libretext data but no adapt data
@@ -138,9 +140,28 @@ function setDataPipeline(params, isPage, data, codeFound, dbInfo) {
     "$unset": ["pageTitle", "pageURL"]
   }
 
-  var unwind = {
+  var pageUnwind = {
     '$unwind': {
       'path': '$pageInfo'
+    }
+  }
+
+  var tagLookup = {
+    '$lookup': {
+      "from": dbInfo.metaColl,
+      "localField": "pageInfo.id",
+      "foreignField": "pageId",
+      "as": "metaTags"
+    }
+  }
+  var tagUnwind = {
+    '$unwind': {
+      'path': '$metaTags'
+    }
+  }
+  var tagMatch = {
+    "$match": {
+      'metaTags.value': params.tagFilter
     }
   }
 
@@ -155,8 +176,26 @@ function setDataPipeline(params, isPage, data, codeFound, dbInfo) {
 
   if (isPage) {
     data['pipeline'].splice(1, 0, lookup)
-    data['pipeline'].splice(2, 0, unwind)
-    data['pipeline'].splice(8, 0, pageTitle)
+    data['pipeline'].splice(2, 0, pageUnwind)
+    if (params.tagFilter) {
+      data['pipeline'].splice(3, 0, tagLookup)
+      data['pipeline'].splice(4, 0, tagUnwind)
+      data['pipeline'].splice(5, 0, tagMatch)
+    }
+    data['pipeline'].push(pageTitle)
+  }
+
+  if (params.path && !isPage) {
+    data['pipeline'].splice(2, 0, lookup)
+    data['pipeline'].splice(3, 0, pageUnwind)
+    data['pipeline'].splice(4, 0, unitLookup)
+    data['pipeline'].splice(6, 0, unset)
+  } else if (params.path) {
+    if (isPage && params.tagFilter) {
+      data['pipeline'].splice(6, 0, unitLookup)
+    } else {
+      data['pipeline'].splice(3, 0, unitLookup)
+    }
   }
 
   return data
@@ -215,7 +254,11 @@ function setDateFilterAggregation(params, isPage, data, dbInfo) {
   if (matchesUsed && !isPage) {
     data['pipeline'].splice(2, 0, filterMatch)
   } else if (matchesUsed && isPage) {
-    data['pipeline'].splice(4, 0, filterMatch)
+    if (params.tagFilter) {
+      data['pipeline'].splice(7, 0, filterMatch)
+    } else {
+      data['pipeline'].splice(4, 0, filterMatch)
+    }
     // console.log(data['pipeline'])
   }
 
@@ -264,7 +307,11 @@ function setTagMatchAggregation(params, data) {
   // check the params to set up pipeline
 
   if (params.tagType) {
-    data['pipeline'].splice(6, 0, tagLookup)
+    if (isPage && params.tagFilter) {
+      data['pipeline'].splice(9, 0, tagLookup)
+    } else {
+      data['pipeline'].splice(6, 0, tagLookup)
+    }
     tagMatch['$project']['tags']['$filter']['cond']['$and'].push({'$eq': ['$tags.type', params.tagType]})
     hasTags = true
   }
@@ -274,7 +321,11 @@ function setTagMatchAggregation(params, data) {
   }
   //console.log(tagMatch['$project']['tags']['$filter'])
   if (hasTags) {
-    data['pipeline'].splice(7, 0, tagMatch)
+    if (isPage && params.tagFilter) {
+      data['pipeline'].splice(10, 0, tagMatch)
+    } else {
+      data['pipeline'].splice(7, 0, tagMatch)
+    }
   }
 
   return data

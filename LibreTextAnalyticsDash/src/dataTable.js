@@ -192,6 +192,20 @@ export default function DataTable({
     );
     columns.push(
       {
+        Header: "LibreText",
+        getHeaderProps: (state, rowInfo, column) => {
+          return {
+            style: {
+              background: "rgb(255, 255, 158)",
+            },
+          };
+        },
+        columns: []
+      }
+    )
+
+    columns[1].columns.push(
+      {
         Header: <Tip content={column2Label}>{column2Label}</Tip>,
         headerClassName: "lt-data wordwrap",
         accessor: "objectCount",
@@ -323,6 +337,19 @@ export default function DataTable({
       { label: "Adapt Average Attempts Per Assignment", key: "adaptAvgAttempts" }
     );
     columns.push(
+      {
+        Header: "Adapt",
+        getHeaderProps: (state, rowInfo, column) => {
+          return {
+            style: {
+              background: "rgb(171, 247, 177)",
+            },
+          };
+        },
+        columns: [],
+      }
+    )
+    columns[2].columns.push(
       {
         Header: (
           <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>

@@ -5,13 +5,11 @@ import TitleText from "./titleText.js";
 import MultiSelect from "./multiSelect.js";
 import { infoText } from "./allInfoText.js";
 import {
-  handleClick,
-  handleFilterClick,
-  handleChange,
-  menuCollapsible,
-  clearPath,
-  changeColumns,
-} from "./filterFunctions.js";
+  handleClick
+} from "./dataFetchingFunctions.js";
+import {
+  handleChange
+} from "./handleChangeFunction.js";
 
 export default function FilterView({ state, setState, queryVariables }) {
   return (
@@ -24,12 +22,13 @@ export default function FilterView({ state, setState, queryVariables }) {
       />
       <Grid
         fill={true}
-        rows={["auto"]}
+        rows={["auto", "auto"]}
         columns={["50%", "50%"]}
         gap="small"
         areas={[
           { name: "filters", start: [0, 0], end: [0, 0] },
           { name: "dropdown", start: [1, 0], end: [1, 0] },
+          { name: "metatag", start: [1, 1], end: [1, 1] },
         ]}
         flex={true}
         responsive={true}
@@ -67,14 +66,19 @@ export default function FilterView({ state, setState, queryVariables }) {
                   data={state.allChapters}
                   levels={state.courseLevel}
                   handleChange={handleChange}
-                  filterClick={handleFilterClick}
+                  filterClick={handleClick}
                   init={state.dataPath}
-                  clearPath={state.clearPath}
                   state={state}
                   setState={setState}
+                  queryVariables={queryVariables}
                 />
               </Box>
             )}
+            {/* <MetaTagFilter
+              state={state}
+              setState={setState}
+              queryVariables={queryVariables}
+            /> */}
           </>
         )}
       </Grid>

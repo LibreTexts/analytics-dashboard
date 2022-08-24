@@ -1,18 +1,4 @@
 import React, { useState } from "react";
-import { DefaultTooltipContent } from "recharts/lib/component/DefaultTooltipContent";
-import {
-  BarChart,
-  CartesianGrid,
-  Cell,
-  XAxis,
-  YAxis,
-  ZAxis,
-  Tooltip,
-  Legend,
-  Bar,
-  Label,
-  ResponsiveContainer,
-} from "recharts";
 import {
   Box,
   Button,
@@ -23,7 +9,7 @@ import {
   Text,
   RangeInput,
 } from "grommet";
-import { Filter, Close, FormClose } from "grommet-icons";
+import { Filter, Close } from "grommet-icons";
 import TitleText from "./titleText.js";
 import InfoBox from "./infoBox.js";
 import { infoText as allInfoText } from "./allInfoText.js";
@@ -59,11 +45,11 @@ export default function LayeredComponent({
   const [disableFilter, setDisableFilter] = useState(false);
 
   var height = 150;
-  var border = false;
+  //var border = false;
   var disableButton = true;
   if (selectComponent) {
     height += 75;
-    border = true;
+    //border = true;
     disableButton = disable;
   }
   if (downloadComponent) {
@@ -84,6 +70,23 @@ export default function LayeredComponent({
   }
 
   var hasLegend = (type === "studentAssignments" || type === "aggregatePageViews" || type === "chapterData") ? true : false
+
+  var rows = ["33%", "67%"]
+  // if (hasLegend) {
+  //   rows = ["45%", "55%"]
+  // }
+  if (type === "barXAxisLabel") {
+    rows = ["25%", "75%"]
+  }
+  if (type === "individualAssignmentViews" || type === "numBinsGrades") {
+    //rows = ["25%", "75%"]
+    if (!data) {
+      rows = ["99%", "1%"]
+    }
+  }
+  if (type === "chapterData") {
+    rows = ["25%", "75%"]
+  }
 
   function closeFilter(
     state,
@@ -140,19 +143,19 @@ export default function LayeredComponent({
     setClick(false);
     setDisableFilter(false);
   }
-
   return (
     <Box
       gridArea={gridArea}
-      border={!border}
+      border={true}
       align="center"
       direction="row"
       overflowY="scroll"
       responsive={true}
+      height="100%"
     >
       <Grid
         fill={true}
-        rows={["1/5", "4/5"]}
+        rows={rows}
         columns={["100%"]}
         gap="small"
         areas={[
@@ -169,7 +172,7 @@ export default function LayeredComponent({
           overflowY="scroll"
           responsive={true}
           height={height}
-          border={border}
+          border={false}
           justify={hasLegend ? "center" : "stretch"}
         >
           {hasLegend && (
@@ -225,7 +228,7 @@ export default function LayeredComponent({
           direction="row"
           overflowY="scroll"
           responsive={true}
-          border={border && data ? true : false}
+          border={false}
           height={chartHeight}
         >
           {data && (type !== "chapterData") && (

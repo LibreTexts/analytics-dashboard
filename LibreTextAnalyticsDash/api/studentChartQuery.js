@@ -1,3 +1,4 @@
+const addFilters =  require("./addFilters.js");
 //find the data for the bar chart on the student tab
 //look at an attribute and find the number of students per x axis element
 
@@ -78,84 +79,11 @@ function studentChartQuery(params, dbInfo) {
       }
     ]
   }
+  var index = 1;
+  index = addFilters.spliceDateFilter(index, params, data);
+  index = addFilters.splicePathFilter(index, params, data, true);
+  addFilters.spliceTagFilter(index, params, data, index > 4 ? false : true);
 
-  var match = {
-    "$match": {
-      '$expr': {
-        '$and': []
-      }
-    }
-  }
-
-  var filterMatch = {
-    "$match": {
-      '$expr': {
-        '$and': []
-      }
-    }
-  }
-
-  var lookup = {
-    "$lookup": {
-      "from": dbInfo.pageColl,
-      "localField": "object.id",
-      "foreignField": "id",
-      "as": "pageInfo"
-    }
-  }
-
-  var unwind = {
-    "$unwind": {
-      'path': '$pageInfo'
-    }
-  }
-
-  var addFields = {
-    '$addFields': {
-      'course': '$pageInfo.courseName'
-    }
-  }
-
-  var pathMatch = {
-    "$match": {
-      '$expr': {
-        '$and': []
-      }
-    }
-  }
-
-  var matchesUsed = false
-  if (params.start) {
-    filterMatch['$match']['$expr']['$and'].push({'$gte': ['$date', {'$dateFromString': {'dateString': params.start}}]})
-    matchesUsed = true
-  }
-  if (params.end) {
-    filterMatch['$match']['$expr']['$and'].push({'$lte': ['$date', {'$dateFromString': {'dateString': params.end}}]})
-    matchesUsed = true
-  }
-  if (matchesUsed && params.courseId) {
-    data['pipeline'].splice(2, 0, filterMatch)
-  } else if (matchesUsed && !params.courseId) {
-    data['pipeline'].splice(2, 0, filterMatch)
-  }
-
-  if (!params.courseId || (params.path && params.courseId)) {
-    data['pipeline'].splice(1, 0, lookup)
-    data['pipeline'].splice(2, 0, unwind)
-  }
-  if (!params.courseId) {
-    data['pipeline'].splice(1, 0, initMatch)
-    data['pipeline'].splice(4, 0, addFields)
-    data['pipeline'].splice(5, 0, courseMatch)
-  }
-  // if (params.courseId) {
-  //   match['$match']['$expr']['$and'].push({'$eq': ['$actor.courseName', params.courseId]})
-  //   data['pipeline'].splice(0, 0, match)
-  // }
-  if (params.path) {
-    pathMatch['$match']['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]})
-    data['pipeline'].splice(4, 0, pathMatch)
-  }
   return data;
 }
 

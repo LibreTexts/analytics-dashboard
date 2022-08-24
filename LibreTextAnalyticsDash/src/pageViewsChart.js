@@ -5,9 +5,7 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-  ZAxis,
   Tooltip,
-  Legend,
   Bar,
   Label,
   ResponsiveContainer,
@@ -15,9 +13,6 @@ import {
 import moment from "moment";
 
 export default class PageViewsChart extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     var height = 350;
     if (this.props.height) {
@@ -29,6 +24,8 @@ export default class PageViewsChart extends React.Component {
     if (type === "individual") {
       label = "Total Views";
       aspect = 3;
+    } else if (type === "aggregateStudent") {
+      label = "Average Views on All Pages";
     }
 
     this.props.data.forEach((d, index) => {
@@ -57,8 +54,8 @@ export default class PageViewsChart extends React.Component {
         if (this.props.individualData) {
           var pageData = [
             {
-              name: "Page",
-              value: this.props.page
+              name: this.props.type === "aggregate" ? "Page" : "Student",
+              value: this.props.type === "aggregate" ? this.props.page : this.props.student
             },
             {
               name: "Individual Page Views",
@@ -100,7 +97,7 @@ export default class PageViewsChart extends React.Component {
           </YAxis>
           {this.props.individualData &&
             <YAxis dataKey="indivCount" yAxisId="right" orientation="right" stroke="#F93549">
-              <Label value="Total Views on Individual Page" position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
+              <Label value={type === "aggregate" ? "Total Views on Individual Page" : "Average Views"} position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
             </YAxis>
           }
           <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />}/>

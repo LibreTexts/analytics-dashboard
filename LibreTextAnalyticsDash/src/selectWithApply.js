@@ -21,7 +21,7 @@ export default function SelectWithApply({
     dropHeight = dropSize;
   }
   if (
-    (type === "studentAssignments" || type === "studentForChapterChart") &&
+    (type === "studentAssignments" || type === "studentForChapterChart" || type === "studentForTextbookEngagement") &&
     state.displayMode
   ) {
     selectOptions = state.encryptedStudents;
@@ -62,7 +62,7 @@ export default function SelectWithApply({
           right: "medium",
         }}
       />
-      {(type === "studentAssignments" || type === "studentForChapterChart") && (
+      {(type === "studentAssignments" || type === "studentForChapterChart" || type === "studentForTextbookEngagement") && (
         <Button
           secondary
           size="small"
@@ -70,7 +70,9 @@ export default function SelectWithApply({
           onClick={() =>
             type === "studentAssignments"
               ? setState({ ...state, student: null, studentAssignments: null })
-              : setState({ ...state, studentForChapterChart: null, individualChapterData: null })
+              :  type === "studentForChapterChart"
+              ? setState({ ...state, studentForChapterChart: null, individualChapterData: null })
+              : setState({ ...state, studentForTextbookEngagement: null, textbookEngagementData: null })
           }
           margin={{
             bottom: "small",
