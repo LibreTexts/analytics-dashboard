@@ -53,7 +53,7 @@ function individualTimelineQuery(params, dbInfo) {
             '_id': params.groupBy,
             // 'allStartDates': {'$addToSet': '$startDate'},
             // 'allEndDates': {'$addToSet': '$endDate'},
-            "pageTitle": {'$addToSet': '$pageTitle'},
+            "pageTitle": {'$first': '$pageTitle'},
             //"pageURL": {'$addToSet': '$pageURL'}
           }
         },
