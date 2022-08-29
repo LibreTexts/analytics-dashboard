@@ -80,6 +80,7 @@ export default function TextbookChapterChart({
         <BarChart
           margin={{ top: 25, right: 30, bottom: 250, left: data ? 70 : 55 }}
           data={showData}
+          barGap={0}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis

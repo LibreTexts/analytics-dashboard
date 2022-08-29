@@ -108,6 +108,7 @@ export default class AllAdaptAssignmentsChart extends React.Component {
             height={375}
             margin={{ top: 25, right: 20, bottom: 110, left: 30 }}
             data={this.props.allData}
+            barGap={0}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis

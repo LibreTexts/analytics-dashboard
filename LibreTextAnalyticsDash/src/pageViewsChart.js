@@ -77,6 +77,8 @@ export default class PageViewsChart extends React.Component {
           height={height}
           margin={{ right: 20, bottom: 80, left: 30 }}
           data={this.props.data}
+          barGap={0}
+          barCategoryGap="15%"
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
