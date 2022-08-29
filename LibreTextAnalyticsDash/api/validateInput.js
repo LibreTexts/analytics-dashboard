@@ -15,12 +15,12 @@ function validateInput(endpoint, params) {
     ) {
         params.courseId = null
     }
-    
+
     if (params.groupBy &&
         (checkInvalid(params.groupBy, invalidChars) ||
-        (params.groupBy).replace(/[^a]/g, "").length > 1)   
+        (params.groupBy).replace(/[^$]/g, "").length > 1)
     ) {
-        console.error(`${(params.groupBy).replace(/[^a]/g, "").length } '$' instances in groupby`);
+        console.error(`${(params.groupBy).replace(/[^$]/g, "").length } '$' instances in groupby`);
         params.groupBy = null
     }
 
@@ -39,15 +39,15 @@ function validateInput(endpoint, params) {
         console.log(params.path) //do sumthing?
     }
     // const alphanum =  /^[0-9a-zA-Z():.,/Δ-]+$/;
-    
-    if (params.adaptLevelGroup && 
+
+    if (params.adaptLevelGroup &&
         typeof params.adaptLevelGroup != 'string' &&
         invalidChars.test(params.adaptLevelGroup)
     ) {
         console.error(`${params.adaptLevelGroup} is not a string`);
         params.adaptLevelGroup = null
     }
-    if (params.adaptLevelName && 
+    if (params.adaptLevelName &&
         typeof params.adaptLevelName != 'string' &&
         invalidChars.test(params.adaptLevelName)
     ) {
@@ -68,7 +68,7 @@ function validateInput(endpoint, params) {
         console.log(params.path);
     }
 
-    if (params.unit && 
+    if (params.unit &&
         params.unit != "day" &&
         params.unit != "week" &&
         params.unit != "month"

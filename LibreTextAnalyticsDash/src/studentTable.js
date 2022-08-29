@@ -51,8 +51,10 @@ export default class StudentTable extends React.Component {
         filterMethod: (filter, rows) =>
           matchSorter(rows, filter.value, { keys: [idAccessor] }),
         filterAll: true,
-      },
-      {
+      }
+    ]
+    if (this.props.ltCourse) {
+      columns.push({
         Header: (
           <Tip content="Unique Pages Accessed">Unique Pages Accessed</Tip>
         ),
@@ -140,8 +142,8 @@ export default class StudentTable extends React.Component {
         filterMethod: (filter, rows) =>
           matchSorter(rows, filter.value, { keys: ["timeStudied"] }),
         filterAll: true,
-      },
-    ];
+      })
+    }
 
     if (this.props.hasAdapt) {
       headers.push(

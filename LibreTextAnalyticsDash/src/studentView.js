@@ -96,8 +96,7 @@ export default function StudentView({ state, setState, queryVariables }) {
             )}
             {state.studentData &&
               queryVariables.click &&
-              state.display &&
-              state.ltCourse && (
+              state.display && (
                 <LayeredComponent
                   gridArea="plots"
                   queryVariables={queryVariables}
@@ -118,6 +117,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                       xaxisLabel={state.barXAxisLabel}
                       width="100%"
                       displayMode={state.displayMode}
+                      ltCourse={state.ltCourse}
                     />
                   }
                   data={state.studentChart}
@@ -187,8 +187,8 @@ export default function StudentView({ state, setState, queryVariables }) {
                         {label: 'Level/Assignment', key: "level_name"},
                         {label: "Due Date", key: 'due'},
                         {label: "Submitted", key: 'submitted'},
-                        {label: "Points Possible?", key: 'levelpoints'},
-                        {label: "Points Earned?", key: 'Sum'},
+                        {label: "Points Possible", key: 'levelpoints'},
+                        {label: "Points Earned", key: 'Sum'},
                         {label: "Percent Score", key: 'percent'},
                       ] :
                       [
@@ -250,12 +250,12 @@ export default function StudentView({ state, setState, queryVariables }) {
                   }
                   downloadComponent={
                     <DataToCSV
-                      data={state.pageViews}
-                      filename="aggregate-page-views.csv"
+                      data={state.textbookEngagementData ? state.textbookEngagementData : state.pageViews}
+                      filename={state.textbookEngagementData ? state.studentForTextbookEngagement+"-individual-page-views.csv" : "aggregate-page-views.csv"}
                       headers={[
                         { label: "Date", key: "dateString" },
                         { label: "Number of Views", key: "count" },
-                        { label: "Unique Pages", key: "uniquePages" },
+                        { label: "Number of Unique Pages", key: "uniquePageCount" },
                       ]}
                     />
                   }

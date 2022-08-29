@@ -110,12 +110,12 @@ export default function TextbookView({ state, setState, queryVariables }) {
                 }
                 downloadComponent={
                   <DataToCSV
-                    data={state.pageViews}
-                    filename="aggregate-page-views.csv"
+                    data={state.individualPageViews ? state.individualPageViews : state.pageViews}
+                    filename={state.individualPageViews ? state.page+"-individual-page-views.csv" : "aggregate-page-views.csv"}
                     headers={[
                       { label: "Date", key: "dateString" },
                       { label: "Number of Views", key: "count" },
-                      { label: "Unique Pages", key: "uniquePages" },
+                      { label: state.individualPageViews ? "Number of Unique Students" : "Number of Unique Pages", key: state.individualPageViews ? "uniqueStudentCount" : "uniquePageCount" },
                     ]}
                   />
                 }
@@ -169,16 +169,15 @@ export default function TextbookView({ state, setState, queryVariables }) {
                   }
                   downloadComponent={
                     <DataToCSV
-                      data={state.individualPageViews}
-                      filename={state.page + "-views.csv"}
+                      data={state.individualChapterData ? state.individualChapterData : state.aggregateChapterData}
+                      filename={state.individualChapterData ? state.studentForChapterChart+"-individual-chapter-views.csv" : "aggregate-chapter-views.csv"}
                       headers={[
-                        { label: "Date", key: "dateString" },
-                        { label: "Number of Views", key: "count" },
+                        { label: "Chapter", key: "_id" },
+                        { label: "Number of Views", key: "viewCount" },
                         {
-                          label: "Number of Unique Students",
-                          key: "uniqueStudents.length",
-                        },
-                        // {label: "Unique Students", key: "uniqueStudents"}
+                          label: "Number of Unique Pages",
+                          key: "uniqueViewCount",
+                        }
                       ]}
                     />
                   }

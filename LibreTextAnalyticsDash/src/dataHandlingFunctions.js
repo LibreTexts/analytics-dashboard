@@ -2,8 +2,8 @@
 
 export function handleStudentData(key, value, tempState, courseData, allData) {
   if (
-    Object.keys(value[0]).includes("adapt") &&
-    value[0]["adapt"] !== false
+    tempState.adaptCourse &&
+    tempState.ltCourse
   ) {
     tempState["hasAdapt"] = true;
     courseData["hasAdapt"] = true;
@@ -21,13 +21,21 @@ export function handleStudentData(key, value, tempState, courseData, allData) {
       "Adapt Average Percent Per Assignment": true,
       "Adapt Average Attempts Per Assignment": true
     };
-    var checks = Object.keys(columns);
-    tempState["tableColumns"] = columns;
-    tempState["checkedValues"] = checks;
-    courseData["tableColumns"] = columns;
-    courseData["checkedValues"] = checks;
-    allData["tableColumns"] = columns;
-    allData["checkedValues"] = checks;
+  } else if (
+    tempState.adaptCourse &&
+    !tempState.ltCourse
+  ) {
+    tempState["hasAdapt"] = true;
+    courseData["hasAdapt"] = true;
+    allData["hasAdapt"] = true;
+    columns = {
+      All: true,
+      "Adapt Unique Interaction Days": true,
+      "Adapt Unique Assignments": true,
+      "Adapt Most Recent Page Load": true,
+      "Adapt Average Percent Per Assignment": true,
+      "Adapt Average Attempts Per Assignment": true
+    }
   } else {
     columns = {
       All: true,
@@ -37,14 +45,14 @@ export function handleStudentData(key, value, tempState, courseData, allData) {
       "LT Unique Interaction Days": true,
       "LT Hours on Site": true
     };
-    checks = Object.keys(columns);
-    tempState["tableColumns"] = columns;
-    tempState["checkedValues"] = checks;
-    courseData["tableColumns"] = columns;
-    courseData["checkedValues"] = checks;
-    allData["tableColumns"] = columns;
-    allData["checkedValues"] = checks;
   }
+  var checks = Object.keys(columns);
+  tempState["tableColumns"] = columns;
+  tempState["checkedValues"] = checks;
+  courseData["tableColumns"] = columns;
+  courseData["checkedValues"] = checks;
+  allData["tableColumns"] = columns;
+  allData["checkedValues"] = checks;
   courseData[key] = value;
 }
 

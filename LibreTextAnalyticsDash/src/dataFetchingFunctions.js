@@ -69,8 +69,8 @@ export async function handleClick(state, setState, type, queryVariables, path = 
         filterTab: false,
         reset: false,
         barXAxis: "dateCount",
-        barXAxisLabel: "LT Unique Interaction Days",
-        adaptStudentChartVal: false,
+        barXAxisLabel: state.ltCourse ? "LT Unique Interaction Days" : "Adapt Unique Interaction Days",
+        adaptStudentChartVal: state.ltCourse ? false : true,
         studentChart: null,
         aggregateChapterData: null,
         individualChapterData: null,
@@ -132,7 +132,6 @@ export async function handleClick(state, setState, type, queryVariables, path = 
       if (state.ltCourse) {
         configs.push(getAllDataConfig(tempState, setState, "page"));
         configs.push(getAllPagesConfig(tempState, setState, "page"));
-        configs.push(getStudentChartConfig(tempState, setState));
         //configs.push(getChapterChartConfig(tempState, setState));
         configs.push(simpleConfigTemplate(tempState, setState, "/aggregatechapterdata"));
         configs.push(simpleConfigTemplate(tempState, setState, "/coursestructure"));
@@ -143,9 +142,11 @@ export async function handleClick(state, setState, type, queryVariables, path = 
         configs.push(simpleConfigTemplate(tempState, setState, "/alladaptassignments"));
         configs.push(simpleConfigTemplate(tempState, setState, "/adaptlevels"));
       }
+      configs.push(getStudentChartConfig(tempState, setState));
       configs.push(getAllStudentsConfig(tempState, setState));
       tempState = await getData(configs, tempState, setState, path, tagData);
-      if (type === "filterReset" || type === "courseId") {
+      console.log(type, state.adaptCourse, state.ltCourse, !(state.adaptCourse && !state.ltCourse))
+      if ((type === "filterReset" || type === "courseId") && !(state.adaptCourse && !state.ltCourse)) {
         getMetaTags(tempState, setState)
       }
       if (type === "filterReset") {

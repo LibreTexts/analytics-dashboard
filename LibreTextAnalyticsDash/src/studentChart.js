@@ -24,7 +24,8 @@ export default function StudentChart({
   allData,
   hasAdapt,
   showColumns,
-  displayMode
+  displayMode,
+  ltCourse
 }) {
   const [studentData, setStudentData] = React.useState(null);
   const [newWidth, setNewWidth] = React.useState(width);
@@ -127,6 +128,7 @@ export default function StudentChart({
           <StudentTable
             data={studentData}
             hasAdapt={hasAdapt}
+            ltCourse={ltCourse}
             showColumns={showColumns}
             displayMode={displayMode}
           />

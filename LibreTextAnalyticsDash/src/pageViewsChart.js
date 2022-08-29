@@ -24,9 +24,10 @@ export default class PageViewsChart extends React.Component {
     if (type === "individual") {
       label = "Total Views";
       aspect = 3;
-    } else if (type === "aggregateStudent") {
-      label = "Average Views on All Pages";
     }
+    // else if (type === "aggregateStudent") {
+    //   label = "Average Views on All Pages";
+    // }
 
     this.props.data.forEach((d, index) => {
       if (this.props.individualData) {
@@ -97,7 +98,7 @@ export default class PageViewsChart extends React.Component {
           </YAxis>
           {this.props.individualData &&
             <YAxis dataKey="indivCount" yAxisId="right" orientation="right" stroke="#F93549">
-              <Label value={type === "aggregate" ? "Total Views on Individual Page" : "Average Views"} position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
+              <Label value="Total Views on Individual Page" position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
             </YAxis>
           }
           <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />}/>

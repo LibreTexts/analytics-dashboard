@@ -349,7 +349,7 @@ export default function DataTable({
         columns: [],
       }
     )
-    columns[2].columns.push(
+    columns[ltCourse ? 2 : 1].columns.push(
       {
         Header: (
           <Tip content="Unique Interaction Days">Unique Interaction Days</Tip>

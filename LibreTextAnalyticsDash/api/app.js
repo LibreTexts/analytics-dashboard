@@ -1,52 +1,24 @@
-const dataTable = require("./dataTableQuery.js");
-const adaptCode = require("./adaptCodeQuery.js");
-const adaptLevel = require("./adaptLevelQuery.js");
-const aggregatePageViews = require("./aggregatePageViewsQuery.js");
-const allCourses = require("./allCoursesQuery.js");
-const courseUnits = require("./courseUnitsQuery.js");
-const individualData = require("./individualDataQuery.js");
-const individualPageViews = require("./individualPageViewsQuery.js");
-const individualGradePageViews = require("./individualGradePageViewsQuery.js");
-const individualTimeline = require("./individualTimelineQuery.js");
-const studentChart = require("./studentChartQuery.js");
-const adaptStudentChart = require("./adaptStudentChartQuery.js");
-const studentAdaptAssignment = require("./studentAdaptAssignmentQuery.js");
-const allAdaptCourses = require("./allAdaptCoursesQuery.js");
-const adaptDataTable = require("./adaptDataTableQuery.js");
-const adaptStudents = require("./adaptStudentsQuery.js");
-const allStudents = require("./allStudentsQuery.js");
-const pageCount = require("./pageCountQuery.js");
-const assignmentCount = require("./assignmentCountQuery.js");
-const allAdaptAssignments = require("./allAdaptAssignmentsQuery.js");
-const chapterChart = require("./chapterChartQuery.js");
-const studentTextbookEngagement = require("./studentTextbookEngagementQuery.js");
-const averagePageViews = require("./averagePageViewsQuery.js");
-const validateInput = require("./validateInput.js")
-const getTag = require("./getTagQuery.js")
+const queries = require("./queries/index.js");
+const helperFunctions = require("./helper/helperFunctions.js");
+const lookupQueries = require("./queries/lookupQueries.js");
+const dbInfo = require("./config/db.config.js");
+const validateInput = require("./validateInput.js");
 
-var axios = require("axios");
+const axios = require("axios");
 const express = require("express");
-const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const moment = require("moment");
-app.use(bodyParser.json());
-app.use(cors());
 require("dotenv").config();
 const basicAuth = require("express-basic-auth");
 
-const dbInfo = {
-  coll: process.env.COLL,
-  pageColl: process.env.PCOLL,
-  adaptColl: process.env.ACOLL,
-  metaColl: process.env.TCOLL,
-  db: process.env.DB,
-  dataSource: process.env.SRC,
-};
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
+const app = express();
+app.use(bodyParser.json());
+app.use(cors());
 app.use(
   basicAuth({
     users: { admin: userPassword },
@@ -54,135 +26,11 @@ app.use(
   })
 );
 
-// Debug
-app.use((req, res, next) => {
-  console.log(req.method,req.url);
-  next();
-})
-//
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, console.log(`Server started on port ${PORT}`));
 
-function encryptStudent(student) {
-  const algorithm = "aes-256-cbc";
-  const key = process.env.studentHash;
-  const iv = Buffer.from(key, "hex");
-  const cipher = crypto.createCipheriv(algorithm, key, iv);
-
-  student = cipher.update(student, "utf8", "hex");
-  student += cipher.final("hex");
-
-  return student;
-}
-
-function decryptStudent(student) {
-  const algorithm = "aes-256-cbc";
-  const key = process.env.studentHash;
-  const iv = Buffer.from(key, "hex");
-
-  const decipher = crypto.createDecipheriv(algorithm, key, iv);
-
-  let decrypted = "";
-  let chunk;
-  decipher.on("readable", () => {
-    while (null !== (chunk = decipher.read())) {
-      decrypted += chunk.toString("utf8");
-    }
-  });
-
-  decipher.write(student, "hex");
-  decipher.end();
-  return decrypted;
-}
-
-//get the list of all students enrolled in a given course (found in adapt enrollment data)
-var enrollmentQuery = {
-  collection: "enrollments",
-  database: dbInfo.db,
-  dataSource: dbInfo.dataSource,
-  pipeline: [
-    {
-      $group: {
-        _id: "$class",
-        students: { $addToSet: "$email" },
-        dates: { $addToSet: "$created_at" },
-      },
-    },
-  ],
-};
-
-var startEndDateQuery = {
-  collection: dbInfo.adaptColl,
-  database: dbInfo.db,
-  dataSource: dbInfo.dataSource,
-  pipeline: [
-    {
-      $group: {
-        _id: "$class",
-        startDate: {
-          $first: "$class_start_date",
-        },
-        endDate: {
-          $max: "$due",
-        },
-      },
-    },
-  ],
-};
-
-function getRequest(queryString) {
-  var config = {
-    method: "post",
-    url: process.env.URL,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Request-Headers": "*",
-      "api-key": process.env.API_KEY,
-    },
-    data: JSON.stringify(queryString),
-  };
-  return config;
-}
-
-//find a course in the adapt data, find student enrollment
-function findEnrollmentData(
-  adaptCodes,
-  enrollmentData,
-  course,
-  allCourses,
-  dates
-) {
-  var codeFound = adaptCodes.find((o) => o.course === course);
-  var courseCode = codeFound ? parseInt(codeFound.code) : null;
-
-  var studentEnrollment = [];
-  if (codeFound) {
-    var studentEnrollment = enrollmentData.find((o) => o._id === courseCode);
-    studentEnrollment.dates = studentEnrollment.dates
-      .map((d) => new Date(d))
-      .sort((a, b) => {
-        return a < b;
-      });
-    var start = new Date(studentEnrollment.dates[0]);
-    var end = studentEnrollment.dates.pop();
-
-    //checking the adapt dates against the dates on the lt data to see if it's the right term
-    if (allCourses) {
-      var index = Object.keys(allCourses).find(c => allCourses[c]._id === course)
-      var date = new Date(JSON.parse(JSON.stringify(allCourses[index])).date)
-      const diffTime = Math.abs(date - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 14) {
-        return [];
-      }
-    }
-    //work here to find dates and check them against actual lt dates
-    //change the enrollment dates to Date objects and compare
-    return studentEnrollment["students"];
-  } else {
-    return [];
-  }
-}
-
-let libretextToAdaptConfig = getRequest(adaptCode.adaptCodeQuery(dbInfo));
+//setup
+let libretextToAdaptConfig = helperFunctions.getRequest(queries.adaptCodeQuery(dbInfo));
 var adaptCodes = {};
 axios(libretextToAdaptConfig)
   .then(function (response) {
@@ -193,7 +41,7 @@ axios(libretextToAdaptConfig)
     console.log(error);
   });
 
-let enrollmentConfig = getRequest(enrollmentQuery);
+let enrollmentConfig = helperFunctions.getRequest(lookupQueries.enrollmentQuery);
 var enrollmentData = {};
 axios(enrollmentConfig)
   .then(function (response) {
@@ -204,7 +52,7 @@ axios(enrollmentConfig)
     console.log(error);
   });
 
-let dateConfig = getRequest(startEndDateQuery);
+let dateConfig = helperFunctions.getRequest(lookupQueries.startEndDateQuery);
 var courseDates = [];
 axios(dateConfig)
   .then(function (response) {
@@ -215,7 +63,7 @@ axios(dateConfig)
     console.log(error);
   });
 
-let pageConfig = getRequest(pageCount.pageCountQuery(dbInfo));
+let pageConfig = helperFunctions.getRequest(queries.pageCountQuery(dbInfo));
 var pageCountData = {};
 axios(pageConfig)
   .then(function (response) {
@@ -225,7 +73,7 @@ axios(pageConfig)
     console.log(error);
   });
 
-let assignmentConfig = getRequest(assignmentCount.assignmentCountQuery(dbInfo));
+let assignmentConfig = helperFunctions.getRequest(queries.assignmentCountQuery(dbInfo));
 var assignmentCountData = {};
 axios(assignmentConfig)
   .then(function (response) {
@@ -234,8 +82,12 @@ axios(assignmentConfig)
   .catch(function (error) {
     console.log(error);
   });
+//
+// const middleware = require("./routes/realCourses.js");
+// console.log(middleware)
+// app.use("/realcourses", middleware);
 
-let realCourseConfig = getRequest(allCourses.allCoursesQuery(dbInfo));
+let realCourseConfig = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
 let realCourseNames = {};
 axios(realCourseConfig)
   .then(function (response) {
@@ -265,8 +117,8 @@ app.get("/realcourses", (req, res) => {
   res.json(realCourseNames);
 });
 
-let adaptCourseConfig = getRequest(
-  allAdaptCourses.allAdaptCoursesQuery(dbInfo)
+let adaptCourseConfig = helperFunctions.getRequest(
+  queries.allAdaptCoursesQuery(dbInfo)
 );
 let adaptCourses = {};
 axios(adaptCourseConfig)
@@ -321,14 +173,14 @@ app.get("/adaptcourses", (req, res) => {
 });
 
 app.post("/allstudents", (req, res, next) => {
-  let queryString = allStudents.allStudentsQuery(
+  let queryString = queries.allStudentsQuery(
     validateInput.validateInput("allstudents", req.body),
     dbInfo
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   var studentEnrollment = JSON.parse(
     JSON.stringify(
-      findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
+      helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
     )
   );
   axios(config)
@@ -337,7 +189,7 @@ app.post("/allstudents", (req, res, next) => {
       newData["documents"].forEach((d, index) => {
         var id = d._id;
         newData["documents"][index]["displayModeStudent"] = d._id;
-        newData["documents"][index]._id = decryptStudent(d._id);
+        newData["documents"][index]._id = helperFunctions.decryptStudent(d._id);
         if (studentEnrollment.length < 1) {
           newData["documents"][index]["isEnrolled"] = true;
         } else if (studentEnrollment.includes(id)) {
@@ -357,11 +209,11 @@ app.post("/allstudents", (req, res, next) => {
 });
 
 app.post("/timelineData", (req, res, next) => {
-  let queryString = individualTimeline.individualTimelineQuery(
+  let queryString = queries.individualTimelineQuery(
     validateInput.validateInput("timelineData", req.body),
     dbInfo
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -369,7 +221,7 @@ app.post("/timelineData", (req, res, next) => {
         newData["documents"].forEach((d, index) => {
           if (d._id.length >= 20) {
             newData["documents"][index]["displayModeStudent"] = d._id;
-            newData["documents"][index]._id = decryptStudent(d._id);
+            newData["documents"][index]._id = helperFunctions.decryptStudent(d._id);
           }
         });
         if (newData["documents"][0]._id.includes("@")) {
@@ -392,18 +244,18 @@ app.post("/timelineData", (req, res, next) => {
 
 app.post("/data", async (req, res, next) => {
   //console.log(req.body)
-  let queryString = dataTable.dataTableQuery(
+  let queryString = queries.dataTableQuery(
     validateInput.validateInput("data", req.body),
     await adaptCodes,
     dbInfo
   );
   if (req.body.adaptCourse && !req.body.ltCourse) {
-    queryString = adaptDataTable.adaptDataTableQuery(
+    queryString = queries.adaptDataTableQuery(
       validateInput.validateInput("data", req.body),
       dbInfo
     );
   }
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   var tab = "";
   if (req.body.groupBy === "$actor.id") {
     tab = "student";
@@ -415,7 +267,7 @@ app.post("/data", async (req, res, next) => {
   var adaptCourse = req.body.adaptCourse;
   //get all students enrolled in the course
   var enrollment =
-      await findEnrollmentData(
+      await helperFunctions.findEnrollmentData(
         adaptCodes,
         enrollmentData,
         req.body.courseId,
@@ -465,14 +317,14 @@ app.post("/data", async (req, res, next) => {
           }
           newData["documents"][index]["hasData"] = true;
           newData["documents"][index]["displayModeStudent"] = student._id;
-          newData["documents"][index]._id = decryptStudent(student._id);
+          newData["documents"][index]._id = helperFunctions.decryptStudent(student._id);
         });
       }
       //if there is an enrolled student that has no data, add them to the table
       if (enrollment.length > 0 && tab === "student") {
         studentEnrollment.forEach((s) => {
           newData["documents"].splice(0, 0, {
-            _id: decryptStudent(s),
+            _id: helperFunctions.decryptStudent(s),
             isEnrolled: true,
             hasData: false,
             adapt: hasAdapt,
@@ -495,16 +347,16 @@ app.post("/data", async (req, res, next) => {
 });
 
 app.post("/individual", (req, res, next) => {
-  let queryString = individualData.individualDataQuery(
+  let queryString = queries.individualDataQuery(
     validateInput.validateInput("individual", req.body),
     dbInfo
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
       newData["documents"].forEach((s, index) => {
-        newData["documents"][index]._id = decryptStudent(s._id);
+        newData["documents"][index]._id = helperFunctions.decryptStudent(s._id);
       });
       newData["individual"] = newData["documents"];
       delete newData["documents"];
@@ -517,16 +369,16 @@ app.post("/individual", (req, res, next) => {
 });
 
 app.post("/adaptstudents", (req, res, next) => {
-  let queryString = adaptStudents.adaptStudentsQuery(
+  let queryString = queries.adaptStudentsQuery(
     validateInput.validateInput("adaptstudents", req.body),
     dbInfo
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
       newData["documents"].forEach((s, index) => {
-        newData["documents"][index]._id = decryptStudent(s._id);
+        newData["documents"][index]._id = helperFunctions.decryptStudent(s._id);
       });
       newData["adaptStudents"] = newData["documents"];
       delete newData["documents"];
@@ -539,17 +391,24 @@ app.post("/adaptstudents", (req, res, next) => {
 });
 
 app.post("/studentchart", (req, res, next) => {
-  let queryString = studentChart.studentChartQuery(
+  let queryString = queries.studentChartQuery(
     validateInput.validateInput("studentchart", req.body),
     dbInfo
   );
-  var pages = pageCountData.find((o) => o._id === req.body.courseId);
-  var maxPageCount = pages.pageCount;
+
   var isAdaptXAxis = req.body.adaptAxisValue;
+  if (!isAdaptXAxis) {
+    var pages = pageCountData.find((o) => o._id === req.body.courseId);
+    var maxPageCount = pages.pageCount;
+  }
   if (isAdaptXAxis) {
     var course = adaptCodes.find((o) => o.course === req.body.courseId);
-    course = course.code;
-    queryString = adaptStudentChart.adaptStudentChartQuery(
+    if (course) {
+      course = course.code;
+    } else {
+      course = req.body.courseId;
+    }
+    queryString = queries.adaptStudentChartQuery(
       req.body,
       dbInfo,
       adaptCodes
@@ -558,10 +417,10 @@ app.post("/studentchart", (req, res, next) => {
     maxPageCount = assignments.assignmentCount;
   }
   var groupBy = req.body.groupBy;
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   var studentEnrollment = JSON.parse(
     JSON.stringify(
-      findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
+      helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
     )
   );
   axios(config)
@@ -575,7 +434,6 @@ app.post("/studentchart", (req, res, next) => {
           hasMaxPage = true;
         }
         var allStudents = JSON.parse(JSON.stringify(student.students));
-        var encryptedStudents = JSON.parse(JSON.stringify(student.students));
         student.students.forEach((s, i) => {
           if (studentEnrollment.length > 0) {
             if (!studentEnrollment.includes(s)) {
@@ -588,12 +446,13 @@ app.post("/studentchart", (req, res, next) => {
                 newData["documents"][index].count - 1;
             }
             // else {
-            //   newData['documents'][index].students[i] = decryptStudent(s)
+            //   newData['documents'][index].students[i] = helperFunctions.decryptStudent(s)
             // }
           }
         });
+        var encryptedStudents = JSON.parse(JSON.stringify(allStudents));
         allStudents.forEach((s, i) => {
-          allStudents[i] = decryptStudent(s);
+          allStudents[i] = helperFunctions.decryptStudent(s);
         });
         newData["documents"][index].students = allStudents;
         newData["documents"][index]["displayModeStudents"] = encryptedStudents;
@@ -613,11 +472,11 @@ app.post("/studentchart", (req, res, next) => {
 });
 
 app.post("/pageviews", (req, res, next) => {
-  let queryString = aggregatePageViews.aggregatePageViewsQuery(
+  let queryString = queries.aggregatePageViewsQuery(
     validateInput.validateInput("pageviews", req.body),
     dbInfo
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -632,14 +491,14 @@ app.post("/pageviews", (req, res, next) => {
 });
 
 app.post("/individualpageviews", (req, res, next) => {
-  let queryString = individualPageViews.individualPageViewsQuery(
+  let queryString = queries.individualPageViewsQuery(
     validateInput.validateInput("individualpageviews", req.body),
     adaptCodes,
     dbInfo
   );
   // console.log("QUERY STRING")
   // console.log(queryString)
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   //console.log(config)
   axios(config)
     .then(function (response) {
@@ -660,14 +519,14 @@ app.post("/individualpageviews", (req, res, next) => {
 
 // Robert Au 7/14/22 -- following refactoring
 app.post("/gradepageviews", (req, res, next) => {
-  let queryString = individualGradePageViews.individualGradePageViewsQuery(
+  let queryString = queries.individualGradePageViewsQuery(
     validateInput.validateInput("gradepageviews", req.body),
     adaptCodes,
     dbInfo
   );
   // console.log("QUERY STRING")
   // console.log(queryString)
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   //console.log(config)
   axios(config)
     .then(function (response) {
@@ -681,19 +540,19 @@ app.post("/gradepageviews", (req, res, next) => {
 });
 
 app.post("/studentassignments", (req, res, next) => {
-  let queryString = studentAdaptAssignment.studentAdaptAssignmentQuery(
+  let queryString = queries.studentAdaptAssignmentQuery(
     validateInput.validateInput("studentassignments", req.body),
     adaptCodes,
     dbInfo,
-    encryptStudent
+    helperFunctions.encryptStudent
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
       newData["documents"].forEach((d, index) => {
         newData["documents"][index]["displayModeStudent"] = d["_id"]["student"];
-        newData["documents"][index]["_id"]["student"] = decryptStudent(
+        newData["documents"][index]["_id"]["student"] = helperFunctions.decryptStudent(
           d["_id"]["student"]
         );
       });
@@ -708,13 +567,13 @@ app.post("/studentassignments", (req, res, next) => {
 });
 
 app.post("/alladaptassignments", (req, res, next) => {
-  let queryString = allAdaptAssignments.allAdaptAssignmentsQuery(
+  let queryString = queries.allAdaptAssignmentsQuery(
     req.body,
     adaptCodes,
     dbInfo,
-    encryptStudent
+    helperFunctions.encryptStudent
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -728,28 +587,13 @@ app.post("/alladaptassignments", (req, res, next) => {
     });
 });
 
-// app.post('/adapt', (req,res,next) => {
-//   let queryString = assignmentView.getAdaptQuery(req.body);
-//   let config = getRequest(queryString);
-//   axios(config)
-//       .then(function (response) {
-//         let newData = (response.data)
-//         newData = JSON.stringify(newData)
-//         res.json(newData);
-//       })
-//       .catch(function (error) {
-//           console.log(error);
-//       });
-//
-// });
-
 app.post("/adaptlevels", (req, res, next) => {
-  let queryString = adaptLevel.adaptLevelQuery(
+  let queryString = queries.adaptLevelQuery(
     validateInput.validateInput("adaptlevels", req.body),
     adaptCodes,
     dbInfo
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -764,11 +608,11 @@ app.post("/adaptlevels", (req, res, next) => {
 });
 
 app.post('/tags', (req,res,next) => {
-  let queryString = getTag.getTagQuery(
+  let queryString = queries.getTagQuery(
     validateInput.validateInput("tags", req.body),
     dbInfo
   );
-  let config = getRequest(queryString);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
       .then(function (response) {
         let newData = (response.data)
@@ -792,8 +636,8 @@ app.post('/tags', (req,res,next) => {
 // });
 
 app.post("/aggregatechapterdata", (req, res, next) => {
-  let queryString = chapterChart.chapterChartQuery(req.body, dbInfo);
-  let config = getRequest(queryString);
+  let queryString = queries.chapterChartQuery(req.body, dbInfo);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -808,8 +652,8 @@ app.post("/aggregatechapterdata", (req, res, next) => {
 });
 
 app.post("/individualchapterdata", (req, res, next) => {
-  let queryString = chapterChart.chapterChartQuery(req.body, dbInfo, encryptStudent, decryptStudent);
-  let config = getRequest(queryString);
+  let queryString = queries.chapterChartQuery(req.body, dbInfo, helperFunctions.encryptStudent, helperFunctions.decryptStudent);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -824,8 +668,8 @@ app.post("/individualchapterdata", (req, res, next) => {
 });
 
 app.post("/coursestructure", (req, res, next) => {
-  let queryString = courseUnits.courseUnitsQuery(req.body, dbInfo);
-  let config = getRequest(queryString);
+  let queryString = queries.courseUnitsQuery(req.body, dbInfo);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -840,8 +684,8 @@ app.post("/coursestructure", (req, res, next) => {
 });
 
 app.post("/studenttextbookengagement", (req, res, next) => {
-  let queryString = studentTextbookEngagement.studentTextbookEngagementQuery(req.body, dbInfo, encryptStudent);
-  let config = getRequest(queryString);
+  let queryString = queries.studentTextbookEngagementQuery(req.body, dbInfo, helperFunctions.encryptStudent);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -856,8 +700,8 @@ app.post("/studenttextbookengagement", (req, res, next) => {
 });
 
 app.post("/averagepageviews", (req, res, next) => {
-  let queryString = averagePageViews.averagePageViewsQuery(req.body, dbInfo);
-  let config = getRequest(queryString);
+  let queryString = queries.averagePageViewsQuery(req.body, dbInfo);
+  let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -870,7 +714,3 @@ app.post("/averagepageviews", (req, res, next) => {
       console.log(error);
     });
 });
-
-const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, console.log(`Server started on port ${PORT}`));

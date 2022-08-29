@@ -48,16 +48,10 @@ export function getAllStudents(state) {
 export function reactGrids(state) {
   var grids = [
     { name: "table", start: [0, 0], end: [1, 0] },
-    { name: "timeline", start: [0, 1], end: [1, 1] },
+    { name: "plots", start: [0, 1], end: [1, 1] },
+    { name: "timeline", start: [0, 2], end: [1, 2] },
   ];
   if (state.ltCourse && state.adaptCourse) {
-    grids.forEach((g) => {
-      if (g.name === "timeline") {
-        g.start = [0, 2];
-        g.end = [1, 2];
-      }
-    });
-    grids.splice(1, 0, { name: "plots", start: [0, 1], end: [1, 1] });
     grids.push({ name: "studentTextbookEngagement", start: [0, 3], end: [1, 3] });
   } else if (state.ltCourse && !state.adaptCourse) {
     grids = [
@@ -70,22 +64,21 @@ export function reactGrids(state) {
 }
 
 export function reactRows(state) {
-  var rows = ["50%", "50%"];
+  var rows = ["28%", "33%", "39%"];
   if (state.ltCourse && state.adaptCourse) {
     rows = ["23%", "22%", "27%", "28%"];
-  } else if (state.ltCourse && !state.adaptCourse) {
-    rows = ["28%", "33%", "39%"];
   }
   return rows;
 }
 
 export function getStudentChartFilters(state) {
-  var filters = [
-    "LT Unique Pages Accessed",
-    "LT Unique Interaction Days",
-    "LT Most Recent Page Load",
-    "LT Hours on Site"
-  ];
+  var filters = [];
+  if (state.ltCourse) {
+    filters.push("LT Unique Pages Accessed");
+    filters.push("LT Unique Interaction Days");
+    filters.push("LT Most Recent Page Load");
+    filters.push("LT Hours on Site");
+  }
   if (state.hasAdapt) {
     filters.push("Adapt Unique Interaction Days");
     filters.push("Adapt Unique Assignments");

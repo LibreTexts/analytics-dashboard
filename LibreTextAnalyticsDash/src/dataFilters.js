@@ -10,14 +10,9 @@ import {
 import InfoBox from "./infoBox.js";
 import DataFilterText from "./dataFilterText.js";
 import SelectWithApply from "./selectWithApply.js";
-import {
-  handleClick,
-} from "./dataFetchingFunctions.js";
+import { handleClick } from "./dataFetchingFunctions.js";
 import { handleChange } from "./handleChangeFunction.js";
-import {
-  clearDates,
-  clearTags
-} from "./helperFunctions.js";
+import { clearDates, clearTags } from "./helperFunctions.js";
 import { infoText } from "./allInfoText.js";
 import "./index.css";
 
@@ -25,11 +20,11 @@ export default function DataFilters({ state, setState, queryVariables }) {
   let noEnrollmentData = false;
 
   if (state.studentData) {
-    state.studentData.forEach(student => {
+    state.studentData.forEach((student) => {
       if (student.isEnrolled === "N/A") {
         noEnrollmentData = true;
       }
-    })
+    });
   }
 
   return (
@@ -113,47 +108,48 @@ export default function DataFilters({ state, setState, queryVariables }) {
                     color="#0047BA"
                   />
                 </Box>
-                <Box>
-                  <Text
-                    size="medium"
-                    weight="bold"
-                    textAlign="center"
-                    margin={{ top: "small" }}
-                  >
-                    Metatag Filters
-                  </Text>
-                </Box>
-                <Box
-                  pad="small"
-                  direction="row"
-                  width="550px"
-                  justify="center"
-                >
-                  {state.tagData &&
-                    <Box direction="row">
-                      <Select
-                        style={{ height: 45 }}
-                        margin={{ vertical: "small" }}
-                        options={state.tagData}
-                        value={state.chosenTag}
-                        onChange={({ value }) =>
-                          handleChange("chosenTag", value, state, setState)
-                        }
-                      />
-                      <Button
-                        size="small"
-                        margin={{
-                          left: "medium",
-                          vertical: "small"
-                        }}
-                        label="Clear Tag Filter"
-                        onClick={() => clearTags(state, setState)}
-                        color="#022851"
-                      />
+                {state.tagData && (
+                  <>
+                    <Box>
+                      <Text
+                        size="medium"
+                        weight="bold"
+                        textAlign="center"
+                        margin={{ top: "small" }}
+                      >
+                        Metatag Filters
+                      </Text>
                     </Box>
-
-                  }
-                </Box>
+                    <Box
+                      pad="small"
+                      direction="row"
+                      width="550px"
+                      justify="center"
+                    >
+                      <Box direction="row">
+                        <Select
+                          style={{ height: 45 }}
+                          margin={{ vertical: "small" }}
+                          options={state.tagData}
+                          value={state.chosenTag}
+                          onChange={({ value }) =>
+                            handleChange("chosenTag", value, state, setState)
+                          }
+                        />
+                        <Button
+                          size="small"
+                          margin={{
+                            left: "medium",
+                            vertical: "small",
+                          }}
+                          label="Clear Tag Filter"
+                          onClick={() => clearTags(state, setState)}
+                          color="#022851"
+                        />
+                      </Box>
+                    </Box>
+                  </>
+                )}
                 <Box direction="row" alignSelf="center" pad="small">
                   <Button
                     label="Apply"
@@ -162,48 +158,60 @@ export default function DataFilters({ state, setState, queryVariables }) {
                     primary
                     color="#0047BA"
                     disabled={state.disable}
-                    onClick={() => handleClick(state, setState, "filters", queryVariables, false, true)}
+                    onClick={() =>
+                      handleClick(
+                        state,
+                        setState,
+                        "filters",
+                        queryVariables,
+                        false,
+                        true
+                      )
+                    }
                   />
                 </Box>
               </Box>
               <Box border={true}>
-              <InfoBox
-                infoText={infoText.toggleText}
-                color="#b0e0e6"
-              />
-              <CheckBox
-                label="Include Non-enrolled Students"
-                checked={state.showNonEnrolledStudents}
-                pad={{ left: "large", bottom: "small" }}
-                toggle={true}
-                onClick={() =>
-                  setState({
-                    ...state,
-                    showNonEnrolledStudents: !state.showNonEnrolledStudents,
-                  })
-                }
-              />
-              <CheckBox
-                label="Hide Student Emails"
-                checked={state.displayMode}
-                pad={{ left: "large", top: "small" }}
-                toggle={true}
-                onClick={() =>
-                  setState({ ...state, displayMode: !state.displayMode })
-                }
-              />
-              {(state.start || state.end || noEnrollmentData) && (
-                <Box margin={{ top: "medium" }}>
-                  {state.disable && (!state.studentData || !state.display) && (
-                    <InfoBox
-                      infoText={infoText.loadingMessage}
-                      showIcon={true}
-                      icon={<Spinner />}
-                    />
-                  )}
-                  {state.display && <DataFilterText data={state.studentData} noEnrollmentData={noEnrollmentData} />}
-                </Box>
-              )}
+                <InfoBox infoText={infoText.toggleText} color="#b0e0e6" />
+                <CheckBox
+                  label="Include Non-enrolled Students"
+                  checked={state.showNonEnrolledStudents}
+                  pad={{ left: "large", bottom: "small" }}
+                  toggle={true}
+                  onClick={() =>
+                    setState({
+                      ...state,
+                      showNonEnrolledStudents: !state.showNonEnrolledStudents,
+                    })
+                  }
+                />
+                <CheckBox
+                  label="Hide Student Emails"
+                  checked={state.displayMode}
+                  pad={{ left: "large", top: "small" }}
+                  toggle={true}
+                  onClick={() =>
+                    setState({ ...state, displayMode: !state.displayMode })
+                  }
+                />
+                {(state.start || state.end || noEnrollmentData) && (
+                  <Box margin={{ top: "medium" }}>
+                    {state.disable &&
+                      (!state.studentData || !state.display) && (
+                        <InfoBox
+                          infoText={infoText.loadingMessage}
+                          showIcon={true}
+                          icon={<Spinner />}
+                        />
+                      )}
+                    {state.display && (
+                      <DataFilterText
+                        data={state.studentData}
+                        noEnrollmentData={noEnrollmentData}
+                      />
+                    )}
+                  </Box>
+                )}
               </Box>
             </Box>
           </Box>
