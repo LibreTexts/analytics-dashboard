@@ -1,3 +1,4 @@
+const addFilters =  require("../helper/addFilters.js");
 
 function studentTextbookEngagementQuery(params, dbInfo, encryptStudent) {
   var student = params.individual
@@ -32,11 +33,25 @@ function studentTextbookEngagementQuery(params, dbInfo, encryptStudent) {
           }
         }
       },
+      {
+        "$lookup": {
+          "from": dbInfo.pageColl,
+          "localField": "object.id",
+          "foreignField": "id",
+          "as": "pageInfo"
+        }
+      },
+      {
+        "$unwind": {
+          'path': '$pageInfo'
+        }
+      },
       //group by date, automatically binning it
       {
         "$group": {
           '_id': '$date',
-          'pages': {'$push': '$object.id' }
+          'pages': {'$push': '$object.id' },
+          'uniquePages': {'$addToSet': '$pageInfo.title'}
         }
       },
       //counting the number of pages viewed per date
@@ -44,7 +59,7 @@ function studentTextbookEngagementQuery(params, dbInfo, encryptStudent) {
         "$addFields": {
           'count': {'$size': '$pages'},
           'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]},
-          'uniquePages' : {'$setUnion' : ['$pages', []]}
+          'uniquePageCount' : {'$size': '$uniquePages'}
         }
       },
       {
@@ -52,7 +67,12 @@ function studentTextbookEngagementQuery(params, dbInfo, encryptStudent) {
       }
     ]
   }
-
+  var index = 2;
+  index = addFilters.spliceDateFilter(index, params, data);
+  index = addFilters.splicePathFilter(index+2, params, data);
+  addFilters.spliceTagFilter(index, params, data);
+  console.log(data['pipeline'])
+  console.log(data['pipeline'][4]['$match']['$expr'])
   return data;
 }
 

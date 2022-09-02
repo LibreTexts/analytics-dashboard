@@ -2,7 +2,7 @@
 import React from 'react';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Label, ResponsiveContainer } from 'recharts';
 
-export default function GradesPageView({ height, data, range, numberOfBins }) {
+export default function GradesPageView({ height, data, range, numberOfBins, individualData }) {
   // Initialize data
   let dataBins = null;
   const inc = range[1] / numberOfBins
@@ -23,20 +23,42 @@ export default function GradesPageView({ height, data, range, numberOfBins }) {
       let binMax = (inc * (i + 1) * 100).toFixed(2)
       dataBins[i] = {
         "bin": binMax,
-        "count": 0,
+        "Count": 0,
+        "Individual Count": 0,
         "binString": `${binMin} - ${binMax}%`
       }
     }
+    var indivBins = []
+    if (individualData) {
+      indivBins = JSON.parse(JSON.stringify(dataBins))
+      individualData.forEach(element => {
+        let i = Math.floor(element.score / inc);
+        if (i === numberOfBins) {
+          i--
+        }
+        if (i < numberOfBins) {
+          indivBins[i].Count++;
+        }
+      })
+    }
+    //console.log(indivBins)
+
     data.forEach(element => {
       let index = Math.floor(element.score / inc);
-      if (index == numberOfBins) {
+      if (index === numberOfBins) {
         index--
       }
       if (index < numberOfBins) {
-        dataBins[index].count++;
+        dataBins[index].Count++;
       }
     });
     //console.log("data bins", dataBins)
+    dataBins.forEach((elem) => {
+      var find = indivBins.find(o => o.bin === elem.bin)
+      if (find) {
+        elem["Individual Count"] = find.Count
+      }
+    })
   }
 
   return (
@@ -55,7 +77,10 @@ export default function GradesPageView({ height, data, range, numberOfBins }) {
           <Label value={"Number of Students"} position="insideBottomLeft" angle="-90" />
         </YAxis>
         <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-        <Bar dataKey={'count'} fill="#0047BA" />
+        <Bar dataKey='Count' fill="#0047BA" />
+        {individualData &&
+          <Bar dataKey='Individual Count' fill="#F93549" />
+        }
       </BarChart>
     </ResponsiveContainer>
   )

@@ -1,3 +1,4 @@
+const addFilters =  require("../helper/addFilters.js");
 
 function adaptStudentsQuery(params, dbInfo) {
   var data = {
@@ -17,6 +18,9 @@ function adaptStudentsQuery(params, dbInfo) {
       }
     ]
   }
+  var index = 1;
+  addFilters.spliceDateFilter(index, params, data, true);
+
   return data;
 }
 

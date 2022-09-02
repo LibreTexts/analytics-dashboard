@@ -1,3 +1,5 @@
+const addFilters =  require("../helper/addFilters.js");
+
 function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
   //find the adapt code for the lt course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
@@ -91,28 +93,8 @@ function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
       }
     ]
   }
-
-  var filterMatch = {
-    "$match": {
-      '$expr': {
-        '$and': []
-      }
-    }
-  }
-
-  var matchesUsed = false
-  if (params.start) {
-    filterMatch['$match']['$expr']['$and'].push({'$gte': [{'$dateFromString': {'dateString': '$time'}}, {'$dateFromString': {'dateString': params.start}}]})
-    matchesUsed = true
-  }
-  if (params.end) {
-    filterMatch['$match']['$expr']['$and'].push({'$lte': [{'$dateFromString': {'dateString': '$time'}}, {'$dateFromString': {'dateString': params.end}}]})
-    matchesUsed = true
-  }
-
-  if (matchesUsed && params.courseId) {
-    data['pipeline'].splice(1, 0, filterMatch)
-  }
+  var index = 1;
+  addFilters.spliceDateFilter(index, params, data, true);
 
   return data;
 }

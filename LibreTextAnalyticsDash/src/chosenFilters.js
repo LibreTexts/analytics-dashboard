@@ -13,7 +13,7 @@ export default function ChosenFilters({
   gridArea,
   queryVariables
 }) {
-  var hasFilter = state.chosenPath || state.start || state.end || state.chosenTag
+  var hasFilter = state.chosenPaths || state.start || state.end || state.chosenTag
 
   return (
       <Box
@@ -26,12 +26,29 @@ export default function ChosenFilters({
       >
       {state.studentData &&
         <>
-        {state.chosenPath && (
+        {state.chosenPaths && (
           <Text margin="small">
-            Current chosen path:{" "}
-            {state.chosenPath.split("/").map((a) => (
-              <li>{a.replaceAll("_", " ")}</li>
+            Current chosen paths:{" "}
+            {(state.chosenPaths).map((a) => (
+              a.split("/").map((b, idx) => {
+                var item = (
+                  <li>
+                    {b.replaceAll("_", " ")}
+                  </li>
+                )
+                for(var i = 0; i < idx; i++) {
+                  item = (
+                    <ul>
+                      {item}
+                    </ul>
+                  )
+                }
+                return item
+              })
             ))}
+            {/* {state.chosenPaths.split("/").map((a) => (
+              <li>{a.replaceAll("_", " ")}</li>
+            ))} */}
           </Text>
         )}
         {state.start && (
@@ -49,7 +66,7 @@ export default function ChosenFilters({
             Metatag: {state.chosenTag}
           </Text>
         )}
-        {!hasFilter &&
+        {!hasFilter && !state.chosenPaths &&
           <Text alignSelf="center" margin={{top: "large"}} size="medium">
             No filters have been chosen.
           </Text>

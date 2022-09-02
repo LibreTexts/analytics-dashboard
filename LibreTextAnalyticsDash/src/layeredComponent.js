@@ -38,6 +38,8 @@ export default function LayeredComponent({
   csvName,
   csvHeaders,
   queryVariables,
+  optionalLoadingTest=true,
+  topMargin="small"
 }) {
   const [showFilter, setShowFilter] = useState(false);
   const [axisLabel, setAxisLabel] = useState(label);
@@ -69,17 +71,20 @@ export default function LayeredComponent({
     option = state.sliderValue;
   }
 
-  var hasLegend = (type === "studentAssignments" || type === "aggregatePageViews" || type === "chapterData") ? true : false
+  var hasLegend = (type === "studentAssignments" || type === "aggregatePageViews" || type === "chapterData" || type === "textbookEngagement") ? true : false
 
-  var rows = ["33%", "67%"]
+  var rows = ["23%", "77%"]
   // if (hasLegend) {
   //   rows = ["45%", "55%"]
   // }
+  if (type === "aggregatePageViews") {
+    rows = ["30%", "70%"]
+  }
   if (type === "barXAxisLabel") {
-    rows = ["25%", "75%"]
+    rows = ["15%", "85%"]
   }
   if (type === "individualAssignmentViews" || type === "numBinsGrades") {
-    //rows = ["25%", "75%"]
+    rows = ["30%", "70%"]
     if (!data) {
       rows = ["99%", "1%"]
     }
@@ -183,7 +188,7 @@ export default function LayeredComponent({
           )}
           {!hasLegend && (
             <>
-              <TitleText title={title} text={infoText} topMargin="small" />
+              <TitleText title={title} text={infoText} topMargin={topMargin} />
               {selectComponent}
             </>
           )}
@@ -353,7 +358,7 @@ export default function LayeredComponent({
               </Box>
             </Layer>
           )}
-          {disableButton && !data && (
+          {optionalLoadingTest && disableButton && !data && (
             <InfoBox infoText={loading} showIcon={true} icon={<Spinner />} />
           )}
           {data && data.length > 0

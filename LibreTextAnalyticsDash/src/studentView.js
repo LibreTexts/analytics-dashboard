@@ -6,6 +6,7 @@ import DataTable from "./dataTable.js";
 import LayeredComponent from "./layeredComponent.js";
 import StudentChart from "./studentChart.js";
 import PageViewsChart from "./pageViewsChart.js";
+import StudentTextbookEngagementChart from "./studentTextbookEngagementChart.js";
 import { infoText } from "./allInfoText.js";
 import { getStudentChartData, getStudentTextbookEngagementData } from "./ltDataQueries-individual.js";
 import DataToCSV from "./dataToCSV.js";
@@ -91,6 +92,8 @@ export default function StudentView({ state, setState, queryVariables }) {
                   ltCourse={state.ltCourse}
                   adaptCourse={state.adaptCourse}
                   displayMode={state.displayMode}
+                  student={state.student}
+                  disableStudent={state.disableStudent}
                 />
               </Box>
             )}
@@ -165,19 +168,6 @@ export default function StudentView({ state, setState, queryVariables }) {
                   filterFunction={sortData}
                   clickFunction={sortData}
                   type="studentAssignments"
-                  selectComponent={
-                    <SelectWithApply
-                      selectOptions={state.allStudents}
-                      value={state.student}
-                      disable={state.disableStudent}
-                      dropdownFunction={handleChange}
-                      clickFunction={handleIndividual}
-                      queryVariables={queryVariables}
-                      state={state}
-                      setState={setState}
-                      type="studentAssignments"
-                    />
-                  }
                   downloadComponent={
                     <DataToCSV
                       data = {state.student ? state.studentAssignments : state.allAdaptAssignments}
@@ -216,7 +206,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                   setState={setState}
                   loading={infoText.loadingMessage}
                   component={
-                    <PageViewsChart
+                    <StudentTextbookEngagementChart
                       data={state.pageViews}
                       individualData={state.textbookEngagementData}
                       type="aggregateStudent"
@@ -233,21 +223,8 @@ export default function StudentView({ state, setState, queryVariables }) {
                   filterSelectLabel="Unit of Time:"
                   filterFunction={changeBinVal}
                   clickFunction={pageViewCharts}
-                  type="aggregatePageViews"
+                  type="textbookEngagement"
                   axisType="binLabel"
-                  selectComponent={
-                    <SelectWithApply
-                      selectOptions={state.allStudents}
-                      value={state.studentForTextbookEngagement}
-                      dropdownFunction={handleChange}
-                      clickFunction={getStudentTextbookEngagementData}
-                      state={state}
-                      setState={setState}
-                      type="studentForTextbookEngagement"
-                      disable={state.disableStudentTextbookEngagement}
-                      queryVariables={queryVariables}
-                    />
-                  }
                   downloadComponent={
                     <DataToCSV
                       data={state.textbookEngagementData ? state.textbookEngagementData : state.pageViews}

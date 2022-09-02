@@ -37,6 +37,7 @@ export async function getStudentChartData(state, setState) {
         path: state.dataPath,
         hasAdapt: state.hasAdapt,
         adaptAxisValue: state.adaptStudentChartVal,
+        tagFilter: state.chosenTag
       },
     }).then((response) => {
       // setState({
@@ -108,6 +109,7 @@ export async function getPageViewData(state, setState) {
         start: state.start,
         end: state.end,
         path: state.dataPath,
+        tagFilter: state.chosenTag,
       },
     }).then((response) => {
       tempState = {
@@ -187,10 +189,11 @@ export function getIndividualPageViewData(state, setState) {
         courseId: state.courseId,
         start: state.start,
         end: state.end,
-        //path: state.dataPath,
+        path: state.dataPath,
         individual: p,
         levelGroup: lgroup,
         levelName: lname,
+        tagFilter: state.chosenTag,
       },
     }).then((response) => {
         var d = JSON.parse(response.data)
@@ -208,21 +211,23 @@ export function getIndividualPageViewData(state, setState) {
             courseData["individual"+bin+unit+lgroup+lname] = value
           }
           tempState["noChartData"] = false
-          if (state.tab === "page") {
-            tempState["disablePage"] = false
-          }else if (state.tab === "assignment") {
-            tempState["disableAssignment"] = false
-          }
+          // if (state.tab === "page") {
+          //   tempState["disablePage"] = false
+          // }
+          // else if (state.tab === "assignment") {
+          //   tempState["disableAssignment"] = false
+          // }
 
           setState(tempState)
           localStorage.setItem(state.courseId+"-chart", JSON.stringify(courseData))
         } else {
           tempState["noChartData"] = true
-          if (state.tab === "page") {
-            tempState["disablePage"] = false
-          }else if (state.tab === "assignment") {
-            tempState["disableAssignment"] = false
-          }
+          // if (state.tab === "page") {
+          //   tempState["disablePage"] = false
+          // }
+          // else if (state.tab === "assignment") {
+          //   tempState["disableAssignment"] = false
+          // }
         }
     });
   } else {
@@ -235,11 +240,11 @@ export function getIndividualPageViewData(state, setState) {
         courseData["individual" + bin + unit + lgroup + lname];
       console.log(tempState["individualAssignmentViews"]);
     }
-    if (state.tab === "page") {
-      tempState["disablePage"] = false
-    } else if (state.tab === "assignment") {
-      tempState["disableAssignment"] = false
-    }
+    // if (state.tab === "page") {
+    //   tempState["disablePage"] = false
+    // } else if (state.tab === "assignment") {
+    //   tempState["disableAssignment"] = false
+    // }
     setState({
       ...tempState,
       noChartData: false,
@@ -250,7 +255,7 @@ export function getIndividualPageViewData(state, setState) {
 export function getIndividualChapterData(state, setState) {
   setState({
     ...state,
-    disablePage: true
+    disableChapterChart: true
   })
   axios({
     method: "post",
@@ -268,21 +273,21 @@ export function getIndividualChapterData(state, setState) {
     setState({
       ...state,
       individualChapterData: JSON.parse(response.data)['individualChapterData'],
-      disablePage: true
+      disableChapterChart: true
     })
   })
 }
 
 export function getStudentTextbookEngagementData(state, setState) {
-  setState({
-    ...state,
-    disableStudentTextbookEngagement: true
-  })
+  // setState({
+  //   ...state,
+  //   disableStudent: true
+  // })
   var courseData = {};
   if (Object.keys(localStorage).includes(state.courseId+"-chart")) {
     courseData = JSON.parse(localStorage.getItem(state.courseId+"-chart"));
   }
-  if (!Object.keys(courseData).includes(state.studentForTextbookEngagement+state.individualStudentBin+state.individualStudentUnit+"-textbookEngagement")) {
+  if (!Object.keys(courseData).includes(state.student+state.individualStudentBin+state.individualStudentUnit+"-textbookEngagement")) {
     axios({
       method: "post",
       url: state.homepage + "/studenttextbookengagement",
@@ -291,24 +296,26 @@ export function getStudentTextbookEngagementData(state, setState) {
       },
       data: {
         courseId: state.courseId,
-        //path: state.dataPath,
-        individual: state.studentForTextbookEngagement,
+        path: state.dataPath,
+        individual: state.student,
         bin: state.individualStudentBin,
-        unit: state.individualStudentUnit
+        unit: state.individualStudentUnit,
+        tagFilter: state.chosenTag
       },
     }).then((response) => {
       setState({
         ...state,
         textbookEngagementData: JSON.parse(response.data)['textbookEngagementData'],
-        disableStudentTextbookEngagement: true
+        disableStudent: true
       })
-      courseData[state.studentForTextbookEngagement+state.individualStudentBin+state.individualStudentUnit+"-textbookEngagement"] = JSON.parse(response.data)['textbookEngagementData']
+      courseData[state.student+state.individualStudentBin+state.individualStudentUnit+"-textbookEngagement"] = JSON.parse(response.data)['textbookEngagementData']
       writeToLocalStorage(state.courseId+"-chart", courseData)
     })
   } else {
     setState({
       ...state,
-      textbookEngagementData: courseData[state.studentForTextbookEngagement+state.individualStudentBin+state.individualStudentUnit+"-textbookEngagement"]
+      textbookEngagementData: courseData[state.student+state.individualStudentBin+state.individualStudentUnit+"-textbookEngagement"],
+      disableStudent: true
     })
   }
 }

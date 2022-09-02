@@ -5,6 +5,7 @@ import {
   Notification,
   Spinner,
   Text,
+  Select
 } from "grommet";
 import Legend from "./legend.js";
 import CourseDropdown from "./courseDropdown.js";
@@ -12,6 +13,9 @@ import Tabs from "./tabs.js";
 import InfoBox from "./infoBox.js";
 import ChosenFilters from "./chosenFilters.js";
 import CheckBoxGroup from "./checkBoxGroup.js";
+import SelectWithApply from "./selectWithApply.js";
+import { handleChange } from "./handleChangeFunction.js";
+import { handleIndividual, getAllStudentData } from "./dataFetchingFunctions.js";
 import { infoText } from "./allInfoText.js";
 import {
   changeColumns,
@@ -100,6 +104,50 @@ export default function HeaderGrid({
                   queryVariables={queryVariables}
                 />
                 {!initPage && state.tab === "student" && queryVariables.click && (
+                  <>
+                  <Box align="center">
+                  <Box direction="column" style={{width: "350px"}} align="center">
+                    <Text weight="bold">Student: </Text>
+                    <Select
+                      options={state.allStudents}
+                      margin={{ vertical: "small" }}
+                      dropAlign={{
+                        top: "bottom",
+                        left: "left",
+                        right: "right",
+                      }}
+                      dropHeight={"medium"}
+                      value={state.student}
+                      onChange={({ option }) =>
+                        handleChange(
+                          "studentAssignments",
+                          option,
+                          state,
+                          setState,
+                          queryVariables.realCourses,
+                          queryVariables
+                        )
+                      }
+                    />
+                    <Button
+                      primary
+                      label="Apply"
+                      disabled={state.disableStudent}
+                      onClick={() => getAllStudentData(state, setState, "studentAssignments")}
+                      margin={{
+                        bottom: "small",
+                      }}
+                      style={{width: "175px"}}
+                    />
+                      <Button
+                        secondary
+                        size="small"
+                        label="Clear Student"
+                        onClick={() => setState({ ...state, student: null, studentAssignments: null, textbookEngagementData: null })}
+                        style={{width: "125px"}}
+                      />
+                  </Box>
+                  </Box>
                   <Box gridArea="checks">
                     <Box
                       width="100px"
@@ -127,6 +175,7 @@ export default function HeaderGrid({
                       />
                     )}
                   </Box>
+                  </>
                 )}
               </>
             )}

@@ -11,7 +11,8 @@ import {
 import {
   getPageViewData,
   getIndividualPageViewData,
-  getMetaTags
+  getMetaTags,
+  getStudentTextbookEngagementData
 } from "./ltDataQueries-individual.js";
 import {
   getStudentAssignments,
@@ -55,14 +56,18 @@ export async function handleClick(state, setState, type, queryVariables, path = 
         gradesPageView: null,
         gradeLevelGroup: null,
         gradeLevelName: null,
-        disableGradesAssignment: false,
+        disableGradesAssignment: true,
+        disablePage: true,
+        disableStudent: true,
+        disableAssignment: true,
+        disableStudentTextbookEngagement: true,
+        disableChapterChart: true,
         index: 0,
         tab: "student",
         levelGroup: null,
         levelName: null,
-        disableAssignment: false,
+        disableAssignment: true,
         studentAssignments: null,
-        disableStudent: false,
         studentTab: true,
         pageTab: false,
         assignmentTab: false,
@@ -76,7 +81,7 @@ export async function handleClick(state, setState, type, queryVariables, path = 
         individualChapterData: null,
         textbookEngagementData: null,
         averagePageViews: null,
-        tagData: null,
+        tagData: type === "refresh" ? state.tagData : null,
         allPageIds: null,
         studentForTextbookEngagement: null,
         chosenTag: null,
@@ -101,12 +106,20 @@ export async function handleClick(state, setState, type, queryVariables, path = 
         pageResult: null,
         student: null,
         page: null,
-        disablePage: false,
         individualPageViews: null,
-        disableCourseStructureButton: true
+        disableCourseStructureButton: true,
+        disableGradesAssignment: true,
+        disablePage: true,
+        disableStudent: true,
+        disableAssignment: true,
+        disableStudentTextbookEngagement: true,
+        studentForChapterChart: null,
+        individualChapterData: null,
+        textbookEngagementData: null,
+        studentAssignments: null
       };
       if (path) {
-        tempState["chosenPath"] = path;
+        tempState["chosenPath"] = JSON.stringify(path);
       }
     }
 
@@ -141,11 +154,12 @@ export async function handleClick(state, setState, type, queryVariables, path = 
       if (state.adaptCourse) {
         configs.push(simpleConfigTemplate(tempState, setState, "/alladaptassignments"));
         configs.push(simpleConfigTemplate(tempState, setState, "/adaptlevels"));
+        configs.push(simpleConfigTemplate(tempState, setState, "/aggregateassignmentviews"));
+        configs.push(simpleConfigTemplate(tempState, setState, "/allassignmentgrades"));
       }
       configs.push(getStudentChartConfig(tempState, setState));
       configs.push(getAllStudentsConfig(tempState, setState));
       tempState = await getData(configs, tempState, setState, path, tagData);
-      console.log(type, state.adaptCourse, state.ltCourse, !(state.adaptCourse && !state.ltCourse))
       if ((type === "filterReset" || type === "courseId") && !(state.adaptCourse && !state.ltCourse)) {
         getMetaTags(tempState, setState)
       }
@@ -195,7 +209,8 @@ export function handleIndividual(state, setState, type) {
     //setState(tempState)
   }
   if (type === "studentAssignments") {
-    getStudentAssignments(tempState, setState);
+    tempState = getStudentAssignments(tempState, setState);
+    return tempState;
   } else {
     getIndividualPageViewData(tempState, setState);
   }
@@ -211,6 +226,16 @@ export function pageViewCharts(state, setState, type) {
   } else if (type === "individualPageViews") {
     getIndividualPageViewData(state, setState);
   }
+}
+
+export function getAllStudentData(state, setState, type) {
+  setState({
+    ...state,
+    disableStudent: true
+  })
+  var tempState = JSON.parse(JSON.stringify(state));
+  tempState = handleIndividual(tempState, setState, type);
+  getStudentTextbookEngagementData(tempState, setState);
 }
 
 // 7/15 Robert

@@ -74,11 +74,6 @@ export default function FilterView({ state, setState, queryVariables }) {
                 />
               </Box>
             )}
-            {/* <MetaTagFilter
-              state={state}
-              setState={setState}
-              queryVariables={queryVariables}
-            /> */}
           </>
         )}
       </Grid>

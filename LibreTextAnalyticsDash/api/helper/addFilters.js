@@ -1,12 +1,19 @@
 function splicePathFilter(index, params, data, addPageLookup=false) {
-  if (params.path && !addPageLookup) {
-    data['pipeline'].splice(index, 0, {
-      '$match': {
-        '$expr': {
-          '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
-        }
+  var pathMatch = {
+    "$match": {
+      '$expr': {
+        '$or': []
       }
-    })
+    }
+  }
+  if (params.path) {
+    params.path.forEach(e => {
+      pathMatch["$match"]['$expr']['$or'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", e ] }, -1]})
+    });
+  }
+
+  if (params.path && !addPageLookup) {
+    data['pipeline'].splice(index, 0, pathMatch)
     index = index + 1;
   } else if (params.path && addPageLookup) {
     var lookup = {
@@ -24,23 +31,21 @@ function splicePathFilter(index, params, data, addPageLookup=false) {
     }
     data['pipeline'].splice(index, 0, lookup)
     data['pipeline'].splice(index+1, 0, unwind)
-    data['pipeline'].splice(index+2, 0, {
-      '$match': {
-        '$expr': {
-          '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
-        }
-      }
-    })
+    data['pipeline'].splice(index+2, 0, pathMatch)
     index = index + 3
   }
   return index;
 }
 
-function spliceDateFilter(index, params, data) {
+function spliceDateFilter(index, params, data, isAdapt=false) {
+  var timestamp = '$object.timestamp';
+  if (isAdapt) {
+    timestamp = '$time'
+  }
   if (params.startDate || params.endDate) {
     var addFields = {
     "$addFields": {
-        "newDate": {'$dateFromString': {'dateString': '$object.timestamp'}}
+        "newDate": {'$dateFromString': {'dateString': timestamp}}
       }
     }
     var match = {
@@ -87,6 +92,7 @@ function spliceTagFilter(index, params, data, addPageLookup=false) {
     data['pipeline'].splice(index+1, 0, unwind)
     data['pipeline'].splice(index+2, 0, match)
     //index = index + 3
+    return index+3
   } else if (params.tagFilter && addPageLookup) {
     var pageLookup = {
       '$lookup': {
@@ -106,8 +112,9 @@ function spliceTagFilter(index, params, data, addPageLookup=false) {
     data['pipeline'].splice(index+2, 0, lookup)
     data['pipeline'].splice(index+3, 0, unwind)
     data['pipeline'].splice(index+4, 0, match)
+    return index+5
   }
-  //return index;
+  return index;
 }
 
 module.exports = { spliceTagFilter, spliceDateFilter, splicePathFilter }

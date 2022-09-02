@@ -1,7 +1,7 @@
 const dbInfo = require("../config/db.config.js");
 //get the list of all students enrolled in a given course (found in adapt enrollment data)
 var enrollmentQuery = {
-  collection: "enrollments",
+  collection: dbInfo.enrollColl,
   database: dbInfo.db,
   dataSource: dbInfo.dataSource,
   pipeline: [

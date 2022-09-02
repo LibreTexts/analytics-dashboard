@@ -9,4 +9,6 @@ module.exports = {
   metaColl: process.env.TCOLL,
   db: process.env.DB,
   dataSource: process.env.SRC,
+  enrollColl: process.env.ECOLL,
+  codesColl: process.env.CODES
 }

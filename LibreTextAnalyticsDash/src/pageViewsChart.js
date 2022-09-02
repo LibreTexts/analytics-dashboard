@@ -28,14 +28,19 @@ export default class PageViewsChart extends React.Component {
     // else if (type === "aggregateStudent") {
     //   label = "Average Views on All Pages";
     // }
+    if (type === "individualAssignment") {
+      label = "Total Views on All Assignments"
+    }
 
     this.props.data.forEach((d, index) => {
       if (this.props.individualData) {
         var match = this.props.individualData.find((o) => o["dateString"] === d["dateString"]);
         if (match) {
           d["indivCount"] = match["count"];
+          d["due"] = match["due"];
         } else {
           d["indivCount"] = 0;
+          d["due"] = null;
         }
       }
     });
@@ -52,7 +57,7 @@ export default class PageViewsChart extends React.Component {
             value: props.payload[0].payload.count,
           },
         ];
-        if (this.props.individualData) {
+        if (this.props.individualData && type !== "individualAssignment") {
           var pageData = [
             {
               name: this.props.type === "aggregate" ? "Page" : "Student",
@@ -64,6 +69,18 @@ export default class PageViewsChart extends React.Component {
             }
           ]
           newPayload.splice(2, 0, ...pageData)
+        } else if (this.props.individualData && type === "individualAssignment") {
+          var indivInfo = [
+            {
+              name: "Individual Assignment Views",
+              value: props.payload[0].payload.indivCount
+            },
+            {
+              name: "Due Date",
+              value: props.payload[0].payload.due ? moment(props.payload[0].payload.due).format("MMM Do YYYY") : "N/A"
+            }
+          ]
+          newPayload.splice(2, 0, ...indivInfo)
         }
         return <DefaultTooltipContent payload={newPayload} />;
       }
@@ -100,7 +117,7 @@ export default class PageViewsChart extends React.Component {
           </YAxis>
           {this.props.individualData &&
             <YAxis dataKey="indivCount" yAxisId="right" orientation="right" stroke="#F93549">
-              <Label value="Total Views on Individual Page" position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
+              <Label value={type === "individualAssignment" ? "Total Views on Individual Assignment" : "Total Views on Individual Page"} position="insideBottomRight" angle="90" style={{ fill: "#F93549" }}/>
             </YAxis>
           }
           <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />}/>

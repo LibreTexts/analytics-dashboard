@@ -1,3 +1,4 @@
+const addFilters =  require("../helper/addFilters.js");
 //query to find date data for each student or page
 //originally for use in the student and page timeline components to have page views by date
 //now being used to grab page ids with titles and all students
@@ -62,57 +63,11 @@ function individualTimelineQuery(params, dbInfo) {
         }
       ]
     }
-    var match = {
-      '$match': {
-        '$expr': {
-          '$and': []
-        }
-      }
-    }
+    var index = 1;
+    index = addFilters.spliceDateFilter(index, params, data);
+    index = addFilters.splicePathFilter(index+2, params, data);
+    addFilters.spliceTagFilter(index, params, data);
 
-    //filters down to a specific page path that the user chooses
-    var unitLookup = {
-      '$match': {
-        '$expr': {
-          '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
-        }
-      }
-    }
-
-    var tagLookup = {
-      '$lookup': {
-        "from": dbInfo.metaColl,
-        "localField": "pageInfo.id",
-        "foreignField": "pageId",
-        "as": "metaTags"
-      }
-    }
-    var tagUnwind = {
-      '$unwind': {
-        'path': '$metaTags'
-      }
-    }
-    var tagMatch = {
-      "$match": {
-        '$expr': {
-          '$eq': ['$metaTags.value', params.tagFilter]
-        }
-      }
-    }
-
-    if (params.tagFilter) {
-      data['pipeline'].splice(3, 0, tagLookup)
-      data['pipeline'].splice(4, 0, tagUnwind)
-      data['pipeline'].splice(5, 0, tagMatch)
-    }
-
-    if (params.path) {
-      if (params.tagFilter) {
-        data['pipeline'].splice(4, 0, unitLookup)
-      } else{
-        data['pipeline'].splice(3, 0, unitLookup)
-      }
-    }
     return data;
 }
 

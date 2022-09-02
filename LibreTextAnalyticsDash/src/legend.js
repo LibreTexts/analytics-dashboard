@@ -12,7 +12,7 @@ export default function Legend({
       alignSelf="start"
       border={true}
       width="325px"
-      height="180px"
+      height={state.showNonEnrolledStudents ? "180px" : "150px"}
       gridArea="legend"
       margin={{ bottom: "small"}}
     >
@@ -42,18 +42,20 @@ export default function Legend({
           Adapt Data
         </Text>
       </Box>
-      <Box direction="row">
-        <Box
-          margin={{ left: "small", bottom: "small" }}
-          border={true}
-          height="30px"
-          width="40px"
-          background="gainsboro"
-        />
-        <Text margin={{ left: "small", bottom: "small" }}>
-          Not Enrolled in Course
-        </Text>
-      </Box>
+      {state.showNonEnrolledStudents &&
+        <Box direction="row">
+          <Box
+            margin={{ left: "small", bottom: "small" }}
+            border={true}
+            height="30px"
+            width="40px"
+            background="gainsboro"
+          />
+          <Text margin={{ left: "small", bottom: "small" }}>
+            Not Enrolled in Course
+          </Text>
+        </Box>
+      }
       <Box direction="row">
         <Text weight="bold" margin={{ left: "small", bottom: "small"}}>
           Enrolled with No Data

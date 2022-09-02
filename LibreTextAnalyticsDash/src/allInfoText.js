@@ -26,5 +26,7 @@
       toggleText:
         "Toggle the following options.  The changes will take effect immediately without hitting apply.",
       textbookChapterChart:
-        "This graph shows textbook chapter activity for an entire class. Choose a student to see individual activity."
+        "This graph shows textbook chapter activity for an entire class. Choose a student to see individual activity.",
+      studentTextbookEngagementChart:
+        "  Click on one of the red bars to see what pages the student viewed on that day."
     }

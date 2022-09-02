@@ -88,7 +88,7 @@ function chapterChartQuery(params, dbInfo, encryptStudent, decryptStudent) {
       }
     }
     index = addFilters.splicePathFilter(index+2, params, data)
-    addFilters.spliceTagFilter(index-2, params, data)
+    addFilters.spliceTagFilter(index, params, data)
 
   return data;
 }

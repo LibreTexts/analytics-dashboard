@@ -71,7 +71,7 @@ function findEnrollmentData(
     var end = studentEnrollment.dates.pop();
 
     //checking the adapt dates against the dates on the lt data to see if it's the right term
-    if (allCourses) {
+    if (allCourses && allCourses.length > 0) {
       var index = Object.keys(allCourses).find(c => allCourses[c]._id === course)
       var date = new Date(JSON.parse(JSON.stringify(allCourses[index])).date)
       const diffTime = Math.abs(date - start);

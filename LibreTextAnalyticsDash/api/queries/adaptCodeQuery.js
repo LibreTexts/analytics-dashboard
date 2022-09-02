@@ -2,7 +2,7 @@
 
 function adaptCodeQuery(dbInfo) {
   var data = {
-    "collection": "adaptCodes",
+    "collection": dbInfo.codesColl,
     "database": dbInfo.db,
     "dataSource": dbInfo.dataSource,
     "pipeline": [

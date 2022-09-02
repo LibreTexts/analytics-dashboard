@@ -36,7 +36,7 @@ function validateInput(endpoint, params) {
     }
 
     if (params.path) {
-        console.log(params.path) //do sumthing?
+        // console.log(params.path) //do sumthing?
     }
     // const alphanum =  /^[0-9a-zA-Z():.,/Δ-]+$/;
 
@@ -65,7 +65,7 @@ function validateInput(endpoint, params) {
     if (checkInvalid(params.tagTitle, invalidChars)) params.tagTitle = null;
 
     if (params.path) {
-        console.log(params.path);
+        //console.log(params.path);
     }
 
     if (params.unit &&

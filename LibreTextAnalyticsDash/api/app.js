@@ -88,7 +88,7 @@ axios(assignmentConfig)
 // app.use("/realcourses", middleware);
 
 let realCourseConfig = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
-let realCourseNames = {};
+let realCourseNames = [];
 axios(realCourseConfig)
   .then(function (response) {
     realCourseNames = response.data["documents"];
@@ -616,7 +616,7 @@ app.post('/tags', (req,res,next) => {
   axios(config)
       .then(function (response) {
         let newData = (response.data)
-        console.log(newData)
+        //console.log(newData)
         newData['tags'] = newData['documents']
         newData = JSON.stringify(newData)
         res.json(newData);
@@ -706,6 +706,38 @@ app.post("/averagepageviews", (req, res, next) => {
     .then(function (response) {
       let newData = response.data;
       newData["averagePageViews"] = newData["documents"];
+      delete newData["documents"];
+      newData = JSON.stringify(newData);
+      res.json(newData);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+});
+
+app.post("/aggregateassignmentviews", (req, res, next) => {
+  let queryString = queries.aggregateAssignmentViewsQuery(req.body, dbInfo, adaptCodes);
+  let config = helperFunctions.getRequest(queryString);
+  axios(config)
+    .then(function (response) {
+      let newData = response.data;
+      newData["aggregateAssignmentViews"] = newData["documents"];
+      delete newData["documents"];
+      newData = JSON.stringify(newData);
+      res.json(newData);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+});
+
+app.post("/allassignmentgrades", (req, res, next) => {
+  let queryString = queries.allAssignmentGradesQuery(req.body, dbInfo, adaptCodes);
+  let config = helperFunctions.getRequest(queryString);
+  axios(config)
+    .then(function (response) {
+      let newData = response.data;
+      newData["allAssignmentGrades"] = newData["documents"];
       delete newData["documents"];
       newData = JSON.stringify(newData);
       res.json(newData);

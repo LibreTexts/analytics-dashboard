@@ -61,8 +61,8 @@ export async function getData(data, state, setState, path=false, tagData) {
     );
   }
   if (path) {
-    courseData['dataPath'] = path;
-    courseData['chosenPath'] = path;
+    courseData['dataPath'] = JSON.stringify(path);
+    courseData['chosenPaths'] = JSON.stringify(path);
     // filters['dataPath'] = path;
     // filters['chosenPath'] = path;
     //localStorage.setItem(state.courseId, JSON.stringify(courseData));
@@ -200,6 +200,7 @@ export function getAveragePageViewsConfig(state, setState) {
     start: state.start,
     end: state.end,
     path: state.dataPath,
+    tagFilter: state.chosenTag,
   };
 
   var config = getAxiosCall("/averagepageviews", data, state);
@@ -223,7 +224,7 @@ export function getIndividualPageViewsConfig(state, setState) {
     courseId: state.courseId,
     start: state.start,
     end: state.end,
-    //path: state.dataPath,
+    path: state.dataPath,
     individual: p,
     levelGroup: lgroup,
     levelName: lname,

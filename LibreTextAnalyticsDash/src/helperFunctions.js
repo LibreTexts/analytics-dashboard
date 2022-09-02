@@ -113,7 +113,7 @@ export function menuCollapsible(state, setState) {
 export function clearPath(event, state, setState) {
   setState({
     ...state,
-    chosenPath: null,
+    chosenPaths: null,
     dataPath: null,
     resetPath: true,
   });
@@ -123,7 +123,7 @@ export function filterReset(state, setState) {
   setState({
     ...state,
     reset: true,
-    chosenPath: null,
+    chosenPaths: null,
     dataPath: null,
     start: null,
     end: null,
@@ -131,7 +131,7 @@ export function filterReset(state, setState) {
     chosenTag: null
   });
   var courseData = JSON.parse(localStorage.getItem(state.courseId+"-filters"))
-  courseData["chosenPath"] = null;
+  courseData["chosenPaths"] = null;
   courseData["dataPath"] = null;
   courseData["start"] = null;
   courseData["end"] = null;

@@ -78,7 +78,7 @@ export function handleChange(
       courseId: realCourses[value].courseId,
       course: value,
       disableCourse: false,
-      chosenPath: null,
+      chosenPaths: null,
       dataPath: null,
       start: realCourses[value].startDate
         ? new Date(realCourses[value].startDate)
@@ -108,13 +108,14 @@ export function handleChange(
     setState({
       ...state,
       student: value,
+      disableStudent: false
     });
   }
   if (type === "studentForChapterChart") {
     setState({
       ...state,
       studentForChapterChart: value,
-      disablePage: false
+      disableChapterChart: false
     })
   }
   if (type === "studentForTextbookEngagement") {
@@ -156,6 +157,7 @@ export function handleChange(
       ...state,
       levelGroup: value,
       levelName: null,
+      disableAssignment: true
     });
   } else if (type === "pageLevelName") {
     setState({
@@ -168,6 +170,7 @@ export function handleChange(
       ...state,
       gradeLevelGroup: value,
       gradeLevelName: null,
+      disableAssignment: true
     });
   } else if (type === "gradesPageLevelName") {
     setState({
@@ -188,11 +191,12 @@ export function handleChange(
       courseData = JSON.parse(localStorage.getItem(state.courseId+"-filters"));
     }
     courseData["dataPath"] = value;
-    courseData["chosenPath"] = value;
+    courseData["chosenPaths"] = value;
     localStorage.setItem(state.courseId+"-filters", JSON.stringify(courseData));
     setState({
       ...state,
       dataPath: value,
+      chosenPaths: value,
       disableCourseStructureButton: false
     });
   }

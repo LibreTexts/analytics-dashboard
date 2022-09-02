@@ -15,7 +15,9 @@ export default function DataTable({
   showNonStudents,
   ltCourse,
   adaptCourse,
-  displayMode
+  displayMode,
+  student=false,
+  disableStudent=false
 }) {
   const [pageSize, setPageSize] = React.useState(20);
   let reactTable = React.useRef(null);
@@ -39,14 +41,21 @@ export default function DataTable({
     var filename = "page-data.csv";
     var pageLength = 10;
   }
-
+  var matchFound = 0;
+  if (student && tab === "student" && disableStudent) {
+    var studentFound = data.findIndex(obj => obj._id === student)
+    data.splice(0, 0, data[studentFound])
+    data.splice(studentFound+1, 1)
+    matchFound = matchFound + 1;
+  }
   if (tab === "student") {
     var getTrProps = (state, rowInfo, instance) => {
       if (rowInfo) {
-        //console.log(rowInfo)
         return {
           style: {
-            background: rowInfo.original.isEnrolled ? "white" : "Gainsboro",
+            background: matchFound === 0 ?
+              (rowInfo.original.isEnrolled ? "white" : "Gainsboro") :
+              (rowInfo.index > 0 && rowInfo.original.isEnrolled ? "white" : rowInfo.index === 0 ? "Yellow" : "Gainsboro"),
             opacity: rowInfo.original.isEnrolled ? 1 : 0.4,
           },
         };
@@ -54,6 +63,7 @@ export default function DataTable({
       return {};
     };
   }
+
   var showData = JSON.parse(JSON.stringify(data));
   if (showNonStudents === false) {
     showData = showData.filter(o => o.isEnrolled)

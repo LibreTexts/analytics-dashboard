@@ -1,3 +1,4 @@
+const addFilters =  require("../helper/addFilters.js");
 
 function adaptDataTableQuery(params, dbInfo) {
 
@@ -232,19 +233,8 @@ function adaptDataTableQuery(params, dbInfo) {
         }
       }
     }
-
-    var matchesUsed = false
-    if (params.startDate) {
-      filterMatch['$match']['$expr']['$and'].push({'$gte': ['$date', {'$dateFromString': {'dateString': params.startDate}}]})
-      matchesUsed = true
-    }
-    if (params.endDate) {
-      filterMatch['$match']['$expr']['$and'].push({'$lte': ['$date', {'$dateFromString': {'dateString': params.endDate}}]})
-      matchesUsed = true
-    }
-    if (matchesUsed) {
-      data['pipeline'].splice(3, 0, filterMatch)
-    }
+    var index = 1;
+    addFilters.spliceDateFilter(index, params, data, true);
 
     return data;
 }

@@ -109,12 +109,38 @@ function averagePageViewsQuery(params, dbInfo) {
     }
   }
 
+  var tagLookup = {
+    '$lookup': {
+      "from": dbInfo.metaColl,
+      "localField": "pageInfo.id",
+      "foreignField": "pageId",
+      "as": "metaTags"
+    }
+  }
+  var tagUnwind = {
+    '$unwind': {
+      'path': '$metaTags'
+    }
+  }
+  var tagMatch = {
+    "$match": {
+      'metaTags.value': params.tagFilter
+    }
+  }
+
   var pathMatch = {
     "$match": {
       '$expr': {
-        '$and': []
+        // '$and': []
+        '$or': []
       }
     }
+  }
+
+  if(params.tagFilter) {
+    data['pipeline'].splice(3, 0, tagLookup)
+    data['pipeline'].splice(4, 0, tagUnwind)
+    data['pipeline'].splice(5, 0, tagMatch)
   }
 
   var matchesUsed = false
@@ -131,13 +157,31 @@ function averagePageViewsQuery(params, dbInfo) {
     matchesUsed = true
   }
   if (params.path) {
-    pathMatch['$match']['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]})
-    data['pipeline'].splice(5, 0, pathMatch)
+    Object.values(params.path).forEach(e => {
+      //console.log(e)
+      // pathMatch["$match"]['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", e ] }, -1]})
+      pathMatch["$match"]['$expr']['$or'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", e ] }, -1]})
+    });
+    //console.log(JSON.stringify(pathMatch, null, 2))
+
+    if(params.tagFilter) {
+      data['pipeline'].splice(8, 0, pathMatch)
+    } else {
+      data['pipeline'].splice(5, 0, pathMatch)
+    }
   }
   if (matchesUsed && params.path) {
-    data['pipeline'].splice(7, 0, filterMatch)
+    if(params.tagFilter) {
+      data['pipeline'].splice(10, 0, filterMatch)
+    } else {
+      data['pipeline'].splice(7, 0, filterMatch)
+    }
   } else if (matchesUsed && !params.path) {
-    data['pipeline'].splice(6, 0, filterMatch)
+    if(params.tagFilter) {
+      data['pipeline'].splice(9, 0, filterMatch)
+    } else {
+      data['pipeline'].splice(6, 0, filterMatch)
+    }
   }
   return data;
 }

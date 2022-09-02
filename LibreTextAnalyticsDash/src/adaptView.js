@@ -21,12 +21,12 @@ import {
 export default function AdaptView({ state, setState, queryVariables, theme }) {
   var height = "1500px";
   var rows = ["50%", "50%"];
-  if (!state.individualAssignmentViews && !state.gradesPageView) {
+  if (!state.aggregateAssignmentViews && !state.allAssignmentGrades) {
     height = "500px"
-  } else if (!state.individualAssignmentViews && state.gradesPageView) {
+  } else if (!state.aggregateAssignmentViews && state.allAssignmentGrades) {
     height = "1000px"
     rows = ["25%", "75%"]
-  } else if (!state.gradesPageView && state.individualAssignmentViews) {
+  } else if (!state.allAssignmentGrades && state.aggregateAssignmentViews) {
     height = "1000px"
     rows = ["75%", "25%"]
   }
@@ -70,8 +70,9 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               setState={setState}
               component={
                 <PageViewsChart
-                  data={state.individualAssignmentViews}
-                  type="individual"
+                  data={state.aggregateAssignmentViews}
+                  individualData={state.individualAssignmentViews}
+                  type="individualAssignment"
                   xaxis="_id"
                   yaxis="count"
                   binLabel={state.individualAssignmentBinLabel}
@@ -79,7 +80,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                   height={500}
                 />
               }
-              data={state.individualAssignmentViews}
+              data={state.aggregateAssignmentViews}
               label={state.individualAssignmentBinLabel}
               filterOptions={["Day", "Week", "2 Weeks", "Month"]}
               filterSelectLabel="Unit of Time:"
@@ -87,6 +88,8 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               clickFunction={handleIndividual}
               type="individualAssignmentViews"
               axisType="individualAssignmentBinLabel"
+              optionalLoadingTest={state.levelName}
+              topMargin="large"
               selectComponent={
                 <SelectWithApply
                   selectOptions={Object.keys(state.adaptLevels)}
@@ -143,20 +146,23 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               setState={setState}
               component={
                 <GradesPageView
-                  data={state.gradesPageView}
+                  data={state.allAssignmentGrades}
                   range={[0, 1]}
                   numberOfBins={state.numBinsGrades}
                   height={500}
+                  individualData={state.gradesPageView}
                 />
               }
-              data={state.gradesPageView}
+              data={state.allAssignmentGrades}
               label={state.sliderValue}
-              filterOptions={[1, state.gradesPageView]}
+              filterOptions={[1, state.allAssignmentGrades]}
               filterSelectLabel="Number of bins:"
               filterFunction={changePropValue}
               clickFunction={changePropValue}
               type="numBinsGrades"
               axisType="sliderValue"
+              optionalLoadingTest={state.gradeLevelName}
+              topMargin="large"
               selectComponent={
                 <SelectWithApply
                   selectOptions={Object.keys(state.adaptLevels)}

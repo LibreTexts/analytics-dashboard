@@ -109,7 +109,8 @@ function individualDataQuery(params, dbInfo) {
     var pathMatch = {
       "$match": {
         '$expr': {
-          '$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]
+          // '$and': []
+          '$or': []
         }
       }
     }
@@ -133,6 +134,11 @@ function individualDataQuery(params, dbInfo) {
     }
 
     if (params.path) {
+      Object.values(params.path).forEach(e => {
+        //console.log(e)
+        // pathMatch["$match"]['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", e ] }, -1]})
+        pathMatch["$match"]['$expr']['$or'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", e ] }, -1]})
+      });
       data['pipeline'].splice(4, 0, pathMatch)
     }
     if (params.type === "page") {

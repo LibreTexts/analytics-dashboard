@@ -21,7 +21,7 @@ export default function TextbookChapterChart({
   displayMode,
   state
 }) {
-  if (data) {
+  if (data && data.length > 0) {
     var student = data[0]['student']
     var displayModeStudent = data[0]['displayModeStudent']
   }

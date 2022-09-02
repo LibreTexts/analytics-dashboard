@@ -1,3 +1,4 @@
+const addFilters =  require("../helper/addFilters.js");
 //query to find views per date for an individual page
 
 function individualPageViewsQuery(params, adaptCodes, dbInfo) {
@@ -80,30 +81,6 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
         }
       ]
     }
-
-    var tagLookup = {
-      '$lookup': {
-        "from": dbInfo.metaColl,
-        "localField": "pageInfo.id",
-        "foreignField": "pageId",
-        "as": "metaTags"
-      }
-    }
-    var tagUnwind = {
-      '$unwind': {
-        'path': '$metaTags'
-      }
-    }
-    var tagMatch = {
-      "$match": {
-        'metaTags.value': params.tagFilter
-      }
-    }
-    if (params.tagFilter) {
-      data['pipeline'].splice(3, 0, tagLookup)
-      data['pipeline'].splice(4, 0, tagUnwind)
-      data['pipeline'].splice(5, 0, tagMatch)
-    }
     //params.levelName is for individual adapt assignments chart
   } else if (params.levelName) {
     //look in the adapt collection
@@ -139,7 +116,8 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
           {
             "$group": {
               '_id': '$date',
-              'students': {'$push': '$anon_student_id' }
+              'students': {'$push': '$anon_student_id' },
+              'due': {'$first': '$due'}
             }
           },
           //count the number of students who submitted the assignment by the date
@@ -159,56 +137,14 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
         ]
       }
   }
-  //console.log(data)
-  var match = {
-    "$match": {
-      '$expr': {
-        '$and': []
-      }
-    }
+
+  var index = 1;
+  index = addFilters.spliceDateFilter(index, params, data);
+  if (params.individual) {
+    index = addFilters.splicePathFilter(index+2, params, data);
+    addFilters.spliceTagFilter(index, params, data);
   }
 
-  var filterMatch = {
-    "$match": {
-      '$expr': {
-        '$and': []
-      }
-    }
-  }
-
-  var pathMatch = {
-    "$match": {
-      '$expr': {
-        '$and': []
-      }
-    }
-  }
-
-  var matchesUsed = false
-  if (params.start) {
-    filterMatch['$match']['$expr']['$and'].push({'$gte': ['$_id', {'$dateFromString': {'dateString': params.start}}]})
-    matchesUsed = true
-  }
-  if (params.end) {
-    filterMatch['$match']['$expr']['$and'].push({'$lte': ['$_id', {'$dateFromString': {'dateString': params.end}}]})
-    matchesUsed = true
-  }
-  if (params.path) {
-    pathMatch['$match']['$expr']['$and'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", params.path ] }, -1]})
-    if (params.individual && params.tagFilter) {
-      data['pipeline'].splice(8, 0, pathMatch)
-    } else {
-      data['pipeline'].splice(5, 0, pathMatch)
-    }
-  }
-  if (matchesUsed && params.courseId) {
-    if (params.individual && params.tagFilter) {
-      data['pipeline'].splice(9, 0, filterMatch)
-    } else {
-      data['pipeline'].splice(6, 0, filterMatch)
-    }
-  }
-  // console.log(data['pipeline'])
   return data;
 }
 

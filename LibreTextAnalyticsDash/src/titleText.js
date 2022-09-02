@@ -3,7 +3,7 @@ import { Box, Button, Collapsible, Text } from "grommet";
 import { CircleInformation } from "grommet-icons";
 
 export default function TitleText({ title, text, topMargin }) {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   return (
     <Box
       align="center"

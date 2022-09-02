@@ -128,7 +128,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                 <LayeredComponent
                   gridArea="timeline"
                   queryVariables={queryVariables}
-                  disable={state.disablePage}
+                  disable={state.disableChapterChart}
                   loading={infoText.loadingMessage}
                   title="Textbook Chapter Metrics"
                   infoText={infoText.textbookChapterChart}
@@ -163,7 +163,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                       state={state}
                       setState={setState}
                       type="studentForChapterChart"
-                      disable={state.disablePage}
+                      disable={state.disableChapterChart}
                       queryVariables={queryVariables}
                     />
                   }

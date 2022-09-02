@@ -32,7 +32,7 @@ export default class AllAdaptAssignmentsChart extends React.Component {
     // this.props.data.sort(function (a, b) {
     //   return a[xaxis] - b[xaxis];
     // });
-    if (this.props.data) {
+    if (this.props.data && this.props.data.length > 0) {
       var student = this.props.data[0]["_id"]["student"];
     }
 

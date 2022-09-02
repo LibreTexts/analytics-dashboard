@@ -1,3 +1,4 @@
+const addFilters =  require("../helper/addFilters.js");
 //query to get student grades for each adapt assignment, on the student tab
 
 function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent) {
@@ -130,27 +131,8 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
         }
       ]
     }
-
-    var matchesUsed = false
-    var filterMatch = {
-      "$match": {
-        '$expr': {
-          '$and': []
-        }
-      }
-    }
-    if (params.start) {
-      filterMatch['$match']['$expr']['$and'].push({'$gte': [{'$dateFromString': {'dateString': '$due'}}, {'$dateFromString': {'dateString': params.start}}]})
-      matchesUsed = true
-    }
-    if (params.end) {
-      filterMatch['$match']['$expr']['$and'].push({'$lte': [{'$dateFromString': {'dateString': '$due'}}, {'$dateFromString': {'dateString': params.end}}]})
-      matchesUsed = true
-    }
-
-    if (matchesUsed) {
-      data['pipeline'].splice(6, 0, filterMatch)
-    }
+    var index = 1;
+    addFilters.spliceDateFilter(index, params, data);
 
     return data;
 }

@@ -34,13 +34,14 @@ function App() {
     end: null,
     showFilter: false,
     tab: "student",
-    disable: false,
+    disable: true,
     disableCourse: false,
-    disablePage: false,
-    disableStudent: false,
-    disableAssignment: false,
-    disableGradesAssignment: false,
-    disableStudentTextbookEngagement: false,
+    disablePage: true,
+    disableStudent: true,
+    disableAssignment: true,
+    disableGradesAssignment: true,
+    disableStudentTextbookEngagement: true,
+    disableChapterChart: true,
     course: null,
     courseId: null,
     allPages: null,
@@ -80,7 +81,7 @@ function App() {
     pathLength: 0,
     allChapters: null,
     courseLevel: null,
-    chosenPath: null,
+    chosenPaths: null,
     dataPath: null,
     openFilter: false,
     reset: false,
@@ -123,7 +124,9 @@ function App() {
     noChartData: false,
     chosenChapter: null,
     disableCourseStructureButton: false,
-    disableFilterReset: false
+    disableFilterReset: false,
+    aggregateAssignmentViews: null,
+    allAssignmentGrades: null
   });
 
   const [click, setClick] = useState(false);

@@ -2,7 +2,7 @@ function getTagQuery(params, dbInfo) {
   console.log("getTagQuery", params.pageIds);
 
   var data = {
-    "collection": "metatags",
+    "collection": dbInfo.metaColl,
     "database": dbInfo.db,
     "dataSource": dbInfo.dataSource,
     "pipeline": [

@@ -1,5 +1,6 @@
-import React from "react";
-import { Box, Button } from "grommet";
+import React, { createRef, useState, useEffect } from "react";
+import * as ReactDOM from 'react-dom';
+import { Box, Button, Text } from "grommet";
 import TreeMenu from "react-simple-tree-menu";
 import "../node_modules/react-simple-tree-menu/dist/main.css";
 
@@ -17,83 +18,139 @@ export default function MultiSelect({
   resetPath,
   queryVariables
 }) {
-  const [chosenPath, setChosenPath] = React.useState();
+  const [chosenPaths, setChosenPaths] = useState([]);
+  const treeMenuRef = createRef();
+  const categoriesTreeRef = createRef();
+  const [activeTreeNodes, setActiveTreeNodes] = useState(new Map());
 
-  function treeMap(initData) {
-    var data = JSON.parse(JSON.stringify(initData));
-    var i = Object.keys(data).length - 1;
-    var allData = [];
-    while (i > 1) {
-      var arr = [];
-      Object.keys(data[i]).forEach((e) => {
-        var temp = {
-          label: e.replaceAll("_", " "),
-          key: e,
-          nodes: data[i][e],
-        };
-        arr.push(temp);
-      });
-      allData.push(arr);
-      i = i - 1;
-    }
 
-    var x = allData.length - 1;
-    Object.keys(allData[0]).forEach((k, index) => {
-      allData[0][k].nodes.forEach((c, m) => {
-        allData[0][k].nodes[m] = {
-          label: c.replaceAll("_", " "),
-          key: c,
-          nodes: [],
-        };
-      });
-    });
 
-    var copyData = JSON.parse(JSON.stringify(allData));
-    while (x > 0) {
-      copyData[x].forEach((key) => {
-        key.nodes.forEach((k, index) => {
-          if (copyData[x - 1].find((o) => o.key === k)) {
-            key.nodes[index] = copyData[x - 1].find((o) => o.key === k);
-          } else if (typeof key.nodes[index] !== Object) {
-            key.nodes[index] = {
-              label: k.replaceAll("_", " "),
-              key: k,
-              nodes: [],
-            };
-          }
+  const getCategoriesTree = () => {
+    function treeMap(initData) {
+      var data = JSON.parse(JSON.stringify(initData));
+      var i = Object.keys(data).length - 1;
+      var allData = [];
+      while (i > 1) {
+        var arr = [];
+        Object.keys(data[i]).forEach((e, idx) => {
+          var temp = {
+            label: e.replaceAll("_", " "),
+            key: e,
+            index: idx,
+            nodes: data[i][e],
+          };
+          arr.push(temp);
+        });
+        allData.push(arr);
+        i = i - 1;
+      }
+
+      var x = allData.length - 1;
+      Object.keys(allData[0]).forEach((k, index) => {
+        allData[0][k].nodes.forEach((c, m) => {
+          allData[0][k].nodes[m] = {
+            label: c.replaceAll("_", " "),
+            key: c,
+            index: m,
+            nodes: [],
+          };
         });
       });
-      x = x - 1;
+
+      var copyData = JSON.parse(JSON.stringify(allData));
+      while (x > 0) {
+        copyData[x].forEach((key) => {
+          key.nodes.forEach((k, index) => {
+            if (copyData[x - 1].find((o) => o.key === k)) {
+              key.nodes[index] = copyData[x - 1].find((o) => o.key === k);
+            } else if (typeof key.nodes[index] !== Object) {
+              key.nodes[index] = {
+                label: k.replaceAll("_", " "),
+                key: k,
+                nodes: [],
+              };
+            }
+          });
+        });
+        x = x - 1;
+      }
+      return copyData[allData.length - 1];
     }
-    return copyData[allData.length - 1];
+
+    return (
+      <TreeMenu
+        data={treeMap(data)}
+        onClickItem={(clickedItem) => toggleActiveTreeNode(clickedItem.level, clickedItem.index, clickedItem.label, clickedItem.key)}
+        hasSearch={false}
+        initialActiveKey={init}
+        ref={treeMenuRef}
+      />
+    );
   }
 
-  function handleClick(event, state, setState) {
-    //console.log(event.key)
-    // setState({...state, disableCourseStructureButton: false})
-    setChosenPath(event.key);
-    //console.log(chosenPath)
-    //filterClick(event)
-    handleChange("path", event.key, state, setState);
-  }
+  const toggleActiveTreeNode = (nodeLevel, nodeIndex, nodeLabel, nodeKey) => {
+    const currentNodeKey = `${nodeLevel}-${nodeIndex}`;
+    const isActiveTreeNode = activeTreeNodes.has(currentNodeKey);
+    var activeTreeNodesCopy = new Map(JSON.parse(JSON.stringify(Array.from(activeTreeNodes))))
 
+    console.log(typeof activeTreeNodesCopy)
+    // console.log(currentNodeKey, isActiveTreeNode)
+    var tempState = JSON.parse(JSON.stringify(chosenPaths))
+    if (isActiveTreeNode) {
+      activeTreeNodesCopy.delete(currentNodeKey);
+      tempState = tempState.filter(e => e != nodeKey)
+    } else {
+      activeTreeNodesCopy.set(currentNodeKey, nodeLabel);
+      tempState = [...tempState, nodeKey]
+    }
+
+    // This is a dirty workaround, because 3rd-party TreeMenu component doesn't seem to support multi selection.
+    [[currentNodeKey], ...activeTreeNodesCopy].forEach(([key], iteration) => {
+      const isCurrentNodeKey = iteration === 0;
+      console.log(currentNodeKey)
+      const [level, index] = key.split("-");
+      const treeNodeLevelSelector = `.rstm-tree-item-level${level}`;
+
+      const treeNodeDOM = categoriesTreeRef.current.querySelectorAll(
+        treeNodeLevelSelector
+      )[index];
+      // "Force" DOM actions execution on elements controlled by React.
+      requestAnimationFrame(() => {
+        treeNodeDOM.classList.toggle(
+          "rstm-tree-item--active",
+          !isCurrentNodeKey
+        );
+        treeNodeDOM.setAttribute("aria-pressed", !isCurrentNodeKey);
+      });
+    });
+    setActiveTreeNodes(activeTreeNodesCopy);
+    setChosenPaths(tempState)
+    handleChange("path", tempState, state, setState)
+  };
+
+
+  // async function handleClick(event, state, setState) {
+  //   //console.log(event.key)
+  //   // setState({...state, disableCourseStructureButton: false})
+  //   setChosenPath(event.key);
+  //   //console.log(chosenPath)
+  //   //filterClick(event)
+  //   handleChange("path", event.key, state, setState);
+  // }
+
+  // <Box>
   function clearPath(state, setState) {
-    setState({ ...state, chosenPath: null, dataPath: null, resetPath: true })
-    setChosenPath(null)
+    setState({ ...state, chosenPaths: null, dataPath: null, resetPath: true })
+    setChosenPaths([])
   }
 
   return (
     <Box width="100%">
       {!resetPath && (
         <>
-          <TreeMenu
-            data={treeMap(data)}
-            onClickItem={(event) => {
-              handleClick(event, state, setState);
-            }}
-            hasSearch={false}
-            initialActiveKey={init}
-          />
+          <div ref={categoriesTreeRef}>
+            {getCategoriesTree()}
+          </div>
           <Button
             secondary
             label="Clear Current Path"
@@ -103,13 +160,18 @@ export default function MultiSelect({
           />
         </>
       )}
+      {/* <Box>
+        <Box margin={{bottom: 'medium'}}>
+          {chosenPaths.map((e)=> <>{e}</>)}
+        </Box>
+      </Box> */}
       <Button
         primary
         label="Apply"
         color="#0047BA"
         margin={{ horizontal: "large" }}
         onClick={(event) => {
-          filterClick(state, setState, "", queryVariables, chosenPath, true);
+          filterClick(state, setState, "", queryVariables, chosenPaths, true);
         }}
       />
     </Box>

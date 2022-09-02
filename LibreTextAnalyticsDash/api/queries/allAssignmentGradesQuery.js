@@ -1,7 +1,7 @@
 const addFilters =  require("../helper/addFilters.js");
 //query to get student grades for each adapt assignment, on the student tab
 
-function allAdaptAssignmentsQuery(params, adaptCodes, dbInfo, encryptStudent) {
+function allAssignmentGradesQuery(params, dbInfo, adaptCodes) {
   //find the adapt code for the lt course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   var course = codeFound;
@@ -31,6 +31,7 @@ function allAdaptAssignmentsQuery(params, adaptCodes, dbInfo, encryptStudent) {
         {
           "$project": {
             'levelname' : '$level_name',
+            'levelgroup': '$level_group',
             'student' : '$anon_student_id',
             'levelpoints' : '$level_points',
             'problemname' : '$problem_name',
@@ -58,7 +59,7 @@ function allAdaptAssignmentsQuery(params, adaptCodes, dbInfo, encryptStudent) {
               '_id': {
                 'student': '$student',
                 'level_name': '$levelname',
-                'level_group': '$level_group',
+                'level_group': '$levelgroup',
                 'problem_name': "$problemname"
               },
               'levelpoints': {
@@ -105,34 +106,10 @@ function allAdaptAssignmentsQuery(params, adaptCodes, dbInfo, encryptStudent) {
             }
           }
         },
-        //calculating percent
-        {
-          "$addFields": {
-            'percent': {
-              '$multiply': ['$score', 100]
-            },
-            'level_name': '$_id.level'
-          }
-        },
         {
           "$group": {
-            '_id': '$_id.level',
-            'percent': {
-              '$avg': '$percent'
-            },
-            'due': {'$first': '$due'}
-          }
-        },
-        {
-          "$addFields": {
-            'percent': {
-              '$round': ['$percent', 2]
-            }
-          }
-        },
-        {
-          "$sort": {
-            'due': 1
+            '_id': '$_id.student',
+            'score': {'$avg': '$score'}
           }
         }
       ]
@@ -143,4 +120,4 @@ function allAdaptAssignmentsQuery(params, adaptCodes, dbInfo, encryptStudent) {
     return data;
 }
 
-module.exports = allAdaptAssignmentsQuery
+module.exports = allAssignmentGradesQuery

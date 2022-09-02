@@ -1,3 +1,4 @@
+const addFilters =  require("../helper/addFilters.js");
 //find the data for the bar chart on the student tab
 //look at an attribute and find the number of students per x axis element
 
@@ -81,7 +82,9 @@ function adaptStudentChartQuery(params, dbInfo, adaptCodes) {
       }
     ]
   }
-  
+  var index = 1;
+  addFilters.spliceDateFilter(index, params, data, true);
+
   return data;
 }
 
