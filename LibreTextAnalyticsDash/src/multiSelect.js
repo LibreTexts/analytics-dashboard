@@ -2,6 +2,7 @@ import React, { createRef, useState, useEffect } from "react";
 import * as ReactDOM from 'react-dom';
 import { Box, Button, Text } from "grommet";
 import TreeMenu from "react-simple-tree-menu";
+import {writeToLocalStorage} from "./helperFunctions.js";
 import "../node_modules/react-simple-tree-menu/dist/main.css";
 
 export default function MultiSelect({
@@ -142,6 +143,10 @@ export default function MultiSelect({
   function clearPath(state, setState) {
     setState({ ...state, chosenPaths: null, dataPath: null, resetPath: true })
     setChosenPaths([])
+    var courseData = JSON.parse(localStorage.getItem(state.courseId+"-filters"))
+    courseData["dataPath"] = [];
+    courseData["chosenPaths"] = [];
+    writeToLocalStorage(state.courseId+"-filters", courseData)
   }
 
   return (

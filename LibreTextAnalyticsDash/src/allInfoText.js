@@ -2,7 +2,7 @@
 
     export const infoText = {
       studentMetricsBarChart:
-        "This graph shows data for all students. Switch the axis values using the filters to the left. Click on a bar to populate a table with the chosen data.",
+        "This plot shows the distribution of all students in the course for a selected interaction metric. Switch the axis values using the filters to the left. Click on a bar to populate a table with the chosen data.",
       aggregatePageViewsChart1:
         "This graph shows the number of page views for all pages in ",
       aggregatePageViewsChart2:
@@ -10,7 +10,7 @@
       individualPageViewsChart:
         "This graph shows data for an individual page. Switch the unit of time using the filters to the left.",
       individualAssignmentsChart:
-        "This graph shows data for an individual assignment. Switch the unit of time using the filters to the left.",
+        "This plot shows interaction and performance metrics for a single assignment over time. Switch the unit of time using the filters to the left.",
       assignmentGradesChart:
         "This graph shows grade distribution of a selected assignment. Grade ranges do not include the max value, except for the last bin.",
       courseText:
@@ -18,7 +18,7 @@
       loadingMessage:
         "Loading, please wait",
       dataFilter:
-        "Click on the button to the left to filter the data by date and course unit.",
+        "Use the options below to filter the data by date and metatag. Upload a roster to connect student enrollment data. Click apply to load the filtered data.",
       courseStructureDropdown:
         "Choose a unit from the course to focus on. This filter only affects the LibreText data.",
       noDataMessage:

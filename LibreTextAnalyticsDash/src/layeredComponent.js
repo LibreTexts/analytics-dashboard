@@ -81,7 +81,7 @@ export default function LayeredComponent({
     rows = ["30%", "70%"]
   }
   if (type === "barXAxisLabel") {
-    rows = ["15%", "85%"]
+    rows = ["18%", "82%"]
   }
   if (type === "individualAssignmentViews" || type === "numBinsGrades") {
     rows = ["30%", "70%"]
@@ -209,7 +209,7 @@ export default function LayeredComponent({
                   background="#0047BA"
                 />
                 <Text margin={{ left: "small", bottom: "small", top: "small" }}>
-                  {type === "aggregatePageViews" ? "Aggregate Pages" : "Class Performance"}
+                  {type === "aggregatePageViews" ? "Aggregate Pages" : "Class Performance Average"}
                 </Text>
               </Box>
               <Box direction="row">

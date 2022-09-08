@@ -132,7 +132,7 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
       ]
     }
     var index = 1;
-    addFilters.spliceDateFilter(index, params, data);
+    addFilters.spliceDateFilter(index, params, data, true);
 
     return data;
 }

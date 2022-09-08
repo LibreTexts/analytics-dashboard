@@ -13,6 +13,7 @@ export default function InfoBox({
   count,
   setCount,
   main = false,
+  height="125px"
 }) {
   let [open, setOpen] = useState(initShow);
   let message = [];
@@ -37,7 +38,7 @@ export default function InfoBox({
           alignContent="center"
           alignSelf="center"
           justify="center"
-          height="xsmall"
+          height={height}
           width="75%"
           margin={{ vertical: "small" }}
         >

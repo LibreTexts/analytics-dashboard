@@ -103,7 +103,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                 <LayeredComponent
                   gridArea="plots"
                   queryVariables={queryVariables}
-                  title="Student Metrics"
+                  title="Student Distribution for Interaction Metrics"
                   infoText={infoText.studentMetricsBarChart}
                   filterLabel="Bar Chart Display Filters"
                   state={state}

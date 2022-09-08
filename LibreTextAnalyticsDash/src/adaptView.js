@@ -63,7 +63,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               queryVariables={queryVariables}
               disable={state.disableAssignment}
               loading={infoText.loadingMessage}
-              title="Individual Assignment Metrics"
+              title="Single Assignment Views Over Time"
               infoText={infoText.individualAssignmentsChart}
               filterLabel="Bar Chart Display Filters"
               state={state}
@@ -138,7 +138,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               queryVariables={queryVariables}
               disable={state.disableGradesAssignment}
               loading={infoText.loadingMessage}
-              title="Grades by Assignment"
+              title="Assignment Performance"
               infoText={infoText.assignmentGradesChart}
               filterLabel="Grades Histogram Filters"
               filterType="slider"

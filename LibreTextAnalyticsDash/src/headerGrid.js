@@ -27,6 +27,7 @@ export default function HeaderGrid({
   queryVariables,
   data,
   initPage = false,
+  noEnrollmentData
 }) {
   var gridAreas = [
     { name: "courses", start: [0, 0], end: [1, 0] },
@@ -91,6 +92,7 @@ export default function HeaderGrid({
                 setState={setState}
                 gridArea="legend"
                 queryVariables={queryVariables}
+                noEnrollmentData={noEnrollmentData}
               />
             )}
           {!initPage &&
@@ -109,7 +111,7 @@ export default function HeaderGrid({
                   <Box direction="column" style={{width: "350px"}} align="center">
                     <Text weight="bold">Student: </Text>
                     <Select
-                      options={state.allStudents}
+                      options={state.displayMode ? state.encryptedStudents : state.allStudents}
                       margin={{ vertical: "small" }}
                       dropAlign={{
                         top: "bottom",

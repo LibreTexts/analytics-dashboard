@@ -13,7 +13,7 @@ export default function CourseDropdown({
 }) {
 
   return (
-    <Box gridArea="courses" height="175px" margin={{top: "small"}}>
+    <Box gridArea="courses" height="200px" margin={{top: "small"}}>
       <Box width="100%" responsive={true}>
         {state.showInfoBox && (
           <InfoBox

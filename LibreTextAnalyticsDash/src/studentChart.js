@@ -86,7 +86,7 @@ export default function StudentChart({
   };
   return (
     <>
-      <ResponsiveContainer width={newWidth} height="90%">
+      <ResponsiveContainer width={newWidth} height="87%">
         <BarChart
           margin={{ top: 25, right: 30, bottom: 30, left: leftMargin }}
           data={data}

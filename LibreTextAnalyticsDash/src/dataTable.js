@@ -43,7 +43,11 @@ export default function DataTable({
   }
   var matchFound = 0;
   if (student && tab === "student" && disableStudent) {
-    var studentFound = data.findIndex(obj => obj._id === student)
+    if (!displayMode) {
+      var studentFound = data.findIndex(obj => obj._id === student)
+    } else {
+      studentFound = data.findIndex(obj => obj.displayModeStudent === student)
+    }
     data.splice(0, 0, data[studentFound])
     data.splice(studentFound+1, 1)
     matchFound = matchFound + 1;

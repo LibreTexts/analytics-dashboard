@@ -116,7 +116,8 @@ export async function handleClick(state, setState, type, queryVariables, path = 
         studentForChapterChart: null,
         individualChapterData: null,
         textbookEngagementData: null,
-        studentAssignments: null
+        studentAssignments: null,
+        rosterFilterApplied: state.rosterFile ? true : false
       };
       if (path) {
         tempState["chosenPath"] = JSON.stringify(path);
@@ -171,6 +172,7 @@ export async function handleClick(state, setState, type, queryVariables, path = 
       getDataFromLocalStorage(state.courseId+"-chart", tempState);
       getDataFromLocalStorage(state.courseId+"-dropdown", tempState);
       getDataFromLocalStorage(state.courseId+"-filters", tempState);
+      tempState["rosterFilterApplied"] = tempState.rosterFile ? true : false;
       setState({
         ...tempState,
       });

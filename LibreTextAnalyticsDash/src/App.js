@@ -126,7 +126,10 @@ function App() {
     disableCourseStructureButton: false,
     disableFilterReset: false,
     aggregateAssignmentViews: null,
-    allAssignmentGrades: null
+    allAssignmentGrades: null,
+    roster: null,
+    rosterFile: null,
+    rosterFilterApplied: false
   });
 
   const [click, setClick] = useState(false);

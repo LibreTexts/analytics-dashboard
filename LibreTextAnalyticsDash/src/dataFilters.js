@@ -6,6 +6,7 @@ import {
   CheckBox,
   Spinner,
   Select,
+  FileInput
 } from "grommet";
 import InfoBox from "./infoBox.js";
 import DataFilterText from "./dataFilterText.js";
@@ -15,17 +16,10 @@ import { handleChange } from "./handleChangeFunction.js";
 import { clearDates, clearTags } from "./helperFunctions.js";
 import { infoText } from "./allInfoText.js";
 import "./index.css";
+import Papa from "papaparse";
+import ParseRoster from "./parseRoster.js";
 
-export default function DataFilters({ state, setState, queryVariables }) {
-  let noEnrollmentData = false;
-
-  if (state.studentData) {
-    state.studentData.forEach((student) => {
-      if (student.isEnrolled === "N/A") {
-        noEnrollmentData = true;
-      }
-    });
-  }
+export default function DataFilters({ state, setState, queryVariables, noEnrollmentData }) {
 
   return (
     <Box gridArea="filters" direction="column">
@@ -44,7 +38,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
         <Box direction="column">
           <Box
             direction="column"
-            height="625px"
+            height="1000px"
             width="600px"
             margin={{ left: "xlarge" }}
           >
@@ -128,7 +122,7 @@ export default function DataFilters({ state, setState, queryVariables }) {
                     >
                       <Box direction="row">
                         <Select
-                          style={{ height: 45 }}
+                          style={{ height: 50 }}
                           margin={{ vertical: "small" }}
                           options={state.tagData}
                           value={state.chosenTag}
@@ -147,6 +141,9 @@ export default function DataFilters({ state, setState, queryVariables }) {
                           color="#022851"
                         />
                       </Box>
+                    </Box>
+                    <Box width="100%" alignSelf="center">
+                      <ParseRoster state={state} setState={setState}/>
                     </Box>
                   </>
                 )}

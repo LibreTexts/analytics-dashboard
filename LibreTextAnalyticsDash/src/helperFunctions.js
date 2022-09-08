@@ -94,13 +94,21 @@ export function clearDates(state, setState) {
     end: state.endDate,
     disable: false,
   });
+  var courseData = JSON.parse(localStorage.getItem(state.courseId+"-filters"));
+  courseData["start"] = state.startDate;
+  courseData["end"] = state.endDate;
+  writeToLocalStorage(state.courseId+"-filters", courseData);
 }
 
 export function clearTags(state, setState) {
   setState({
     ...state,
-    chosenTag: null
+    chosenTag: null,
+    disable: false
   })
+  var courseData = JSON.parse(localStorage.getItem(state.courseId+"-filters"))
+  courseData["chosenTag"] = null;
+  writeToLocalStorage(state.courseId+"-filters", courseData)
 }
 
 export function menuCollapsible(state, setState) {

@@ -12,6 +12,14 @@ import {
 } from "./handleChangeFunction.js";
 
 export default function FilterView({ state, setState, queryVariables }) {
+  var noEnrollmentData = false;
+  if (state.studentData) {
+    state.studentData.forEach((student) => {
+      if (student.isEnrolled === "N/A") {
+        noEnrollmentData = true;
+      }
+    });
+  }
   return (
     <>
       <HeaderGrid
@@ -19,9 +27,10 @@ export default function FilterView({ state, setState, queryVariables }) {
         setState={setState}
         queryVariables={queryVariables}
         data={true}
+        noEnrollmentData={noEnrollmentData}
       />
       <Grid
-        fill={true}
+        height="1000px"
         rows={["auto", "auto"]}
         columns={["50%", "50%"]}
         gap="small"
@@ -34,6 +43,7 @@ export default function FilterView({ state, setState, queryVariables }) {
         responsive={true}
         overflow="hidden"
         justifyContent="center"
+        margin={{bottom: "medium"}}
       >
         {queryVariables.click && (
           <>
@@ -41,6 +51,7 @@ export default function FilterView({ state, setState, queryVariables }) {
               state={state}
               setState={setState}
               queryVariables={queryVariables}
+              noEnrollmentData={noEnrollmentData}
             />
             {state.allChapters && state.ltCourse && (
               <Box

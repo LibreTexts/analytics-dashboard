@@ -11,9 +11,14 @@ export default function ChosenFilters({
   state,
   setState,
   gridArea,
-  queryVariables
+  queryVariables,
+  noEnrollmentData=false
 }) {
-  var hasFilter = state.chosenPaths || state.start || state.end || state.chosenTag
+  var hasFilter = (state.chosenPaths && state.chosenPaths.length > 0) || state.start || state.end || state.chosenTag
+
+  var enrollmentMessage = state.rosterFilterApplied ? "This course is using enrollment data from a roster." :
+    noEnrollmentData ? "This course has no enrollment data available." :
+    "This course is using enrollment data from Adapt."
 
   return (
       <Box
@@ -26,7 +31,8 @@ export default function ChosenFilters({
       >
       {state.studentData &&
         <>
-        {state.chosenPaths && (
+        <Text margin={{top: "small"}} textAlign="center" weight="bold">{enrollmentMessage}</Text>
+        {state.chosenPaths && state.chosenPaths.length > 0 && (
           <Text margin="small">
             Current chosen paths:{" "}
             {(state.chosenPaths).map((a) => (
@@ -46,9 +52,6 @@ export default function ChosenFilters({
                 return item
               })
             ))}
-            {/* {state.chosenPaths.split("/").map((a) => (
-              <li>{a.replaceAll("_", " ")}</li>
-            ))} */}
           </Text>
         )}
         {state.start && (
@@ -66,7 +69,7 @@ export default function ChosenFilters({
             Metatag: {state.chosenTag}
           </Text>
         )}
-        {!hasFilter && !state.chosenPaths &&
+        {!hasFilter &&
           <Text alignSelf="center" margin={{top: "large"}} size="medium">
             No filters have been chosen.
           </Text>

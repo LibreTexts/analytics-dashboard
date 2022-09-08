@@ -29,7 +29,7 @@ export default function DataFilterText({
             <Text>
                 Number of Students without Data: {s_without_data}
             </Text>
-            {noEnrollmentData &&
+            {false && noEnrollmentData &&
               <Text weight="bold">
                 This course has no enrollment data available.
               </Text>

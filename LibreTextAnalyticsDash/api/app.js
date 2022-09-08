@@ -275,6 +275,9 @@ app.post("/data", async (req, res, next) => {
         courseDates
       );
   var studentEnrollment = JSON.parse(JSON.stringify(enrollment))
+  var rosterData = req.body.roster
+  var rosterDataCopy = JSON.parse(JSON.stringify(rosterData))
+
   axios(config)
     .then(function async(response) {
       let newData = response.data;
@@ -296,14 +299,28 @@ app.post("/data", async (req, res, next) => {
           newData["documents"][index]["diff"] = diff
           //check if there is enrollment data for the course
           //console.log(studentEnrollment)
-          if (enrollment.length > 0) {
+          var encryptedStudent = student._id
+          var decryptedStudent = helperFunctions.decryptStudent(student._id)
+          //decrypting students from the roster and leaving the rest
+          if (rosterData) {
+            if (rosterData.includes(decryptedStudent)) {
+              newData["documents"][index]["isEnrolled"] = true;
+              rosterDataCopy.find((s, index) => {
+                if (s === decryptedStudent) {
+                  rosterDataCopy.splice(index, 1);
+                }
+              });
+            } else {
+              newData["documents"][index]["isEnrolled"] = false;
+            }
+          } else if (enrollment.length > 0) {
             //check to see if the student is enrolled
-            if (studentEnrollment.includes(student._id)) {
+            if (studentEnrollment.includes(encryptedStudent)) {
               //mark the student as enrolled
               newData["documents"][index]["isEnrolled"] = true;
               //if the student is in the course, remove that student from the enrollment list
               studentEnrollment.find((s, index) => {
-                if (s === student._id) {
+                if (s === encryptedStudent) {
                   studentEnrollment.splice(index, 1);
                 }
               });
@@ -316,21 +333,33 @@ app.post("/data", async (req, res, next) => {
             newData["documents"][index]["isEnrolled"] = "N/A";
           }
           newData["documents"][index]["hasData"] = true;
-          newData["documents"][index]["displayModeStudent"] = student._id;
-          newData["documents"][index]._id = helperFunctions.decryptStudent(student._id);
+          newData["documents"][index]["displayModeStudent"] = encryptedStudent;
+          newData["documents"][index]._id = decryptedStudent;
         });
       }
       //if there is an enrolled student that has no data, add them to the table
-      if (enrollment.length > 0 && tab === "student") {
-        studentEnrollment.forEach((s) => {
-          newData["documents"].splice(0, 0, {
-            _id: helperFunctions.decryptStudent(s),
-            isEnrolled: true,
-            hasData: false,
-            adapt: hasAdapt,
-            displayModeStudent: s,
+      if ((enrollment.length > 0 || rosterDataCopy.length > 0) && tab === "student") {
+        if (rosterData) {
+          rosterDataCopy.forEach((s) => {
+            newData["documents"].splice(0, 0, {
+              _id: s,
+              isEnrolled: true,
+              hasData: false,
+              adapt: hasAdapt,
+              displayModeStudent: helperFunctions.encryptStudent(s),
+            });
           });
-        });
+        } else {
+          studentEnrollment.forEach((s) => {
+            newData["documents"].splice(0, 0, {
+              _id: helperFunctions.decryptStudent(s),
+              isEnrolled: true,
+              hasData: false,
+              adapt: hasAdapt,
+              displayModeStudent: s,
+            });
+          });
+        }
       }
       if (tab === "student") {
         newData["studentData"] = newData["documents"];

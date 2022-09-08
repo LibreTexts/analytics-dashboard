@@ -126,6 +126,7 @@ export function getAllDataConfig(state, setState, type) {
     ltCourse: state.ltCourse,
     adaptCourse: state.adaptCourse,
     tagFilter: state.chosenTag,
+    roster: state.roster
   };
   var config = getAxiosCall("/data", data, state);
   return config;

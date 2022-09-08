@@ -1,4 +1,5 @@
 import React from "react";
+import { writeToLocalStorage } from "./helperFunctions.js";
 const FunctionContext = React.createContext();
 
 export function handleChange(
@@ -26,7 +27,7 @@ export function handleChange(
         disable: false,
       });
       courseData["start"] = value;
-      localStorage.setItem(state.courseId+"-filters", JSON.stringify(courseData));
+      writeToLocalStorage(state.courseId+"-filters", courseData);
     }
   }
   if (type === "end") {
@@ -45,13 +46,13 @@ export function handleChange(
         end: value,
         disable: false,
       });
-      localStorage.setItem(state.courseId+"-filters", JSON.stringify(courseData));
+      writeToLocalStorage(state.courseId+"-filters", courseData);
     }
   }
   if (type === "chosenTag") {
     courseData = JSON.parse(localStorage.getItem(state.courseId+"-filters"));
     courseData["chosenTag"] = value;
-    localStorage.setItem(state.courseId+"-filters", JSON.stringify(courseData));
+    writeToLocalStorage(state.courseId+"-filters", courseData);
     setState({
       ...state,
       chosenTag: value,

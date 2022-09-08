@@ -71,8 +71,6 @@ function studentTextbookEngagementQuery(params, dbInfo, encryptStudent) {
   index = addFilters.spliceDateFilter(index, params, data);
   index = addFilters.splicePathFilter(index+2, params, data);
   addFilters.spliceTagFilter(index, params, data);
-  console.log(data['pipeline'])
-  console.log(data['pipeline'][4]['$match']['$expr'])
   return data;
 }
 

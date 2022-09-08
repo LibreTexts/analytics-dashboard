@@ -8,8 +8,6 @@ export function getStudentAssignments(state, setState) {
   // })
   tempState["studentAssignments"] = null
   var courseData = JSON.parse(localStorage.getItem(state.courseId+"-chart"))
-  console.log("courseData", courseData)
-  console.log("state", state)
   if (!Object.keys(courseData).includes(state.student)) {
     axios({
       method: "post",
