@@ -11,23 +11,156 @@ const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const moment = require("moment");
 require("dotenv").config();
-const basicAuth = require("express-basic-auth");
+//const basicAuth = require("express-basic-auth");
+const cookieParser = require('cookie-parser');
+const url = require('url');
+const randomString = require('randomstring');
 
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
+const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-app.use(
-  basicAuth({
-    users: { admin: userPassword },
-    challenge: true,
-  })
-);
+// app.use(
+//   basicAuth({
+//     users: { admin: userPassword },
+//     challenge: true,
+//   })
+// );
+app.use(cookieParser());
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, console.log(`Server started on port ${PORT}`));
+
+/* Backend routes */
+const router = express.Router();
+
+/**
+ * Start the auth flow by redirecting to Conductor's OAuth2 'authorize' endpoint.
+ * This endpoint could optionally check if valid access tokens are already present and
+ * skip straight to the Dashboard instead of generating new tokens.
+ */
+app.get('/init', (_req, res) => {
+  /* Generate a nonce to thwart CSRF and save it in browser to check later */
+  const stateNonce = randomString.generate(10);
+  res.setHeader('Set-Cookie', [
+    `analytics_conductor_oauth_state=${stateNonce}; Path=/; Domain=localhost; HttpOnly; Secure;`,
+  ]);
+  return res.redirect(`${CONDUCTOR_API_URL}/oauth2.0/authorize?client_id=${process.env.CONDUCTOR_API_CLIENT_ID}&response_type=code&state=${stateNonce}`);
+});
+
+/**
+ * Receive the authorization code from Conductor and exchange it for access and refresh tokens.
+ */
+app.get('/oauth2.0/callback', (req, res) => {
+  /* Check required values */
+  if (!req.query.code) {
+    return res.status(400).send({
+      msg: 'Missing auth code!',
+    });
+  }
+  if (!req.cookies.analytics_conductor_oauth_state) {
+    return res.status(400).send({
+      msg: 'Missing state nonce!',
+    });
+  }
+
+  /* Verify the state nonce is the same -- deny if mismatch */
+  if (req.cookies.analytics_conductor_oauth_state !== req.query.state) {
+    return res.status(400).send({
+      msg: 'Invalid state nonce!',
+    });
+  }
+
+  /*
+   * Build the data to send with the request - use URLSearchParams to
+   * send it in the required "application/x-www-form-urlencoded" format.
+   *
+   * The same data is required when access_token expires; swap 'code' field for
+   * 'refresh_token' field and set 'grant_type' to 'refresh_token'. Getting a
+   * new access_token using refresh_token also issues a new refresh_token.
+   *
+   * If the authorization code OR refresh token is expired, the response includes
+   * 'expired_grant': true. If the access token for any request is expired for any
+   * request, the response includes 'expired_token': true.
+   */
+  const params = new url.URLSearchParams({
+    grant_type: 'authorization_code',
+    code: req.query.code,
+    redirect_uri: 'https://test.libretexts.org/analytics/api/oauth2.0/callback',
+    client_id: process.env.CONDUCTOR_API_CLIENT_ID,
+    client_secret: process.env.CONDUCTOR_API_CLIENT_SECRET,
+  });
+  axios.post(
+    'https://commons-staging.libretexts.org/api/v1/oauth2.0/accessToken',
+    params.toString()
+  ).then((conductorRes) => {
+    // console.log(conductorRes.data);
+
+    /*
+     * Grab the tokens and save them to the browser for later use, then redirect
+     * to Dashboard. 'Max-Age' could also be set to the 'expires_in' value
+     * to automatically expire the access token.
+     * Cookies should be Secure and HttpOnly: requests to Conductor should be routed through
+     * the Analytics API to prevent XSS and CORS denial!
+     */
+    if (typeof (conductorRes.data.access_token) === 'string') {
+      res.setHeader('Set-Cookie', [
+        `analytics_conductor_access=${conductorRes.data.access_token}; Path=/; Domain=localhost; HttpOnly; Secure;`,
+        `analytics_conductor_refresh=${conductorRes.data.refresh_token}; Path=/; Domain=localhost; HttpOnly; Secure;`,
+      ]);
+      return res.redirect('/');
+    }
+
+    /* Something went wrong ... show user an error */
+    throw (new Error('unknown'));
+  }).catch((err) => {
+    if (err.response?.data?.expired_grant) {
+      console.error('auth_code_expired'); // start over?
+    } else {
+      console.error(err);
+    }
+    return res.status(500).send({
+      msg: 'err!',
+    });
+  });
+});
+
+/**
+ * Retrieve some information about the user from Conductor API to make sure auth is working.
+ */
+app.get('/userinfo', (req, res) => {
+  if (!req.cookies.analytics_conductor_access || !req.cookies.analytics_conductor_refresh) {
+    return res.redirect('/api/init'); // need to sign in
+  }
+
+  return axios.get(`${CONDUCTOR_API_URL}/user/basicinfo`, {
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest', // non-auth routes need this header for CSRF protection
+      'Authorization': `Bearer ${req.cookies.analytics_conductor_access}`,
+    },
+  }).then((conductorRes) => {
+    if (!conductorRes.data.err) {
+      return res.status(200).send({
+        firstName: conductorRes.data.user.firstName,
+        lastName: conductorRes.data.user.lastName,
+      });
+    } else {
+      throw (new Error(conductorRes.data.errMsg)); // some error happened, more detail in msg
+    }
+  }).catch((err) => {
+    if (err.response?.data?.expired_token) {
+      console.error('expired_token'); // get new token and start over
+    } else {
+      console.error(err);
+    }
+    return res.status(500).send({
+      msg: 'unknown error!',
+    });
+  });
+});
 
 //setup
 let libretextToAdaptConfig = helperFunctions.getRequest(queries.adaptCodeQuery(dbInfo));
@@ -86,7 +219,7 @@ axios(assignmentConfig)
 // const middleware = require("./routes/realCourses.js");
 // console.log(middleware)
 // app.use("/realcourses", middleware);
-
+  console.log(dbInfo)
 let realCourseConfig = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
 let realCourseNames = [];
 axios(realCourseConfig)
