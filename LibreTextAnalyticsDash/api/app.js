@@ -111,7 +111,7 @@ app.get('/oauth2.0/callback', (req, res) => {
         `analytics_conductor_access=${conductorRes.data.access_token}; Path=/; Domain=localhost; HttpOnly; Secure;`,
         `analytics_conductor_refresh=${conductorRes.data.refresh_token}; Path=/; Domain=localhost; HttpOnly; Secure;`,
       ]);
-      return res.redirect('/');
+      return res.redirect('/analytics');
     }
 
     /* Something went wrong ... show user an error */
