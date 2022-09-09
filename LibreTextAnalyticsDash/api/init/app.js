@@ -41,7 +41,7 @@ const router = express.Router();
  * This endpoint could optionally check if valid access tokens are already present and
  * skip straight to the Dashboard instead of generating new tokens.
  */
-router.get('/api/init', (_req, res) => {
+router.get('https://test.libretexts.org/analytics/api/init', (_req, res) => {
   /* Generate a nonce to thwart CSRF and save it in browser to check later */
   const stateNonce = randomString.generate(10);
   res.setHeader('Set-Cookie', [
