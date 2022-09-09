@@ -21,7 +21,6 @@ const userPassword = process.env.userPassword;
 const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
 
 const app = express();
-app.use(bodyParser.json());
 app.use(cors());
 // app.use(
 //   basicAuth({
@@ -42,7 +41,7 @@ const router = express.Router();
  * This endpoint could optionally check if valid access tokens are already present and
  * skip straight to the Dashboard instead of generating new tokens.
  */
-router.get('/init', (_req, res) => {
+router.get('/api/init', (_req, res) => {
   /* Generate a nonce to thwart CSRF and save it in browser to check later */
   const stateNonce = randomString.generate(10);
   res.setHeader('Set-Cookie', [
@@ -162,6 +161,7 @@ router.get('/userinfo', (req, res) => {
   });
 });
 
+app.use(bodyParser.json());
 //setup
 let libretextToAdaptConfig = helperFunctions.getRequest(queries.adaptCodeQuery(dbInfo));
 var adaptCodes = {};
