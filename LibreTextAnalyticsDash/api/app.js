@@ -11,7 +11,7 @@ const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const moment = require("moment");
 require("dotenv").config();
-//const basicAuth = require("express-basic-auth");
+const basicAuth = require("express-basic-auth");
 const cookieParser = require('cookie-parser');
 const url = require('url');
 const randomString = require('randomstring');
@@ -219,7 +219,7 @@ axios(assignmentConfig)
 // const middleware = require("./routes/realCourses.js");
 // console.log(middleware)
 // app.use("/realcourses", middleware);
-  console.log(dbInfo)
+
 let realCourseConfig = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
 let realCourseNames = [];
 axios(realCourseConfig)
@@ -471,7 +471,7 @@ app.post("/data", async (req, res, next) => {
         });
       }
       //if there is an enrolled student that has no data, add them to the table
-      if ((enrollment.length > 0 || rosterDataCopy.length > 0) && tab === "student") {
+      if ((enrollment.length > 0 || (rosterDataCopy && rosterDataCopy.length > 0)) && tab === "student") {
         if (rosterData) {
           rosterDataCopy.forEach((s) => {
             newData["documents"].splice(0, 0, {
