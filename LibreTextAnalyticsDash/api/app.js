@@ -21,7 +21,6 @@ const userPassword = process.env.userPassword;
 const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
 
 const app = express();
-app.use(bodyParser.json());
 app.use(cors());
 // app.use(
 //   basicAuth({
@@ -162,6 +161,7 @@ app.get('/userinfo', (req, res) => {
   });
 });
 
+app.use(bodyParser.json());
 //setup
 let libretextToAdaptConfig = helperFunctions.getRequest(queries.adaptCodeQuery(dbInfo));
 var adaptCodes = {};
