@@ -26,14 +26,14 @@ const theme = {
 
 function App() {
   const [state, setState] = useState({
-    studentTab: true,
+    studentTab: false,
     pageTab: false,
     assignmentTab: false,
     filterTab: false,
     start: null,
     end: null,
     showFilter: false,
-    tab: "student",
+    tab: "initial",
     disable: true,
     disableCourse: false,
     disablePage: true,
