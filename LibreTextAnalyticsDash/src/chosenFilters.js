@@ -14,11 +14,93 @@ export default function ChosenFilters({
   queryVariables,
   noEnrollmentData=false
 }) {
-  var hasFilter = (state.chosenPaths && state.chosenPaths.length > 0) || state.start || state.end || state.chosenTag
+var hasFilter = (state.chosenPaths && state.chosenPaths.length > 0) || state.start || state.end || state.chosenTag
 
-  var enrollmentMessage = state.rosterFilterApplied ? "This course is using enrollment data from a roster." :
-    noEnrollmentData ? "This course has no enrollment data available." :
-    "This course is using enrollment data from Adapt."
+var enrollmentMessage = state.rosterFilterApplied ? "This course is using enrollment data from a roster." :
+  noEnrollmentData ? "This course has no enrollment data available." :
+  "This course is using enrollment data from Adapt."
+  /* Create a path tree (object) using the chosenPaths */
+
+  // Current node search for child named i
+  function getIndex(obj, i) {
+    if (obj['title'] === i) {
+      return -2
+    }
+    return obj['children'].findIndex(
+      (childObj) => childObj['title'] == i
+    )
+  }
+  // Driver function: takes each string in chosen path
+  // Each string is split by the /
+  // Path (as a list) is turned into a branch of the pathTree (an object)
+  function formatPathList(chosenPaths) {
+    var pathTree = {}
+    chosenPaths.forEach((path) => {
+      createBranch(pathTree, path.split("/"))
+    })
+    // console.log(JSON.stringify(pathTree, null, 2))
+    return pathTree
+  }
+  // For each section in the path, check if it exists
+  // Then traverse the pathTree in sequential order,
+  // inserting a new empty attribute if we cannot get the index
+  function createBranch(obj, path) {
+    let pathHistory = []
+    let curr;
+    while(typeof(curr = path.shift()) !== 'undefined') {
+      let formatCurr = curr.replaceAll("_", " ")
+      pathHistory.push(formatCurr)
+      // A reference to pathTree, to edit/view contents of pathTree at specific point
+      let pointer = obj
+      pathHistory.forEach((p, idx) => {
+        // console.log(JSON.stringify(pointer))
+        // console.log(p)
+        if(idx === 0 && Object.keys(obj).length === 0){
+          // The first node insert
+          // console.log("inserting first node")
+          pointer["title"] = p
+          pointer["children"] = []
+        }
+        else if(getIndex(pointer, p) === -1) {
+          // Creating a node's child
+          // console.log("inserting new child node")
+          let newChild = {
+            "title": p,
+            "children": []
+          }
+          pointer["children"].push(newChild)
+
+        }
+        const indexChild = getIndex(pointer, p)
+        // console.log("pointer at", indexChild)
+        if(indexChild > -1) {
+          pointer = pointer["children"][indexChild]
+        }
+      })
+    }
+  }
+
+  /* Render the pathTree object as an unordered list */
+  function ListItem({ item }) {
+    let title = item["title"]
+    let children = item["children"]
+    // console.log(JSON.stringify(children))
+    return (
+      <li>
+        {title}
+        {
+          children &&
+          children.map((childObj) => {
+            return (
+              <ul style={{marginTop: 5, marginBottom: 5}}>
+                <ListItem item={childObj} />
+              </ul>
+            )
+          })
+        }
+      </li>
+    );
+  }
 
   return (
       <Box
@@ -33,26 +115,11 @@ export default function ChosenFilters({
         <>
         <Text margin={{top: "small"}} textAlign="center" weight="bold">{enrollmentMessage}</Text>
         {state.chosenPaths && state.chosenPaths.length > 0 && (
-          <Text margin="small">
+          <Box margin="small">
             Current chosen paths:{" "}
-            {(state.chosenPaths).map((a) => (
-              a.split("/").map((b, idx) => {
-                var item = (
-                  <li>
-                    {b.replaceAll("_", " ")}
-                  </li>
-                )
-                for(var i = 0; i < idx; i++) {
-                  item = (
-                    <ul>
-                      {item}
-                    </ul>
-                  )
-                }
-                return item
-              })
-            ))}
-          </Text>
+            {/* {JSON.stringify(formatPathList(JSON.parse(state.chosenPaths)))} */}
+            <ListItem item={formatPathList(state.chosenPaths)}/>
+          </Box>
         )}
         {state.start && (
           <Text margin="small">

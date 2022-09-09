@@ -114,7 +114,7 @@ function App() {
       "LT Hours on Site": true
     },
     gridHeight: "small",
-    homepage: "/analytics/api",
+    homepage: "/analytics/api/init",
     showNonEnrolledStudents: false,
     ltCourse: false,
     adaptCourse: false,

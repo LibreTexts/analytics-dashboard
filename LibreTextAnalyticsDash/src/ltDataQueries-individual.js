@@ -322,7 +322,7 @@ export function getStudentTextbookEngagementData(state, setState) {
 
 export async function getMetaTags(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state));
-  console.log("getMetaTags");
+  // console.log("getMetaTags");
 
   var courseData = {};
   if (Object.keys(localStorage).includes(state.courseId+"-dropdown")) {

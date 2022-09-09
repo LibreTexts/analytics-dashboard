@@ -1,5 +1,5 @@
 function getTagQuery(params, dbInfo) {
-  console.log("getTagQuery", params.pageIds);
+  // console.log("getTagQuery", params.pageIds);
 
   var data = {
     "collection": dbInfo.metaColl,

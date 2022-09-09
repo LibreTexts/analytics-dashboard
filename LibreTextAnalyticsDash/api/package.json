@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "axios": "^0.26.0",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "csv-writer": "^1.6.0",
@@ -11,8 +12,10 @@
     "moment": "^2.29.4",
     "nodemon": "^2.0.15",
     "prettier": "^2.6.2",
+    "randomstring": "^1.2.2",
     "react-scripts": "^5.0.0",
-    "unzipper": "^0.10.11"
+    "unzipper": "^0.10.11",
+    "url": "^0.11.0"
   },
   "name": "libretext-node",
   "version": "1.0.0",
