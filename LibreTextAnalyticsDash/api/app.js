@@ -47,6 +47,7 @@ app.get('/init', (_req, res) => {
   res.setHeader('Set-Cookie', [
     `analytics_conductor_oauth_state=${stateNonce}; Path=/; Domain=localhost; HttpOnly; Secure;`,
   ]);
+  res.cookie('analytics_conductor_oauth_state', stateNonce)
   return res.redirect(`${CONDUCTOR_API_URL}/oauth2.0/authorize?client_id=${process.env.CONDUCTOR_API_CLIENT_ID}&response_type=code&state=${stateNonce}`);
 });
 
