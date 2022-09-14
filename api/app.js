@@ -22,12 +22,12 @@ const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
 
 const app = express();
 app.use(cors());
-// app.use(
-//   basicAuth({
-//     users: { admin: userPassword },
-//     challenge: true,
-//   })
-// );
+app.use(
+  basicAuth({
+    users: { admin: userPassword },
+    challenge: true,
+  })
+);
 app.use(cookieParser());
 
 const PORT = process.env.PORT || 8080;
