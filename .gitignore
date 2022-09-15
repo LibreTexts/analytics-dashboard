@@ -1,13 +1,11 @@
-/node_modules
+/LibreTextAnalyticsDash/node_modules
 
-/api/node_modules
+/LibreTextAnalyticsDash/api/node_modules
 
 .DS_Store
 
 *.csv
 
 .env
-
-/api/.env
 
 *.json
