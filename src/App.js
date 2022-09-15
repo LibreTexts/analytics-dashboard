@@ -1,15 +1,15 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Grommet } from "grommet";
-import axios from "axios";
-
-import HeaderGrid from "./components/headerGrid.js";
-import StudentView from "./components/studentView.js";
-import TextbookView from "./components/textbookView.js";
-import AdaptView from "./components/adaptView.js";
-import FilterView from "./components/filterView.js";
 import "react-table-6/react-table.css";
-import "./css/index.css";
+import { Grommet } from "grommet";
+import "./index.css";
+import HeaderGrid from "./headerGrid.js";
+import StudentView from "./studentView.js";
+import TextbookView from "./textbookView.js";
+import AdaptView from "./adaptView.js";
+import FilterView from "./filterView.js";
+import axios from "axios";
+import { getTagInfo } from "./ltDataQueries";
 
 const theme = {
   global: {
@@ -25,7 +25,6 @@ const theme = {
 };
 
 function App() {
-  //initial state
   const [state, setState] = useState({
     studentTab: false,
     pageTab: false,
@@ -112,10 +111,10 @@ function App() {
       "LT Total Page Views": true,
       "LT Most Recent Page Load": true,
       "LT Unique Interaction Days": true,
-      "LT Hours on Site": true,
+      "LT Hours on Site": true
     },
     gridHeight: "small",
-    homepage: "",
+    homepage: "/analytics/api",
     showNonEnrolledStudents: false,
     ltCourse: false,
     adaptCourse: false,
@@ -130,15 +129,13 @@ function App() {
     allAssignmentGrades: null,
     roster: null,
     rosterFile: null,
-    rosterFilterApplied: false,
+    rosterFilterApplied: false
   });
 
-  //state variables on their own to use right away/have easy access
   const [click, setClick] = useState(false);
   const [realCourses, setRealCourses] = useState(null);
   const [count, setCount] = useState(0);
 
-  //put into a single object to easily pass it onto other components
   var queryVariables = {
     click: click,
     setClick: setClick,
@@ -148,12 +145,8 @@ function App() {
     setRealCourses: setRealCourses,
   };
 
-  //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
-    //grab the courses from session storage
     var courses = JSON.parse(sessionStorage.getItem("allCourses"));
-    //check to see if there are libretext courses stored,
-    //currently an error where libretext courses don't show up right away
     if (courses) {
       var success = Object.keys(courses).find(
         (key) => courses[key].ltCourse === true
@@ -162,12 +155,8 @@ function App() {
       success = false;
     }
 
-    //if the courses aren't in session storage or it didn't grab them all the first time
-    //pull the courses from the endpoint on the express node server
     if (!sessionStorage.getItem("allCourses") || !success) {
       let realCourses = {};
-      //libretext and adapt courses have two different queries because they
-      //come from two different mongodb collections and have no direct variable to link them
       axios(state.homepage + "/realcourses").then((response) => {
         let x = {};
         response.data.forEach((course) => {
@@ -203,11 +192,7 @@ function App() {
 
   return (
     <>
-      {
-        //each view component corresponds to a different tab on the dashboard
-        //the HeaderGrid component has the dropdown for the courses
-      }
-      <Grommet theme={theme} full style={{ overflowX: "hidden" }}>
+      <Grommet theme={theme} full fill={true} style={{ overflowX: "hidden" }}>
         {realCourses && !state.studentData && (
           <HeaderGrid
             state={state}
