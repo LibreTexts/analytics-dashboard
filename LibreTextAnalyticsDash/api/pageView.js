@@ -289,7 +289,7 @@ function individualPageViewChartQuery(params, adaptCodes) {
   if (matchesUsed && params.courseId) {
     data['pipeline'].splice(6, 0, filterMatch)
   }
-  console.log(data)
+  // console.log(data)
   return data;
 }
 

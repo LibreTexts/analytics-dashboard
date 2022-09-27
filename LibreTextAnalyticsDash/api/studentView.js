@@ -181,8 +181,8 @@ function studentChartQuery(params) {
 
 function studentAssignmentQuery(params, adaptCodes) {
   var codeFound = adaptCodes.find(o => o.course === params.course)
-  console.log(params)
-  console.log(codeFound)
+  // console.log(params)
+  // console.log(codeFound)
   var student = encryptStudent(params.individual)
 
   var data = {

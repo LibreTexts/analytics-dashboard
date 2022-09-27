@@ -1,4 +1,4 @@
-function adaptLookupSubQuery(codeFound, params) {
+function adaptLookupSubQuery(codeFound, params, dbInfo) {
   var adaptLookup = {
     //getting adapt variables
     "$lookup": {
@@ -36,138 +36,95 @@ function adaptLookupSubQuery(codeFound, params) {
             }
           }
         },
-        //group by student, find the most recent assignment load for adapt, dates, and assignments
-        {
-          '$project': {
-            'date': '$date',
-            'levelname': '$level_name',
-            'student': '$anon_student_id',
-            'levelpoints': '$level_points',
-            'problemname': '$problem_name',
-            'page_id': '$page_id',
-            'points': {
-              '$cond':
-              {
-                'if': { '$eq': ['$outcome', "CORRECT"] },
-                'then': {
-                  '$convert': {
-                    'input': '$problem_points',
-                    'to': 'double'
-                  }
-                },
-                'else': 0
-              }
-            }
-          }
-        },
         {
           '$group': {
             '_id': {
-              'student': '$student',
-              'level': '$levelname',
-              'problemname': '$problemname',
+              'anon_student_id': '$anon_student_id',
+              'level_name': '$level_name',
+              'problem_name': '$problem_name'
             },
-            'dates': {
-              '$addToSet': '$date'
-            },
+            'dates': {'$addToSet': '$date'},
+            'attempts': {'$sum': 1},
             'page_ids': {
               '$addToSet': '$page_id'
-            },
-            'levelpoints': {
-              '$first': '$levelpoints'
-            },
-            'bestScore': {
-              '$max': '$points'
-            },
-            'attempts': {
-              '$sum': 1
-            },
+            }
           }
         },
         {
           '$group': {
             '_id': {
-              'level': '$_id.level',
-              'student': '$_id.student',
+              'anon_student_id': '$_id.anon_student_id',
+              'level_name': '$_id.level_name'
             },
             'dateArrays': {
               '$addToSet': '$dates'
             },
-            'page_idArrays': {
+            'pageArrays': {
               '$addToSet': '$page_ids'
             },
-            'Sum': {
-              '$sum': '$bestScore'
+            'attempts': {'$avg': '$attempts'}
+          }
+        },
+        {
+          '$addFields': {
+            'dates': {
+              '$reduce': {
+                'input': '$dateArrays',
+                'initialValue': [],
+                'in': { '$setUnion': ["$$value", "$$this"] }
+              }
             },
-            'attemptsPerLevel': {
-              '$sum': '$attempts'
+            'pageIds': {
+              '$reduce': {
+                'input': '$pageArrays',
+                'initialValue': [],
+                'in': { '$setUnion': ["$$value", "$$this"] }
+              }
+            }
+          }
+        },
+        {
+          '$lookup': {
+            "from": dbInfo.gradesColl,
+            "localField": "_id.anon_student_id",
+            "foreignField": "email",
+            "let": {
+              'level': '$_id.level_name'
             },
-            'levelpoints': {
-              '$first': {
-                '$convert': {
-                  'input': '$levelpoints',
-                  'to': 'double'
+            "pipeline": [
+              {
+                '$match': {
+                  '$expr': {
+                    '$and': [
+                      {'$eq': ['$$level', '$level_name']}
+                    ]
+                  }
                 }
               }
-            }
+            ],
+            "as": "scores"
           }
         },
         {
-          '$addFields': {
-            'score': {
-              '$divide': [
-                '$Sum',
-                '$levelpoints'
-              ]
-            },
-            'dates': {
-              '$reduce': {
-                'input': '$dateArrays',
-                'initialValue': [],
-                'in': { '$setUnion': ["$$value", "$$this"] }
-              }
-            },
-            'page_ids': {
-              '$reduce': {
-                'input': '$page_idArrays',
-                'initialValue': [],
-                'in': { '$setUnion': ["$$value", "$$this"] }
-              }
-            }
+          "$unwind": {
+            "path": "$scores"
           }
         },
         {
-          '$group': {
-            '_id': {
-              'student': '$_id.student',
-            },
+          "$group": {
+            '_id': '$_id.anon_student_id',
             'dateArrays': {
-              '$addToSet': '$dates'
+              '$push': '$dates'
             },
-            'page_idArrays': {
-              '$addToSet': '$page_ids'
+            'pageArrays': {
+              '$push': '$pageIds'
             },
-            'Sums': {
-              '$push': '$Sum'
-            },
-            'scoresArray': {
-              '$push': '$score'
-            },
-            'attemptsOverall': {
-              '$push': '$attemptsPerLevel'
-            },
+            'adaptAvgAttempts': {'$avg': '$attempts'},
+            'adaptAvgPercentScore': {'$avg': '$scores.assignment_percent'}
           }
         },
         {
           '$addFields': {
-            'adaptAvgPercentScore': {
-              '$avg': '$scoresArray'
-            },
-
-            'adaptAvgAttempts': {
-              '$avg': '$attemptsOverall'
-            },
-
             'dates': {
               '$reduce': {
                 'input': '$dateArrays',
@@ -175,10 +132,9 @@ function adaptLookupSubQuery(codeFound, params) {
                 'in': { '$setUnion': ["$$value", "$$this"] }
               }
             },
-
-            'page_ids': {
+            'pageIds': {
               '$reduce': {
-                'input': '$page_idArrays',
+                'input': '$pageArrays',
                 'initialValue': [],
                 'in': { '$setUnion': ["$$value", "$$this"] }
               }
@@ -187,25 +143,9 @@ function adaptLookupSubQuery(codeFound, params) {
         },
         {
           '$addFields': {
-            'mostRecentAdaptLoad': {
-              '$max': '$dates'
-            },
-            'adaptUniqueInteractionDays': {
-              '$size': '$dates'
-            },
-            'adaptUniqueAssignments': {
-              '$size': '$page_ids'
-            }
-          }
-        },
-        {
-          '$project': {
-            'page_idArrays': 0,
-            'dateArrays': 0,
-            'scoresArray': 0,
-            'attemptsOverall': 0,
-            'page_ids': 0,
-            'dates': 0,
+            'adaptUniqueInteractionDays': {'$size': '$dates'},
+            'adaptUniqueAssignments': {'$size': '$pageIds'},
+            'mostRecentAdaptLoad': {'$max': '$dates'}
           }
         }
       ]

@@ -68,7 +68,7 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
             "adaptPercent": '$adapt.adaptPercent',
             "adaptAttempts": '$adapt.adaptAttempts',
             "adaptAvgAttempts": {'$round': ['$adapt.adaptAvgAttempts', 1]},
-            "adaptAvgPercentScore": {'$round': [{'$multiply': ['$adapt.adaptAvgPercentScore', 100]}, 1]},
+            "adaptAvgPercentScore": {'$round': ['$adapt.adaptAvgPercentScore', 1]}
           }
         },
         {
@@ -95,7 +95,7 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
     index = addFilters.spliceTagFilter(index, params, data, !isPage && index <= 4)
 
     if (!isPage) {
-      setDataPipeline(index+2, params, data, codeFound)
+      setDataPipeline(index+2, params, data, codeFound, dbInfo)
     }
 
     return data;
@@ -120,9 +120,9 @@ function addPageLookup(index, data, dbInfo) {
   return index+2;
 }
 
-function setDataPipeline(index, params, data, codeFound) {
+function setDataPipeline(index, params, data, codeFound, dbInfo) {
   if (codeFound) {
-    var adaptLookup = adaptLookupSubQuery.adaptLookupSubQuery(codeFound, params)
+    var adaptLookup = adaptLookupSubQuery.adaptLookupSubQuery(codeFound, params, dbInfo)
     //preserves students who have libretext data but no adapt data
     var adaptUnwind = {
       "$unwind": {

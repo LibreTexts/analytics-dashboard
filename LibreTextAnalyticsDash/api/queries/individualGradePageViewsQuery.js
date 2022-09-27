@@ -11,7 +11,7 @@ function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
   }
 
   var data = {
-    "collection": dbInfo.adaptColl,
+    "collection": dbInfo.gradesColl,
     "database": dbInfo.db,
     "dataSource": dbInfo.dataSource,
     "pipeline": [
@@ -19,82 +19,22 @@ function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
         "$match": {
           '$expr': {
             '$and': [
-              { '$eq': ["$class", course] },
-              { '$eq': ["$level_name", params.levelName] }
+              {'$eq': ["$class", course]},
+              {'$eq': ["$level_name", params.levelName]}
             ]
-          }
-        }
-      },
-      {
-        "$project": {
-          'levelname': '$level_name',
-          'student': '$anon_student_id',
-          'levelpoints': '$level_points',
-          'problemname': '$problem_name',
-          'points': {
-            "$cond": {
-              'if': { '$eq': ['$outcome', "CORRECT"] },
-              'then': {
-                "$convert": {
-                  'input': '$problem_points',
-                  'to': 'double'
-                }
-              },
-              'else': 0
-            }
-          }
-        }
-      },
-      {
-        "$group":
-        {
-          '_id': {
-            'student': '$student',
-            'level': '$levelname',
-            'levelgroup': '$level_group',
-            'problemname': "$problemname"
-          },
-          'levelpoints': {
-            '$first': '$levelpoints'
-          },
-          'bestScore': {
-            '$max': '$points'
           }
         }
       },
       {
         "$group": {
-          '_id': {
-            'level': '$_id.level',
-            'student': '$_id.student'
-          },
-          'Sum': {
-            '$sum': '$bestScore'
-          },
-          'levelpoints': {
-            '$first': {
-              '$convert': {
-                'input': '$levelpoints',
-                'to': 'double'
-              }
-            }
-          }
-        }
-      },
-      {
-        "$addFields": {
-          'score': {
-            '$divide': [
-              '$Sum',
-              '$levelpoints'
-            ]
-          }
+          '_id': '$email',
+          'score': {'$first': '$assignment_percent'}
         }
       }
     ]
   }
-  var index = 1;
-  addFilters.spliceDateFilter(index, params, data, true);
+  // var index = 1;
+  // addFilters.spliceDateFilter(index, params, data, true);
 
   return data;
 }
