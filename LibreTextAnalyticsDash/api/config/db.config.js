@@ -10,5 +10,6 @@ module.exports = {
   db: process.env.DB,
   dataSource: process.env.SRC,
   enrollColl: process.env.ECOLL,
-  codesColl: process.env.CODES
+  codesColl: process.env.CODES,
+  gradesColl: process.env.GCOLL
 }
