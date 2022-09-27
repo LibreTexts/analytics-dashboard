@@ -13,6 +13,7 @@
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
+    "@tippyjs/react": "^4.2.6",
     "axios": "^0.26.0",
     "cors": "^2.8.5",
     "d3": "^7.3.0",
@@ -45,6 +46,7 @@
     "resize-observer": "^1.0.4",
     "styled-components": "^5.3.3",
     "symbols": "^0.0.6",
+    "tippy.js": "^6.3.7",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
