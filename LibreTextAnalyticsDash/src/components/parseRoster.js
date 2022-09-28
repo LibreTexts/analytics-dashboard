@@ -147,7 +147,7 @@ export default function ParseRoster({ state, setState }) {
         Upload Class Roster
       </Text>
       <Box direction="row" justify="center">
-        <FileInput name="file" multiple={false} onChange={handleFileChange} />
+        <FileInput name="file" multiple={false} onChange={handleFileChange} disabled={state.rosterFilterApplied}/>
         <Button
           onClick={() => handleParse(state, setState)}
           margin={{ left: "medium" }}

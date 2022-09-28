@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Select } from "grommet";
+import { Box, Button, Select, Text } from "grommet";
 
 //dropdown component with apply button
 export default function SelectWithApply({
@@ -16,6 +16,7 @@ export default function SelectWithApply({
   width,
   dropSize,
   queryVariables,
+  selectLabel
 }) {
   var dropHeight = "small";
   if (dropSize) {
@@ -33,6 +34,9 @@ export default function SelectWithApply({
 
   return (
     <Box direction="row">
+      <Text alignSelf="center" margin={{right: "small"}}>
+        {selectLabel}
+      </Text>
       <Select
         options={selectOptions}
         margin={{ vertical: "xsmall", right: "large" }}

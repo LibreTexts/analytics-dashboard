@@ -109,6 +109,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                     type="page"
                     disable={state.disablePage}
                     queryVariables={queryVariables}
+                    selectLabel="Choose a page:"
                   />
                 }
                 downloadComponent={
@@ -183,6 +184,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                       type="studentForChapterChart"
                       disable={state.disableChapterChart}
                       queryVariables={queryVariables}
+                      selectLabel="Choose a student:"
                     />
                   }
                   downloadComponent={

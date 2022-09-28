@@ -102,7 +102,7 @@ export default function HeaderGrid({
                         style={{ width: "350px" }}
                         align="center"
                       >
-                        <Text weight="bold">Student: </Text>
+                        <Text weight="bold">Choose a student: </Text>
                         <Select
                           options={
                             state.displayMode

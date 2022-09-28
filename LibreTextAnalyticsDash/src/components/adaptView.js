@@ -115,6 +115,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                     />
                   }
                   renderSelect={state.levelGroup}
+                  selectLabel="Choose an ADAPT assignment:"
                 />
               }
               downloadComponent={
@@ -197,6 +198,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                     />
                   }
                   renderSelect={state.gradeLevelGroup}
+                  selectLabel="Choose an ADAPT assignment:"
                 />
               }
               downloadComponent={

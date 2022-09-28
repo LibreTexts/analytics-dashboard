@@ -78,7 +78,9 @@ export default function LayeredComponent({
     type === "studentAssignments" ||
     type === "aggregatePageViews" ||
     type === "chapterData" ||
-    type === "textbookEngagement"
+    type === "textbookEngagement" ||
+    type === "individualAssignmentViews" ||
+    type === "numBinsGrades"
       ? true
       : false;
 
