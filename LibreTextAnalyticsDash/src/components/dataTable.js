@@ -258,7 +258,7 @@ export default function DataTable({
       },
       {
         Header: (
-          <Tippy style={{ opacity: 1 }} content="Most Recent Page Load">
+          <Tippy content="Most Recent Page Load">
             <Text>Most Recent Page Load</Text>
           </Tippy>
         ),

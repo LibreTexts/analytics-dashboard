@@ -351,22 +351,22 @@ app.post("/timelineData", (req, res, next) => {
   axios(config)
     .then(function (response) {
       let newData = response.data;
-      if (newData["documents"].length > 0) {
-        newData["documents"].forEach((d, index) => {
-          if (d._id.length >= 20) {
-            newData["documents"][index]["displayModeStudent"] = d._id;
-            newData["documents"][index]._id = helperFunctions.decryptStudent(d._id);
-          }
-        });
-        if (newData["documents"][0]._id.includes("@")) {
-          newData["studentTimelineData"] = newData["documents"];
-        } else {
+      // if (newData["documents"].length > 0) {
+      //   newData["documents"].forEach((d, index) => {
+      //     if (d._id.length >= 20) {
+      //       newData["documents"][index]["displayModeStudent"] = d._id;
+      //       newData["documents"][index]._id = helperFunctions.decryptStudent(d._id);
+      //     }
+      //   });
+      //   if (newData["documents"][0]._id.includes("@")) {
+      //     newData["studentTimelineData"] = newData["documents"];
+      //   } else {
           newData["pageTimelineData"] = newData["documents"];
-        }
-      } else {
-        newData["studentTimelineData"] = null;
-        newData["pageTimelineData"] = null;
-      }
+      //   }
+      // } else {
+      //   newData["studentTimelineData"] = null;
+      //   newData["pageTimelineData"] = null;
+      // }
       delete newData["documents"];
       newData = JSON.stringify(newData);
       res.json(newData);
@@ -837,6 +837,22 @@ app.post("/coursestructure", (req, res, next) => {
     .then(function (response) {
       let newData = response.data;
       newData["chapters"] = newData["documents"];
+      delete newData["documents"];
+      newData = JSON.stringify(newData);
+      res.json(newData);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+});
+
+app.post("/pagelookup", (req, res, next) => {
+  let queryString = queries.pageLookupQuery(req.body, dbInfo);
+  let config = helperFunctions.getRequest(queryString);
+  axios(config)
+    .then(function (response) {
+      let newData = response.data;
+      newData["pageLookup"] = newData["documents"];
       delete newData["documents"];
       newData = JSON.stringify(newData);
       res.json(newData);

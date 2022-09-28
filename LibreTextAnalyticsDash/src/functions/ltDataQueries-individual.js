@@ -1,5 +1,6 @@
 import axios from "axios";
 import { writeToLocalStorage } from "./helperFunctions.js";
+import { handleChapterChart } from "./dataHandlingFunctions.js";
 
 //functions called to get data for individual charts
 //each function updates state and uses tempState to pass through
@@ -144,7 +145,7 @@ export function getIndividualPageViewData(state, setState) {
       ...state,
       individualPageViews: null,
     });
-    p = state.page;
+    p = state.pageId;
   } else if (state.tab === "assignment") {
     setState({
       ...state,
@@ -222,6 +223,11 @@ export function getIndividualPageViewData(state, setState) {
 }
 
 export function getIndividualChapterData(state, setState) {
+  var tempState = JSON.parse(JSON.stringify(state));
+  tempState = {
+    ...tempState,
+    disableChapterChart: true
+  }
   setState({
     ...state,
     disableChapterChart: true,
@@ -237,13 +243,19 @@ export function getIndividualChapterData(state, setState) {
       path: state.dataPath,
       individual: state.studentForChapterChart,
       tagFilter: state.chosenTag,
+      startDate: state.start,
+      endDate: state.end
     },
   }).then((response) => {
-    setState({
-      ...state,
+    tempState = {
+      ...tempState,
       individualChapterData: JSON.parse(response.data)["individualChapterData"],
       disableChapterChart: true,
-    });
+    };
+    handleChapterChart(JSON.parse(response.data)["individualChapterData"], tempState, {}, {}, "individualChapterData", true);
+    setState({
+      ...tempState
+    })
   });
 }
 

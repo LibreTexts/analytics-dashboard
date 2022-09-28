@@ -19,24 +19,24 @@ function aggregatePageViewsQuery(params, dbInfo) {
         }
       },
       //connect lt data to page info
-      {
-        "$lookup": {
-          "from": dbInfo.pageColl,
-          "localField": "object.id",
-          "foreignField": "id",
-          "as": "pageInfo"
-        }
-      },
-      {
-        "$unwind": {
-          'path': '$pageInfo'
-        }
-      },
-      {
-        '$addFields': {
-          'course': '$pageInfo.courseName'
-        }
-      },
+      // {
+      //   "$lookup": {
+      //     "from": dbInfo.pageColl,
+      //     "localField": "object.id",
+      //     "foreignField": "id",
+      //     "as": "pageInfo"
+      //   }
+      // },
+      // {
+      //   "$unwind": {
+      //     'path': '$pageInfo'
+      //   }
+      // },
+      // {
+      //   '$addFields': {
+      //     'course': '$pageInfo.courseName'
+      //   }
+      // },
       //format date and bin by day, week, or month from the frontend filter
       {
         "$addFields": {
@@ -75,8 +75,8 @@ function aggregatePageViewsQuery(params, dbInfo) {
 
   var index = 1;
   index = addFilters.spliceDateFilter(index, params, data);
-  index = addFilters.splicePathFilter(index+2, params, data);
-  addFilters.spliceTagFilter(index, params, data);
+  index = addFilters.splicePathFilter(index+1, params, data, true);
+  addFilters.spliceTagFilter(index, params, data, index <= 4);
 
   return data;
 }

@@ -8,6 +8,8 @@ import {
   handlePageTimelineData,
   handleAdaptStudents,
   handleChapters,
+  handlePageLookup,
+  handleChapterChart
 } from "./dataHandlingFunctions.js";
 
 //gets all of the data from the backend and mongoDB
@@ -51,6 +53,10 @@ export async function getData(data, state, setState, path = false, tagData) {
             handleAdaptStudents(value, tempState, dropdownData, courseData);
           } else if (key === "chapters") {
             handleChapters(value, tempState, dropdownData, courseData);
+          } else if (key === "pageLookup") {
+            handlePageLookup(value, tempState, chartData, courseData);
+          } else if (key === "aggregateChapterData") {
+            handleChapterChart(value, tempState, chartData, courseData);
           } else {
             chartData[key] = value;
           }

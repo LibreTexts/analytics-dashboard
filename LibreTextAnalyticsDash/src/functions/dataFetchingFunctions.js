@@ -170,6 +170,7 @@ export async function handleClick(
       if (state.ltCourse) {
         configs.push(getAllDataConfig(tempState, setState, "page"));
         configs.push(getAllPagesConfig(tempState, setState, "page"));
+        configs.push(simpleConfigTemplate(tempState, setState, "/pagelookup"))
         configs.push(
           simpleConfigTemplate(tempState, setState, "/aggregatechapterdata")
         );

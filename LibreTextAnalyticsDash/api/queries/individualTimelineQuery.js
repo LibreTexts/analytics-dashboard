@@ -20,11 +20,16 @@ function individualTimelineQuery(params, dbInfo) {
             }
           }
         },
+        {
+          '$group': {
+            '_id': '$object.id'
+          }
+        },
         //join lt collection to page collection
         {
           '$lookup': {
             "from": dbInfo.pageColl,
-            "localField": "object.id",
+            "localField": "_id",
             "foreignField": "id",
             "as": "pageInfo"
           }
@@ -34,28 +39,17 @@ function individualTimelineQuery(params, dbInfo) {
             'path': '$pageInfo'
           }
         },
-        {
-          '$addFields': {
-            'course': '$pageInfo.courseName'
-          }
-        },
         //grabbing the dates for each student view
         {
           '$addFields': {
-            // 'startDate': {'$dateFromString': {'dateString': '$object.timestamp'}},
-            // 'endDate': {'$add': [{'$dateFromString': {'dateString': '$object.timestamp'}}, '$object.timeMe']},
-            'pageTitle': '$pageInfo.title',
-            //'pageURL': '$pageInfo.url'
+            'pageTitle': '$pageInfo.title'
           }
         },
         //group by student or page, grabbing the dates and page information
         {
           '$group': {
-            '_id': params.groupBy,
-            // 'allStartDates': {'$addToSet': '$startDate'},
-            // 'allEndDates': {'$addToSet': '$endDate'},
-            "pageTitle": {'$first': '$pageTitle'},
-            //"pageURL": {'$addToSet': '$pageURL'}
+            '_id': '$_id',
+            "pageTitle": {'$first': '$pageTitle'}
           }
         },
         {
@@ -65,7 +59,7 @@ function individualTimelineQuery(params, dbInfo) {
     }
     var index = 1;
     index = addFilters.spliceDateFilter(index, params, data);
-    index = addFilters.splicePathFilter(index+2, params, data);
+    index = addFilters.splicePathFilter(index+3, params, data);
     addFilters.spliceTagFilter(index, params, data);
 
     return data;

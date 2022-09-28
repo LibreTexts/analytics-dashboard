@@ -65,10 +65,6 @@ export default function TextbookChapterChart({
       if (data) {
         var studentData = [
           {
-            name: "Student",
-            value: student,
-          },
-          {
             name: "Individual Views",
             value: props.payload[0].payload.indivCount,
           },

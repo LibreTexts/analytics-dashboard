@@ -41,8 +41,8 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
           "$group": {
             "_id": params.groupBy,
             "courseName": {'$addToSet': '$actor.courseName'},
-            "pageTitle": {'$first': '$pageTitle'},
-            "pageURL": {'$first': '$pageURL'},
+            // "pageTitle": {'$first': '$pageTitle'},
+            // "pageURL": {'$first': '$pageURL'},
             "timestamp": {'$addToSet':'$object.timestamp'},
             "max": { '$max': "$newDate" },
             "uniqueDates": {'$addToSet': '$date'},
@@ -88,16 +88,15 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
 
     var index = 1;
     index = addFilters.spliceDateFilter(index, params, data);
-    if (isPage) {
-      index = addPageLookup(index, data, dbInfo)
-    }
-    index = addFilters.splicePathFilter(index, params, data, !isPage);
-    index = addFilters.spliceTagFilter(index, params, data, !isPage && index <= 4)
+    // if (isPage) {
+    //   index = addPageLookup(index, data, dbInfo)
+    // }
+    index = addFilters.splicePathFilter(index, params, data, true);
+    index = addFilters.spliceTagFilter(index, params, data, true && index <= 4)
 
     if (!isPage) {
       setDataPipeline(index+2, params, data, codeFound, dbInfo)
     }
-
     return data;
 }
 

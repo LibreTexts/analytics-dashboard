@@ -121,6 +121,64 @@ export function handleChapters(value, tempState, courseData, allData) {
   allData["allChapters"] = courseStructure;
 }
 
+export function handleChapterChart(value, tempState, courseData, allData, stateName="aggregateChapterData", individual=false) {
+  var chapterData = tempState[stateName];
+  var pages = tempState["pageLookup"];
+  var binData = [];
+  var chapterNames = [];
+  chapterData.forEach((page, index) => {
+    var pageInfo = pages.find(v => v._id === page._id);
+    if (pageInfo) {
+      chapterData[index]['chapter'] = pageInfo.chapter;
+      if (!chapterNames.includes(pageInfo.chapter) && pageInfo.chapter !== null) {
+        chapterNames.push(pageInfo.chapter);
+      }
+    } else {
+      chapterData[index]['chapter'] = null;
+    }
+  })
+  chapterNames.forEach((chapter, index) => {
+    var data = chapterData.filter(p => p.chapter === chapter);
+    var views = 0;
+    var uniqueViews = 0;
+    //console.log("data", data)
+    data.forEach((d, i) => {
+      views = views + d.viewCount;
+      uniqueViews = uniqueViews + d.uniqueViewCount;
+    })
+    binData.push({
+      _id: chapter,
+      viewCount: views,
+      uniqueViewCount: uniqueViews
+    })
+  })
+  tempState[stateName] = binData;
+  if (!individual) {
+    courseData[stateName] = binData;
+    allData[stateName] = binData;
+  }
+}
+
+export function handlePageLookup(value, tempState, courseData, allData) {
+  var pageData = tempState['pageData'];
+  pageData.forEach((page, index) => {
+    var pageInfo = value.find(v => v._id === page._id);
+    //console.log(pageInfo)
+    if (pageInfo) {
+      pageData[index]['pageTitle'] = pageInfo['pageTitle'];
+      pageData[index]['pageURL'] = pageInfo['pageURL'];
+    } else {
+      pageData[index]['pageTitle'] = null;
+      pageData[index]['pageURL'] = null;
+    }
+  })
+  pageData = pageData.filter(p => p.pageTitle !== null);
+  courseData["pageData"] = pageData;
+  tempState["pageData"] = pageData;
+  tempState["pageLookup"] = value;
+  allData["pageData"] = pageData;
+}
+
 //iterates through the course structure data and formats it
 function calculateCourseStructure(data) {
   let chapter = {};

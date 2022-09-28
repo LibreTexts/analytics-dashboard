@@ -28,23 +28,28 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
           }
         },
         //join to page collection to be able to match by page
+        // {
+        //   "$lookup": {
+        //     "from": dbInfo.pageColl,
+        //     "localField": "object.id",
+        //     "foreignField": "id",
+        //     "as": "pageInfo"
+        //   }
+        // },
+        // {
+        //   "$unwind": {
+        //     'path': '$pageInfo'
+        //   }
+        // },
+        // //filter down to an individual page
+        // {
+        //   '$match': {
+        //     'pageInfo.title': params.individual
+        //   }
+        // },
         {
-          "$lookup": {
-            "from": dbInfo.pageColl,
-            "localField": "object.id",
-            "foreignField": "id",
-            "as": "pageInfo"
-          }
-        },
-        {
-          "$unwind": {
-            'path': '$pageInfo'
-          }
-        },
-        //filter down to an individual page
-        {
-          '$match': {
-            'pageInfo.title': params.individual
+          "$match": {
+            'object.id': params.individual
           }
         },
         //format date
@@ -141,8 +146,8 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
   var index = 1;
   index = addFilters.spliceDateFilter(index, params, data);
   if (params.individual) {
-    index = addFilters.splicePathFilter(index+2, params, data);
-    addFilters.spliceTagFilter(index, params, data);
+    index = addFilters.splicePathFilter(index+1, params, data, true);
+    addFilters.spliceTagFilter(index, params, data, index <= 4);
   }
 
   return data;
