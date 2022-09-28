@@ -67,7 +67,7 @@ export function getGradesPageViewData(state, setState) {
   ) {
     axios({
       method: "post",
-      url: "/gradepageviews",
+      url: state.homepage + "/gradepageviews",
       headers: {
         "Content-Type": "application/json",
       },
