@@ -10,6 +10,7 @@ import {
   Label,
   ResponsiveContainer,
 } from "recharts";
+import BasicTable from "./basicTable.js";
 
 //shows the number of views per chapter of the textbook, aggregate vs individual
 export default function TextbookChapterChart({
@@ -21,12 +22,17 @@ export default function TextbookChapterChart({
   showColumns,
   displayMode,
   state,
+  accessibilityMode,
 }) {
   //data is individual data; allData is aggregate
   if (data && data.length > 0) {
     var student = data[0]["student"];
     var displayModeStudent = data[0]["displayModeStudent"];
   }
+  var tableColumns = {
+    Chapter: "_id",
+    "View Count": "viewCount",
+  };
   //connecting aggregate data to individual
   var showData = JSON.parse(JSON.stringify(allData));
   showData.forEach((chapter, index) => {
@@ -44,6 +50,9 @@ export default function TextbookChapterChart({
     }
     showData[index]["_id"] = chapter["_id"].replaceAll("_", " ");
   });
+  if (data) {
+    tableColumns["View Count by Student"] = "indivCount";
+  }
 
   //backend sorting was causing problems, sorting here instead
   showData = showData.sort(function (a, b) {
@@ -77,56 +86,63 @@ export default function TextbookChapterChart({
   };
   return (
     <>
-      <ResponsiveContainer width="99%" aspect={2}>
-        <BarChart
-          margin={{ top: 25, right: 30, bottom: 250, left: data ? 70 : 55 }}
-          data={showData}
-          barGap={0}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="_id"
-            interval={0}
-            angle={-35}
-            tickSize={10}
-            textAnchor="end"
+      {!accessibilityMode && (
+        <ResponsiveContainer width="99%" aspect={2}>
+          <BarChart
+            margin={{ top: 25, right: 30, bottom: 250, left: data ? 70 : 55 }}
+            data={showData}
+            barGap={0}
           >
-            {
-              //<Label value="Textbook Chapters" position="bottom" />
-            }
-          </XAxis>
-          <YAxis dataKey="viewCount" yAxisId="left" stroke="#0047BA">
-            <Label
-              value="View Count"
-              position="insideBottomLeft"
-              angle="-90"
-              style={{ fill: "#0047BA" }}
-            />
-          </YAxis>
-          {data && (
-            <YAxis
-              dataKey="indivCount"
-              yAxisId="right"
-              orientation="right"
-              stroke="#F93549"
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="_id"
+              interval={0}
+              angle={-35}
+              tickSize={10}
+              textAnchor="end"
             >
+              {
+                //<Label value="Textbook Chapters" position="bottom" />
+              }
+            </XAxis>
+            <YAxis dataKey="viewCount" yAxisId="left" stroke="#0047BA">
               <Label
-                value="Individual Count"
-                position="insideBottomRight"
-                angle="90"
-                style={{ fill: "#F93549" }}
+                value="View Count"
+                position="insideBottomLeft"
+                angle="-90"
+                style={{ fill: "#0047BA" }}
               />
             </YAxis>
-          )}
-          <Tooltip
-            cursor={{ strokeDasharray: "3 3" }}
-            content={<CustomTooltip />}
-            allowEscapeViewBox={{ x: false }}
-          />
-          <Bar dataKey="viewCount" fill="#0047BA" yAxisId="left" />
-          {data && <Bar dataKey="indivCount" fill="#F93549" yAxisId="right" />}
-        </BarChart>
-      </ResponsiveContainer>
+            {data && (
+              <YAxis
+                dataKey="indivCount"
+                yAxisId="right"
+                orientation="right"
+                stroke="#F93549"
+              >
+                <Label
+                  value="Individual Count"
+                  position="insideBottomRight"
+                  angle="90"
+                  style={{ fill: "#F93549" }}
+                />
+              </YAxis>
+            )}
+            <Tooltip
+              cursor={{ strokeDasharray: "3 3" }}
+              content={<CustomTooltip />}
+              allowEscapeViewBox={{ x: false }}
+            />
+            <Bar dataKey="viewCount" fill="#0047BA" yAxisId="left" />
+            {data && (
+              <Bar dataKey="indivCount" fill="#F93549" yAxisId="right" />
+            )}
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+      {accessibilityMode && (
+        <BasicTable data={showData} columnVals={tableColumns} />
+      )}
     </>
   );
 }

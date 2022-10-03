@@ -77,6 +77,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                   binLabel={state.individualAssignmentBinLabel}
                   width={980}
                   height={500}
+                  accessibilityMode={state.accessibilityMode}
                 />
               }
               data={state.aggregateAssignmentViews}
@@ -155,6 +156,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                   numberOfBins={state.numBinsGrades}
                   height={500}
                   individualData={state.gradesPageView}
+                  accessibilityMode={state.accessibilityMode}
                 />
               }
               data={state.allAssignmentGrades}

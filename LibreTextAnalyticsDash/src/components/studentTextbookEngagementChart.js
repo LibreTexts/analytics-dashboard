@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import StudentTextbookEngagementTable from "./studentTextbookEngagementTable.js";
+import BasicTable from "./basicTable.js";
 import { Box, Button } from "grommet";
 import { FormClose } from "grommet-icons";
 import moment from "moment";
@@ -30,6 +31,7 @@ export default function StudentTextbookEngagementChart({
   binLabel,
   yaxis,
   state,
+  accessibilityMode
 }) {
   const [studentData, setStudentData] = React.useState(null);
   const [newWidth, setNewWidth] = React.useState("97%");
@@ -52,7 +54,19 @@ export default function StudentTextbookEngagementChart({
         d["due"] = null;
       }
     }
+    if (accessibilityMode) {
+      data[index]["formattedDate"] = moment(d._id)
+        .add(1, "days")
+        .format("MMM Do YYYY")
+    }
   });
+  var tableColumns = {
+    "Date": "formattedDate",
+    "Total Views on All Pages": "count",
+  }
+  if (individualData) {
+    tableColumns["Total Views by Student"] = "indivCount"
+  }
 
   //fill the table with the unique pages that the student read on a specific day
   function getPages(val, data, allData) {
@@ -60,7 +74,7 @@ export default function StudentTextbookEngagementChart({
       var id = val.activePayload[1].payload._id;
       var index = data.findIndex((o) => o._id === id);
       var allDataIndex = allData.findIndex((o) => o._id === id);
-      
+
       //check if there was individual data found
       if (index >= 0) {
         setActiveIndex(allDataIndex);
@@ -119,6 +133,8 @@ export default function StudentTextbookEngagementChart({
 
   return (
     <>
+    {!accessibilityMode &&
+      <>
       <ResponsiveContainer width={newWidth} aspect={aspect} height={height}>
         <BarChart
           width={500}
@@ -194,6 +210,11 @@ export default function StudentTextbookEngagementChart({
           />
         </Box>
       )}
+      </>
+    }
+    {accessibilityMode &&
+      <BasicTable data={data} columnVals={tableColumns} />
+    }
     </>
   );
 }

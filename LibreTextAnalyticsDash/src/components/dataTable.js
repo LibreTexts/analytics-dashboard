@@ -76,6 +76,7 @@ export default function DataTable({
                 ? "Yellow"
                 : "Gainsboro",
             opacity: rowInfo.original.isEnrolled ? 1 : 0.4,
+            tabindex: "0"
           },
         };
       }
@@ -160,6 +161,10 @@ export default function DataTable({
     }
   }
 
+  function formatCells(idAccessor) {
+
+  }
+
   function formatDate(val, type) {
     if (val) {
       var d = new Date(val);
@@ -229,6 +234,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(255, 255, 158, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -249,6 +255,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(255, 255, 158, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -269,6 +276,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(255, 255, 158, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -289,6 +297,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(255, 255, 158, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -309,6 +318,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(255, 255, 158, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -390,6 +400,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(171, 247, 177, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -412,6 +423,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(171, 247, 177, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -432,6 +444,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(171, 247, 177, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -452,6 +465,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(171, 247, 177, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -472,6 +486,7 @@ export default function DataTable({
           return {
             style: {
               background: "rgb(171, 247, 177, .5)",
+              tabindex: "0"
             },
           };
         },
@@ -502,8 +517,8 @@ export default function DataTable({
         pageSizeOptions={[10, 25, 50]}
       ></ReactTable>
       <div>
-        <CSVLink data={exportData} headers={headers} filename={filename}>
-          <Button secondary icon={<Download />} />
+        <CSVLink data={exportData} headers={headers} filename={filename} style={{marginLeft: "small"}}>
+          <Download />
         </CSVLink>
       </div>
     </>

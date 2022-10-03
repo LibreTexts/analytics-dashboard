@@ -16,7 +16,8 @@ export default function SelectWithApply({
   width,
   dropSize,
   queryVariables,
-  selectLabel
+  selectLabel,
+  a11yTitle
 }) {
   var dropHeight = "small";
   if (dropSize) {
@@ -38,6 +39,7 @@ export default function SelectWithApply({
         {selectLabel}
       </Text>
       <Select
+        a11yTitle={a11yTitle}
         options={selectOptions}
         margin={{ vertical: "xsmall", right: "large" }}
         dropAlign={{

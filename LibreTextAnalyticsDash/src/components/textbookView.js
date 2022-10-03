@@ -88,6 +88,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                     binLabel={state.binLabel}
                     width={980}
                     page={state.page}
+                    accessibilityMode={state.accessibilityMode}
                   />
                 }
                 data={state.pageViews}
@@ -163,6 +164,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                       width={980}
                       height={500}
                       state={state}
+                      accessibilityMode={state.accessibilityMode}
                     />
                   }
                   data={state.aggregateChapterData}

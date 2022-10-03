@@ -45,6 +45,7 @@ export default function CourseDropdown({
               disable={state.disableCourse}
               width="300px"
               dropSize="medium"
+              a11yTitle="Select a course"
             />
             {!initPage && (
               <Button

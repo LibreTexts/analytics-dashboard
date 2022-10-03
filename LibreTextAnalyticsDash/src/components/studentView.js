@@ -107,6 +107,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                     width="100%"
                     displayMode={state.displayMode}
                     ltCourse={state.ltCourse}
+                    accessibilityMode={state.accessibilityMode}
                   />
                 }
                 data={state.studentChart}
@@ -148,6 +149,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                         (o) => o.due !== "Not Found"
                       )}
                       student={state.student}
+                      accessibilityMode={state.accessibilityMode}
                     />
                   }
                   data={state.allAdaptAssignments}
@@ -217,6 +219,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                     binLabel={state.binLabel}
                     width={980}
                     student={state.studentForTextbookEngagement}
+                    accessibilityMode={state.accessibilityMode}
                   />
                 }
                 data={state.pageViews}

@@ -56,6 +56,7 @@ export default function Tabs({ state, setState }) {
             : "bar-item button filter-button"
         }
         onClick={(event) => activeTab(event, "filters", state, setState)}
+        tabindex="0"
       >
         Filters
       </button>
@@ -64,6 +65,7 @@ export default function Tabs({ state, setState }) {
           state.index === 0 ? "bar-item button white" : "bar-item button"
         }
         onClick={(event) => activeTab(event, "student", state, setState)}
+        tabindex="0"
       >
         By Student
       </button>
@@ -73,6 +75,7 @@ export default function Tabs({ state, setState }) {
             state.index === 1 ? "bar-item button white" : "bar-item button"
           }
           onClick={(event) => activeTab(event, "page", state, setState)}
+          tabindex="0"
         >
           Textbook Engagement
         </button>
@@ -83,6 +86,7 @@ export default function Tabs({ state, setState }) {
             state.index === 2 ? "bar-item button white" : "bar-item button"
           }
           onClick={(event) => activeTab(event, "assignment", state, setState)}
+          tabindex="0"
         >
           Homework Engagement
         </button>

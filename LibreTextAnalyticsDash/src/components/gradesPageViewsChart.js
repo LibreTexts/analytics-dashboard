@@ -9,6 +9,7 @@ import {
   Label,
   ResponsiveContainer,
 } from "recharts";
+import BasicTable from "./basicTable.js";
 
 //shows aggregate grades for the course and grades for an individual assignment
 export default function GradesPageView({
@@ -17,6 +18,7 @@ export default function GradesPageView({
   range,
   numberOfBins,
   individualData,
+  accessibilityMode
 }) {
   // Initialize data
   let dataBins = null;
@@ -76,8 +78,14 @@ export default function GradesPageView({
       }
     });
   }
+  var tableColumns = {"Percent": "binString", "Count": "Count"}
+  if (individualData) {
+    tableColumns["Count for Individual Assignment"] = "Individual Count"
+  }
 
   return (
+    <>
+    {!accessibilityMode &&
     <ResponsiveContainer width="99%" aspect={3}>
       <BarChart
         width={500}
@@ -113,5 +121,10 @@ export default function GradesPageView({
         {individualData && <Bar dataKey="Individual Count" fill="#F93549" />}
       </BarChart>
     </ResponsiveContainer>
+  }
+  {accessibilityMode &&
+  <BasicTable data={dataBins} columnVals={tableColumns} />
+}
+  </>
   );
 }

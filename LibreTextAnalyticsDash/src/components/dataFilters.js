@@ -171,9 +171,18 @@ export default function DataFilters({ state, setState, queryVariables, noEnrollm
               <Box border={true}>
                 <InfoBox infoText={infoText.toggleText} color="#b0e0e6" />
                 <CheckBox
+                  label={state.accessibilityMode ? "Toggle to Charts" : "Toggle to Tables"}
+                  checked={state.accessibilityMode}
+                  pad={{ left: "large", bottom: "small" }}
+                  toggle={true}
+                  onClick={() =>
+                    setState({ ...state, accessibilityMode: !state.accessibilityMode })
+                  }
+                />
+                <CheckBox
                   label="Include Non-enrolled Students"
                   checked={state.showNonEnrolledStudents}
-                  pad={{ left: "large", bottom: "small" }}
+                  pad={{ left: "large", bottom: "small", top: "small" }}
                   toggle={true}
                   onClick={() =>
                     setState({

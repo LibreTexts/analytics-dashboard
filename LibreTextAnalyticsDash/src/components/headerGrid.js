@@ -117,6 +117,7 @@ export default function HeaderGrid({
                           }}
                           dropHeight={"medium"}
                           value={state.student}
+                          a11yTitle="Choose a student"
                           onChange={({ option }) =>
                             handleChange(
                               "studentAssignments",

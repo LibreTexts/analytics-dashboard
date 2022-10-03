@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import moment from "moment";
+import BasicTable from "./basicTable.js";
 
 //chart to show the aggregate total number of page views by date for libretext pages
 export default class PageViewsChart extends React.Component {
@@ -45,6 +46,11 @@ export default class PageViewsChart extends React.Component {
         }
       }
     });
+    this.props.data.forEach((d, index) => {
+      this.props.data[index]['formattedDate'] = moment(d._id)
+        .add(1, "days")
+        .format("MMM Do YYYY")
+    })
 
     //custom tooltip that checks for the type of chart and for the individual data
     const CustomTooltip = (props) => {
@@ -98,8 +104,16 @@ export default class PageViewsChart extends React.Component {
       }
       return <DefaultTooltipContent {...props} />;
     };
+    var tableColumns = {"Date": "formattedDate", "Total Views On All Pages": "count"}
+    if (this.props.individualData && type === "individualAssignment") {
+      tableColumns["Total Views by Assignment"] = "indivCount"
+    } else if (this.props.individualData && type !== "individualAssignment") {
+      tableColumns["Total Views by Page"] = "indivCount"
+    }
 
     return (
+      <>
+      {!this.props.accessibilityMode &&
       <ResponsiveContainer width="97%" aspect={aspect}>
         <BarChart
           width={500}
@@ -161,6 +175,11 @@ export default class PageViewsChart extends React.Component {
           )}
         </BarChart>
       </ResponsiveContainer>
+    }
+    {this.props.accessibilityMode &&
+      <BasicTable data={this.props.data} columnVals={tableColumns}/>
+    }
+    </>
     );
   }
 }

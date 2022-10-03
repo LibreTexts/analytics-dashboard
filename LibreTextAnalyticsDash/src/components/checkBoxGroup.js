@@ -13,6 +13,7 @@ export default function CheckBoxGroup({
       checks.push(
         <CheckBox
           label={c}
+          a11yTitle={c}
           pad="small"
           checked={data[c]}
           onChange={(event) => changeColumns(event, c, state, setState)}
