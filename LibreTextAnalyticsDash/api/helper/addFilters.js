@@ -40,7 +40,7 @@ function splicePathFilter(index, params, data, addPageLookup=false) {
 function spliceDateFilter(index, params, data, isAdapt=false) {
   var timestamp = '$object.timestamp';
   if (isAdapt) {
-    timestamp = '$time'
+    timestamp = '$submission_time'
   }
   if (params.startDate || params.endDate) {
     var addFields = {

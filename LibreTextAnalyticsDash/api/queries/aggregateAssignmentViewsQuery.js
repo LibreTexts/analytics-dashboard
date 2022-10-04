@@ -17,13 +17,13 @@ function aggregateAssignmentViewsQuery(params, dbInfo, adaptCodes) {
       "pipeline": [
         {
           '$match': {
-            'class': course
+            'course_id': course
           }
         },
         {
           '$addFields': {
               'date': {'$dateTrunc': {
-                  'date': { '$toDate': '$time'},
+                  'date': { '$toDate': '$submission_time'},
                   'unit': 'day',
                   'binSize': 1
               }

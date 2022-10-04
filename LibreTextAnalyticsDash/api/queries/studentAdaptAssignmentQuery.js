@@ -29,7 +29,7 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
           "$match": {
             '$expr': {
               '$and': [
-                {'$eq': ["$class", course]},
+                {'$eq': ["$course_id", course]},
                 {'$eq': ["$anon_student_id", student]}
               ]
             }
@@ -38,18 +38,18 @@ function studentAdaptAssignmentQuery(params, adaptCodes, dbInfo, encryptStudent)
         //preserve some adapt attributes, change points to 0 if the outcome was "incorrect"
         {
           "$project": {
-            'levelname' : '$level_name',
+            'levelname' : '$assignment_name',
             'student' : '$anon_student_id',
-            'levelpoints' : '$level_points',
-            'problemname' : '$problem_name',
+            'levelpoints' : '$assignment_points',
+            'problemname' : '$question_id',
             'due': '$due',
-            'time': '$time',
+            'time': '$submission_time',
             'points' : {
               "$cond" : {
-                'if': {'$and': [{'$ne': ['$problem_points', ""]}, {'$eq': ['$outcome', "CORRECT"]}]},
+                'if': {'$and': [{'$ne': ['$question_points', ""]}, {'$eq': ['$outcome', "CORRECT"]}]},
                 'then': {
                   "$convert" : {
-                    'input' : '$problem_points',
+                    'input' : '$question_points',
                     'to': 'double'
                   }
                 },

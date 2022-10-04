@@ -8,8 +8,8 @@ function allAdaptCoursesQuery(dbInfo) {
     "pipeline": [
       {
         "$group": {
-          '_id': "$class_name",
-          'course': {'$first': "$class"},
+          '_id': "$course_name",
+          'course': {'$first': "$course_id"},
           'students': {'$addToSet': "$anon_student_id"}
         }
       },

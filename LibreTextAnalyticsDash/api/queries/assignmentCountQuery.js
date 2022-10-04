@@ -9,9 +9,9 @@ function assignmentCountQuery(dbInfo) {
     "pipeline": [
       {
         '$group': {
-          '_id': "$class",
+          '_id': "$course_id",
           'assignments': {
-            '$addToSet': '$level_name'
+            '$addToSet': '$assignment_name'
           }
         }
       },

@@ -99,9 +99,9 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
             '$match': {
               '$expr': {
                 '$and': [
-                  {'$eq': ['$class', course]},
-                  {'$eq': ['$level_group', params.levelGroup]},
-                  {'$eq': ['$level_name', params.levelName]}
+                  {'$eq': ['$course_id', course]},
+                  {'$eq': ['$assignment_group', params.levelGroup]},
+                  {'$eq': ['$assignment_name', params.levelName]}
                 ]
               }
             }
@@ -110,7 +110,7 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
           {
             "$addFields": {
               'date': {'$dateTrunc': {
-                  'date': { '$toDate': '$time'},
+                  'date': { '$toDate': '$submission_time'},
                   'unit': params.unit,
                   'binSize': params.bin
                 }

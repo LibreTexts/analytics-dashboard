@@ -20,7 +20,7 @@ function adaptLevelQuery(params, adaptCodes, dbInfo) {
           '$match': {
             '$expr': {
               '$and': [
-                {'$eq': ["$class", course]}
+                {'$eq': ["$course_id", course]}
               ]
             }
           }
@@ -29,8 +29,8 @@ function adaptLevelQuery(params, adaptCodes, dbInfo) {
           '$match': {
             '$expr': {
               '$and': [
-                {'$ne': ['$level_group', null]},
-                {'$ne': ['$level_group', ""]}
+                {'$ne': ['$assignment_group', null]},
+                {'$ne': ['$assignment_group', ""]}
               ]
             }
           }
@@ -39,8 +39,8 @@ function adaptLevelQuery(params, adaptCodes, dbInfo) {
         {
           '$group': {
             '_id': {
-              'level_group': '$level_group',
-              'level_name': '$level_name'
+              'level_group': '$assignment_group',
+              'level_name': '$assignment_name'
             }
           }
         },

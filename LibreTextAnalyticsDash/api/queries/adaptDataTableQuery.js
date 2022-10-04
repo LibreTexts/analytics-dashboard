@@ -12,7 +12,7 @@ function adaptDataTableQuery(params, dbInfo) {
           '$match': {
             '$expr': {
               '$and': [
-                {'$eq': ["$class", params.courseId]}
+                {'$eq': ["$course_id", params.courseId]}
               ]
             }
           }
@@ -21,7 +21,7 @@ function adaptDataTableQuery(params, dbInfo) {
         {
           '$addFields': {
             'day': {'$replaceAll': {
-              'input': '$time', 'find': '"', 'replacement': ''
+              'input': '$submission_time', 'find': '"', 'replacement': ''
             }}
           }
         },
@@ -39,10 +39,10 @@ function adaptDataTableQuery(params, dbInfo) {
         {
           '$project': {
             'date': '$date',
-            'levelname': '$level_name',
+            'levelname': '$assignment_name',
             'student': '$anon_student_id',
-            'levelpoints': '$level_points',
-            'problemname': '$problem_name',
+            'levelpoints': '$assignment_points',
+            'problemname': '$question_id',
             'page_id': '$page_id',
             'points': {
               '$cond':
@@ -50,7 +50,7 @@ function adaptDataTableQuery(params, dbInfo) {
                 'if': { '$eq': ['$outcome', "CORRECT"] },
                 'then': {
                   '$convert': {
-                    'input': '$problem_points',
+                    'input': '$question_points',
                     'to': 'double',
                     'onError': 0,
                     'onNull': 0

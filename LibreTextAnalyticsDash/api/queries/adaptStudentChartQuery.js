@@ -22,16 +22,16 @@ function adaptStudentChartQuery(params, dbInfo, adaptCodes) {
       {
         "$match": {
           '$expr': {
-            '$and': [{'$eq': ["$class", course]}]
+            '$and': [{'$eq': ["$course_id", course]}]
           }
         }
       },
       //format the date
       {
         '$addFields': {
-          "newDate": {'$dateFromString': {'dateString': '$time'}},
+          "newDate": {'$dateFromString': {'dateString': '$submission_time'}},
           'date': {'$dateTrunc': {
-              'date': { '$toDate': '$time'},
+              'date': { '$toDate': '$submission_time'},
               'unit': 'day'
             }
           }
@@ -41,11 +41,11 @@ function adaptStudentChartQuery(params, dbInfo, adaptCodes) {
       {
         "$group": {
           "_id": '$anon_student_id',
-          "courseName": {'$addToSet': '$class'},
-          "timestamp": {'$addToSet':'$time'},
+          "courseName": {'$addToSet': '$course_id'},
+          "timestamp": {'$addToSet':'$submission_time'},
           "max": { '$max': "$newDate" },
           "uniqueDates": {'$addToSet': '$date'},
-          "objects": {"$addToSet": '$level_name'}
+          "objects": {"$addToSet": '$assignment_name'}
         }
       },
       {

@@ -2,7 +2,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
   var adaptLookup = {
     //getting adapt variables
     "$lookup": {
-      "from": "adapt",
+      "from": dbInfo.adaptColl,
       "localField": "_id",
       "foreignField": "anon_student_id",
       "as": "adapt",
@@ -11,7 +11,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
           '$match': {
             '$expr': {
               '$and': [
-                { '$eq': ["$class", codeFound.code] }
+                { '$eq': ["$course_id", codeFound.code] }
               ]
             }
           }
@@ -21,7 +21,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
           '$addFields': {
             'day': {
               '$replaceAll': {
-                'input': '$time', 'find': '"', 'replacement': ''
+                'input': '$submission_time', 'find': '"', 'replacement': ''
               }
             }
           }
@@ -40,8 +40,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
           '$group': {
             '_id': {
               'anon_student_id': '$anon_student_id',
-              'level_name': '$level_name',
-              'problem_name': '$problem_name'
+              'level_name': '$assignment_name',
+              'problem_name': '$question_id'
             },
             'dates': {'$addToSet': '$date'},
             'attempts': {'$sum': 1},

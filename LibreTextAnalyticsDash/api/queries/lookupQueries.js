@@ -22,7 +22,7 @@ var startEndDateQuery = {
   pipeline: [
     {
       $group: {
-        _id: "$class",
+        _id: "$course_id",
         startDate: {
           $first: "$class_start_date",
         },

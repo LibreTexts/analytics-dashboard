@@ -8,7 +8,7 @@ function adaptStudentsQuery(params, dbInfo) {
     "pipeline": [
       {
         "$match": {
-          "class": params.courseId
+          "course_id": params.courseId
         }
       },
       {
