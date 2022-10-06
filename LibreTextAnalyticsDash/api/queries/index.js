@@ -26,7 +26,8 @@ const allQueries = {
   studentTextbookEngagementQuery: require("./studentTextbookEngagementQuery.js"),
   aggregateAssignmentViewsQuery: require("./aggregateAssignmentViewsQuery.js"),
   allAssignmentGradesQuery: require("./allAssignmentGradesQuery.js"),
-  pageLookupQuery: require("./pageLookupQuery.js")
+  pageLookupQuery: require("./pageLookupQuery.js"),
+  individualAssignmentSubmissionsQuery: require("./individualAssignmentSubmissionsQuery.js")
 }
 
 module.exports = allQueries

@@ -9,7 +9,9 @@ import {
   handleAdaptStudents,
   handleChapters,
   handlePageLookup,
-  handleChapterChart
+  handleChapterChart,
+  handleAggregateAssignmentViews,
+  handlePageViews
 } from "./dataHandlingFunctions.js";
 
 //gets all of the data from the backend and mongoDB
@@ -43,6 +45,8 @@ export async function getData(data, state, setState, path = false, tagData) {
           tempState["showInfoBox"] = false;
           if (key === "studentData") {
             handleStudentData(key, value, tempState, tableData, courseData);
+          } else if (key === "pageViews") {
+            handlePageViews(key, value, tempState, chartData, courseData);
           } else if (key === "adaptLevels") {
             handleAdaptLevels(value, tempState, dropdownData, courseData);
           } else if (key === "allStudents") {
@@ -57,6 +61,8 @@ export async function getData(data, state, setState, path = false, tagData) {
             handlePageLookup(value, tempState, chartData, courseData);
           } else if (key === "aggregateChapterData") {
             handleChapterChart(value, tempState, chartData, courseData);
+          } else if (key === "aggregateAssignmentViews") {
+            handleAggregateAssignmentViews(value, tempState, chartData, courseData);
           } else {
             chartData[key] = value;
           }
@@ -177,10 +183,24 @@ export function getStudentChartConfig(state, setState) {
   return config;
 }
 
-export function getPageViewConfig(state, setState) {
+export function getAssignmentSubmissionsConfig(state, setState, bin, unit) {
   var data = {
-    bin: state.bin,
-    unit: state.unit,
+    bin: bin,
+    unit: unit,
+    course: state.course,
+    courseId: state.courseId,
+    startDate: state.start,
+    endDate: state.end,
+  };
+
+  var config = getAxiosCall("/aggregateassignmentviews", data, state);
+  return config;
+}
+
+export function getPageViewConfig(state, setState, bin, unit) {
+  var data = {
+    bin: bin,
+    unit: unit,
     course: state.course,
     courseId: state.courseId,
     startDate: state.start,

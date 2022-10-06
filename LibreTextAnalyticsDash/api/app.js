@@ -654,11 +654,15 @@ app.post("/pageviews", (req, res, next) => {
 });
 
 app.post("/individualpageviews", (req, res, next) => {
-  let queryString = queries.individualPageViewsQuery(
+  let queryString = req.body.type === "pages" ? queries.individualPageViewsQuery(
     validateInput.validateInput("individualpageviews", req.body),
     adaptCodes,
     dbInfo
-  );
+  ) : queries.individualAssignmentSubmissionsQuery(
+    validateInput.validateInput("individualassignmentsubmissions", req.body),
+    adaptCodes,
+    dbInfo
+  )
   // console.log("QUERY STRING")
   // console.log(queryString)
   let config = helperFunctions.getRequest(queryString);
@@ -666,8 +670,10 @@ app.post("/individualpageviews", (req, res, next) => {
   axios(config)
     .then(function (response) {
       let newData = response.data;
-      if (req.body.individual) {
+      if (req.body.individual && req.body.type === "pages") {
         newData["individualPageViews"] = newData["documents"];
+      } else if (req.body.individual && req.body.type === "assignments") {
+        newData["individualAssignmentSubmissions"] = newData["documents"];
       } else {
         newData["individualAssignmentViews"] = newData["documents"];
       }

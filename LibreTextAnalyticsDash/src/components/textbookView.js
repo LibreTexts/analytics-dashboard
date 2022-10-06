@@ -1,13 +1,14 @@
 import { Grid, Box, Spinner } from "grommet";
 import infoText from "./allInfoText.js";
-import { handleIndividual, pageViewCharts } from "../functions/dataFetchingFunctions.js";
+import { handleIndividual, pageViewCharts, getFilteredChartData } from "../functions/dataFetchingFunctions.js";
 import DataToCSV from "./dataToCSV.js";
 import DataTable from "./dataTable.js";
 import { changeBinVal } from "../functions/filterFunctions.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
 import HeaderGrid from "./headerGrid.js";
 import InfoBox from "./infoBox.js";
-import { getIndividualChapterData } from "../functions/ltDataQueries-individual.js";
+import { getPageViewConfig } from "../functions/ltDataQueries.js";
+import { getIndividualChapterData, getIndividualPageViews } from "../functions/ltDataQueries-individual.js";
 import LayeredComponent from "./layeredComponent.js";
 import PageViewsChart from "./pageViewsChart.js";
 import SelectWithApply from "./selectWithApply.js";
@@ -96,7 +97,16 @@ export default function TextbookView({ state, setState, queryVariables }) {
                 filterOptions={["Day", "Week", "2 Weeks", "Month"]}
                 filterSelectLabel="Unit of Time:"
                 filterFunction={changeBinVal}
-                clickFunction={pageViewCharts}
+                clickFunction={getFilteredChartData}
+                clickFunctionAttributes={{
+                  aggregateFunction: getPageViewConfig,
+                  individualFunction: getIndividualPageViews,
+                  key: "pageViews",
+                  isConfig: true,
+                  individual: state.pageId,
+                  bin: state.bin,
+                  unit: state.unit
+                }}
                 type="aggregatePageViews"
                 axisType="binLabel"
                 selectComponent={

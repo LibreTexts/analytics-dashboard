@@ -27,8 +27,8 @@ export default class PageViewsChart extends React.Component {
     if (type === "individual") {
       label = "Total Views";
     }
-    if (type === "individualAssignment") {
-      label = "Total Views on All Assignments";
+    if (type === "individualAssignment" || type === "individualStudent") {
+      label = "Total Submissions on All Assignments";
     }
 
     //connect the individual data to the aggregate
@@ -67,7 +67,7 @@ export default class PageViewsChart extends React.Component {
             value: props.payload[0].payload.count,
           },
         ];
-        if (this.props.individualData && type !== "individualAssignment") {
+        if (this.props.individualData && type !== "individualAssignment" && type !== "individualStudent") {
           var pageData = [
             {
               name: this.props.type === "aggregate" ? "Page" : "Student",
@@ -88,7 +88,7 @@ export default class PageViewsChart extends React.Component {
         ) {
           var indivInfo = [
             {
-              name: "Individual Assignment Views",
+              name: "Individual Assignment Submissions",
               value: props.payload[0].payload.indivCount,
             },
             {
@@ -99,6 +99,14 @@ export default class PageViewsChart extends React.Component {
             },
           ];
           newPayload.splice(2, 0, ...indivInfo);
+        } else if (this.props.individualData && type === "individualStudent") {
+          var indivInfo = [
+            {
+              name: "Individual Student Submissions",
+              value: props.payload[0].payload.indivCount,
+            },
+          ];
+          newPayload.splice(2, 0, ...indivInfo);
         }
         return <DefaultTooltipContent payload={newPayload} />;
       }
@@ -106,7 +114,9 @@ export default class PageViewsChart extends React.Component {
     };
     var tableColumns = {"Date": "formattedDate", "Total Views On All Pages": "count"}
     if (this.props.individualData && type === "individualAssignment") {
-      tableColumns["Total Views by Assignment"] = "indivCount"
+      tableColumns["Total Submissions by Assignment"] = "indivCount"
+    } else if (this.props.individualData && type === "individualStudent") {
+      tableColumns["Total Submissions by Student"] = "indivCount"
     } else if (this.props.individualData && type !== "individualAssignment") {
       tableColumns["Total Views by Page"] = "indivCount"
     }
@@ -156,7 +166,9 @@ export default class PageViewsChart extends React.Component {
               <Label
                 value={
                   type === "individualAssignment"
-                    ? "Total Views on Individual Assignment"
+                    ? "Total Submissions on Individual Assignment"
+                    : type === "individualStudent"
+                    ? "Total Submissions by Individual Student"
                     : "Total Views on Individual Page"
                 }
                 position="insideBottomRight"

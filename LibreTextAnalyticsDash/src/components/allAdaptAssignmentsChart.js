@@ -19,7 +19,6 @@ import moment from "moment";
 export default class AllAdaptAssignmentsChart extends React.Component {
   render() {
     var student = this.props.student;
-
     //connecting the aggregate data to the individual data
     this.props.allData.forEach((d, index) => {
       if (this.props.data) {
@@ -50,9 +49,6 @@ export default class AllAdaptAssignmentsChart extends React.Component {
     if (this.props.data) {
       tableColumns["Percent Earned by Student"] = "indivPercent";
     }
-    //console.log(this.props.allData)
-    console.log(this.props.data)
-    console.log(tableColumns)
 
     //custom tooltip based on whether there is individual data or not
     const CustomTooltip = (props) => {

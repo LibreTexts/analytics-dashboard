@@ -185,6 +185,7 @@ export function getIndividualPageViewData(state, setState) {
         levelGroup: lgroup,
         levelName: lname,
         tagFilter: state.chosenTag,
+        type: "pages",
       },
     }).then((response) => {
       var d = JSON.parse(response.data);
@@ -222,12 +223,55 @@ export function getIndividualPageViewData(state, setState) {
   }
 }
 
+export function getIndividualPageViews(state, setState) {
+  return axios({
+    method: "post",
+    url: state.homepage + "/individualpageviews",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      bin: state.bin,
+      unit: state.unit,
+      courseId: state.courseId,
+      start: state.start,
+      end: state.end,
+      path: state.dataPath,
+      individual: state.pageId,
+      tagFilter: state.chosenTag,
+      type: "pages",
+    },
+  });
+}
+
+export function getSubmissionsByAssignment(state, setState) {
+  return axios({
+    method: "post",
+    url: state.homepage + "/individualpageviews",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      bin: state.individualAssignmentBin,
+      unit: state.individualAssignmentUnit,
+      courseId: state.courseId,
+      start: state.start,
+      end: state.end,
+      path: state.dataPath,
+      levelGroup: state.levelGroup,
+      levelName: state.levelName,
+      tagFilter: state.chosenTag,
+      type: "pages",
+    },
+  });
+}
+
 export function getIndividualChapterData(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state));
   tempState = {
     ...tempState,
-    disableChapterChart: true
-  }
+    disableChapterChart: true,
+  };
   setState({
     ...state,
     disableChapterChart: true,
@@ -244,7 +288,7 @@ export function getIndividualChapterData(state, setState) {
       individual: state.studentForChapterChart,
       tagFilter: state.chosenTag,
       startDate: state.start,
-      endDate: state.end
+      endDate: state.end,
     },
   }).then((response) => {
     tempState = {
@@ -252,69 +296,36 @@ export function getIndividualChapterData(state, setState) {
       individualChapterData: JSON.parse(response.data)["individualChapterData"],
       disableChapterChart: true,
     };
-    handleChapterChart(JSON.parse(response.data)["individualChapterData"], tempState, {}, {}, "individualChapterData", true);
+    handleChapterChart(
+      JSON.parse(response.data)["individualChapterData"],
+      tempState,
+      {},
+      {},
+      "individualChapterData",
+      true
+    );
     setState({
-      ...tempState
-    })
+      ...tempState,
+    });
   });
 }
 
 export function getStudentTextbookEngagementData(state, setState) {
-  var courseData = {};
-  if (Object.keys(localStorage).includes(state.courseId + "-chart")) {
-    courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
-  }
-  if (
-    !Object.keys(courseData).includes(
-      state.student +
-        state.individualStudentBin +
-        state.individualStudentUnit +
-        "-textbookEngagement"
-    )
-  ) {
-    axios({
-      method: "post",
-      url: state.homepage + "/studenttextbookengagement",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: {
-        courseId: state.courseId,
-        path: state.dataPath,
-        individual: state.student,
-        bin: state.individualStudentBin,
-        unit: state.individualStudentUnit,
-        tagFilter: state.chosenTag,
-      },
-    }).then((response) => {
-      setState({
-        ...state,
-        textbookEngagementData: JSON.parse(response.data)[
-          "textbookEngagementData"
-        ],
-        disableStudent: true,
-      });
-      courseData[
-        state.student +
-          state.individualStudentBin +
-          state.individualStudentUnit +
-          "-textbookEngagement"
-      ] = JSON.parse(response.data)["textbookEngagementData"];
-      writeToLocalStorage(state.courseId + "-chart", courseData);
-    });
-  } else {
-    setState({
-      ...state,
-      textbookEngagementData:
-        courseData[
-          state.student +
-            state.individualStudentBin +
-            state.individualStudentUnit +
-            "-textbookEngagement"
-        ],
-      disableStudent: true,
-    });
-  }
+  return axios({
+    method: "post",
+    url: state.homepage + "/studenttextbookengagement",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      courseId: state.courseId,
+      path: state.dataPath,
+      individual: state.student,
+      bin: state.individualStudentBin,
+      unit: state.individualStudentUnit,
+      tagFilter: state.chosenTag,
+    },
+  });
 }
 
 export async function getMetaTags(state, setState) {

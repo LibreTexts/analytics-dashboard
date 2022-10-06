@@ -34,8 +34,8 @@ export default function GradesPageView({
     dataBins = [];
     // Creating score bin/ranges
     for (let i = 0; i < numberOfBins; i++) {
-      let binMin = (inc * i * 100).toFixed(2);
-      let binMax = (inc * (i + 1) * 100).toFixed(2);
+      let binMin = Math.round(inc * i * 100);
+      let binMax = Math.round(inc * (i + 1) * 100);
       dataBins[i] = {
         bin: binMax,
         Count: 0,

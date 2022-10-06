@@ -60,6 +60,11 @@ export function reactGrids(state) {
       start: [0, 3],
       end: [1, 3],
     });
+    grids.push({
+      name: "studentAdaptEngagement",
+      start: [0, 4],
+      end: [1, 4],
+    });
   } else if (state.ltCourse && !state.adaptCourse) {
     grids = [
       { name: "table", start: [0, 0], end: [1, 0] },
@@ -72,9 +77,10 @@ export function reactGrids(state) {
 
 //create rows for a grid based on whether there is libretext or adapt data
 export function reactRows(state) {
-  var rows = ["28%", "33%", "39%"];
+  var rows = ["20%", "25%", "31%", "24%"];
   if (state.ltCourse && state.adaptCourse) {
-    rows = ["23%", "22%", "27%", "28%"];
+    rows = ["18%", "18%", "20%", "21%", "21%"];
+    //["23%", "22%", "27%", "28%"]
   }
   return rows;
 }

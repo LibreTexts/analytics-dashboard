@@ -1,14 +1,33 @@
 import axios from "axios";
+import { getStudentTextbookEngagementData } from "./ltDataQueries-individual.js";
 
 //for the AlLAdaptAssignmentsChart on the Student View
 export function getStudentAssignments(state, setState) {
-  var tempState = JSON.parse(JSON.stringify(state));
-  tempState["studentAssignments"] = null;
-  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
-  if (!Object.keys(courseData).includes(state.student)) {
-    axios({
+  return axios({
+    method: "post",
+    url: state.homepage + "/studentassignments",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      courseId: state.courseId,
+      individual: state.student,
+      startDate: state.start,
+      endDate: state.end,
+      type: "pages",
+    },
+  });
+}
+
+export function getIndividualAssignmentSubmissions(
+  state,
+  setState,
+  individualRequest = true
+) {
+  //if (!individualRequest) {
+    return axios({
       method: "post",
-      url: state.homepage + "/studentassignments",
+      url: state.homepage + "/individualpageviews",
       headers: {
         "Content-Type": "application/json",
       },
@@ -17,36 +36,36 @@ export function getStudentAssignments(state, setState) {
         individual: state.student,
         startDate: state.start,
         endDate: state.end,
+        type: "assignments",
+        unit: state.individualAdaptEngagementUnit,
+        bin: state.individualAdaptEngagmentBin,
       },
-    }).then((response) => {
-      var d = JSON.parse(response.data);
-      var key = Object.keys(d)[0];
-      var value = d[key];
-      if (value) {
-        tempState[key] = value;
-        courseData[state.student] = value;
-        localStorage.setItem(
-          state.courseId + "-chart",
-          JSON.stringify(courseData)
-        );
-        tempState = {
-          ...tempState,
-          noChartData: false,
-          disableStudent: false,
-        };
-      } else {
-        tempState = {
-          ...tempState,
-          noChartData: true,
-          disableStudent: false,
-        };
-      }
     });
-  } else {
-    tempState["studentAssignments"] = courseData[state.student];
-    tempState["noChartData"] = false;
-  }
-  return tempState;
+  //} //else {
+  //   axios({
+  //     method: "post",
+  //     url: state.homepage + "/individualpageviews",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     data: {
+  //       courseId: state.courseId,
+  //       individual: state.student,
+  //       startDate: state.start,
+  //       endDate: state.end,
+  //       type: "assignments",
+  //       unit: state.individualAdaptEngagementUnit,
+  //       bin: state.individualAdaptEngagmentBin,
+  //     },
+  //   }).then((response) => {
+  //     setState({
+  //       ...state,
+  //       individualAssignmentSubmissions: JSON.parse(response.data)[
+  //         "individualAssignmentSubmissions"
+  //       ],
+  //     });
+  //   });
+  // }
 }
 
 //for the GradesPageViewsChart

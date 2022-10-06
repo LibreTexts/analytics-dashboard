@@ -24,8 +24,8 @@ function aggregateAssignmentViewsQuery(params, dbInfo, adaptCodes) {
           '$addFields': {
               'date': {'$dateTrunc': {
                   'date': { '$toDate': '$submission_time'},
-                  'unit': 'day',
-                  'binSize': 1
+                  'unit': params.unit,
+                  'binSize': params.bin
               }
             }
           }

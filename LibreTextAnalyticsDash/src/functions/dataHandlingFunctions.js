@@ -102,6 +102,24 @@ export function handlePageTimelineData(value, tempState, courseData, allData) {
   courseData["allPageIds"] = pageIds;
 }
 
+export function handleAggregateAssignmentViews(value, tempState, courseData, allData) {
+  tempState["aggregateAssignmentViews"] = value;
+  tempState["aggregateAdaptEngagement"] = value;
+  courseData["aggregateAssignmentViews"] = value;
+  courseData["aggregateAdaptEngagement"] = value;
+  allData["aggregateAssignmentViews"] = value;
+  allData["aggregateAdaptEngagement"] = value;
+}
+
+export function handlePageViews(key, value, tempState, courseData, allData) {
+  tempState[key] = value;
+  tempState["aggregateTextbookEngagement"] = value;
+  courseData[key] = value;
+  courseData["aggregateTextbookEngagement"] = value;
+  allData[key] = value;
+  allData["aggregateTextbookEngagement"] = value;
+}
+
 //adapt-only courses use a different way of getting their students
 export function handleAdaptStudents(value, tempState, courseData, allData) {
   var students = [];

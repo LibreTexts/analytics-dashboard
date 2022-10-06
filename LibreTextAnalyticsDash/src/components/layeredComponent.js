@@ -40,6 +40,7 @@ export default function LayeredComponent({
   queryVariables,
   optionalLoadingTest = true,
   topMargin = "small",
+  clickFunctionAttributes,
 }) {
   const [showFilter, setShowFilter] = useState(false);
   const [axisLabel, setAxisLabel] = useState(label);
@@ -74,15 +75,7 @@ export default function LayeredComponent({
 
   //if the component has a legend (to distinguish between aggregate or individual data)
   //this will be added in the component
-  var hasLegend =
-    type === "studentAssignments" ||
-    type === "aggregatePageViews" ||
-    type === "chapterData" ||
-    type === "textbookEngagement" ||
-    type === "individualAssignmentViews" ||
-    type === "numBinsGrades"
-      ? true
-      : false;
+  var hasLegend = type !== "barXAxisLabel" ? true : false;
 
   var rows = ["23%", "77%"];
 
@@ -133,9 +126,24 @@ export default function LayeredComponent({
     axisType,
     data,
     setDisableFilter,
-    setClick
+    setClick,
+    clickFunctionAttributes
   ) {
-    clickFunction(state, setState, type, option, data);
+    if (type === "numBinsGrades") {
+      clickFunction(state, setState, type, option, data);
+    } else {
+      clickFunction(
+        state,
+        setState,
+        clickFunctionAttributes.key,
+        clickFunctionAttributes.aggregateFunction,
+        clickFunctionAttributes.individualFunction,
+        clickFunctionAttributes.isConfig,
+        clickFunctionAttributes.individual,
+        clickFunctionAttributes.bin,
+        clickFunctionAttributes.unit
+      );
+    }
     setDisableFilter(true);
     setClick(true);
     setAxisLabel(state[axisType]);
@@ -191,7 +199,7 @@ export default function LayeredComponent({
           height={height}
           border={false}
           justify={hasLegend ? "center" : "stretch"}
-          margin={hasLegend ? {top: "none"} : {top: "small"}}
+          margin={hasLegend ? { top: "none" } : { top: "small" }}
           alignSelf={hasLegend ? "center" : "stretch"}
         >
           {hasLegend && (
@@ -245,8 +253,12 @@ export default function LayeredComponent({
                   background="#F93549"
                 />
                 <Text margin={{ left: "small", bottom: "small", top: "small" }}>
-                  {type === "studentAssignments"
+                  {type === "studentAssignments" && state.student
+                    ? state.student + " Scores"
+                    : type === "studentAssignments" && !state.student
                     ? "Individual Scores"
+                    : state.student
+                    ? state.student + " Activity"
                     : "Individual Activity"}
                 </Text>
               </Box>
@@ -375,7 +387,8 @@ export default function LayeredComponent({
                         axisType,
                         data,
                         setDisableFilter,
-                        setClick
+                        setClick,
+                        clickFunctionAttributes
                       )
                     }
                     margin="large"

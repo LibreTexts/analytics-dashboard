@@ -14,7 +14,7 @@ import InfoBox from "./infoBox.js";
 import ChosenFilters from "./chosenFilters.js";
 import CheckBoxGroup from "./checkBoxGroup.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
-import { getAllStudentData } from "../functions/dataFetchingFunctions.js";
+import { getIndividualStudentData } from "../functions/dataFetchingFunctions.js";
 import infoText from "./allInfoText.js";
 import { changeColumns } from "../functions/filterFunctions.js";
 
@@ -134,7 +134,7 @@ export default function HeaderGrid({
                           label="Apply"
                           disabled={state.disableStudent}
                           onClick={() =>
-                            getAllStudentData(
+                            getIndividualStudentData(
                               state,
                               setState,
                               "studentAssignments"
@@ -155,6 +155,7 @@ export default function HeaderGrid({
                               student: null,
                               studentAssignments: null,
                               textbookEngagementData: null,
+                              individualAssignmentSubmissions: null
                             })
                           }
                           style={{ width: "125px" }}

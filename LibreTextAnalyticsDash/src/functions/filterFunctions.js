@@ -94,6 +94,14 @@ export function changeBinVal(option, state, setState, type) {
     bin = "individualAssignmentBin";
     binLabel = "individualAssignmentBinLabel";
     unit = "individualAssignmentUnit";
+  } else if (type === "adaptEngagement") {
+    bin = "individualAdaptEngagmentBin";
+    binLabel = "individualAdaptEngagementBinLabel";
+    unit = "individualAdaptEngagementUnit";
+  } else if (type === "textbookEngagement") {
+    bin = "individualStudentBin";
+    binLabel = "individualStudentBinLabel";
+    unit = "individualStudentUnit";
   }
   if (option === "Day") {
     tempState[bin] = 1;

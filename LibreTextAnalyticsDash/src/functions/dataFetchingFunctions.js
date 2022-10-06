@@ -2,6 +2,7 @@
 import {
   getStudentAssignments,
   getGradesPageViewData,
+  getIndividualAssignmentSubmissions,
 } from "./adaptDataQueries.js";
 import {
   getData,
@@ -11,6 +12,7 @@ import {
   getAllPagesConfig,
   getStudentChartConfig,
   getPageViewConfig,
+  getAssignmentSubmissionsConfig,
 } from "./ltDataQueries.js";
 import {
   getPageViewData,
@@ -18,6 +20,8 @@ import {
   getMetaTags,
   getStudentTextbookEngagementData,
 } from "./ltDataQueries-individual.js";
+import { writeToLocalStorage } from "./helperFunctions.js";
+import axios from "axios";
 
 //called when the user hits apply, reloads the course, or clears all of the filters
 //gets all of the data for the course from mongoDB or localStorage
@@ -170,14 +174,16 @@ export async function handleClick(
       if (state.ltCourse) {
         configs.push(getAllDataConfig(tempState, setState, "page"));
         configs.push(getAllPagesConfig(tempState, setState, "page"));
-        configs.push(simpleConfigTemplate(tempState, setState, "/pagelookup"))
+        configs.push(simpleConfigTemplate(tempState, setState, "/pagelookup"));
         configs.push(
           simpleConfigTemplate(tempState, setState, "/aggregatechapterdata")
         );
         configs.push(
           simpleConfigTemplate(tempState, setState, "/coursestructure")
         );
-        configs.push(getPageViewConfig(tempState, setState));
+        configs.push(
+          getPageViewConfig(tempState, setState, state.bin, state.unit)
+        );
       }
       if (state.adaptCourse) {
         configs.push(
@@ -185,7 +191,12 @@ export async function handleClick(
         );
         configs.push(simpleConfigTemplate(tempState, setState, "/adaptlevels"));
         configs.push(
-          simpleConfigTemplate(tempState, setState, "/aggregateassignmentviews")
+          getAssignmentSubmissionsConfig(
+            tempState,
+            setState,
+            state.bin,
+            state.unit
+          )
         );
         configs.push(
           simpleConfigTemplate(tempState, setState, "/allassignmentgrades")
@@ -268,15 +279,110 @@ export function pageViewCharts(state, setState, type) {
   }
 }
 
+export function getFilteredChartData(
+  state,
+  setState,
+  key,
+  aggregateFunction,
+  individualFunction,
+  isConfig,
+  individual,
+  bin = null,
+  unit = null
+) {
+  var tempState = JSON.parse(JSON.stringify(state));
+  if (isConfig) {
+    var request1 = axios(aggregateFunction(tempState, setState, bin, unit));
+  } else {
+    request1 = aggregateFunction(tempState, setState, bin, unit);
+  }
+  var requests = [request1];
+  if (individual) {
+    var request2 = individualFunction(tempState, setState);
+    requests.push(request2);
+  }
+  axios
+    .all(requests)
+    .then(
+      axios.spread((...responses) => {
+        const responseOne = JSON.parse(responses[0].data);
+        var key1 = Object.keys(responseOne)[0];
+        var val1 = Object.values(responseOne)[0];
+        tempState[key] = val1;
+        if (individual) {
+          const responseTwo = JSON.parse(responses[1].data);
+          var key2 = Object.keys(responseTwo)[0];
+          var val2 = Object.values(responseTwo)[0];
+          tempState[key2] = val2;
+        }
+        setState({
+          ...tempState,
+        });
+      })
+    )
+    .catch((errors) => {
+      console.log(errors);
+    });
+}
+
 //gets the data for all charts on the student tab for an individual student
-export function getAllStudentData(state, setState, type) {
+export function getIndividualStudentData(state, setState, type) {
   setState({
     ...state,
     disableStudent: true,
   });
+  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
   var tempState = JSON.parse(JSON.stringify(state));
-  tempState = handleIndividual(tempState, setState, type);
-  getStudentTextbookEngagementData(tempState, setState);
+  if (!Object.keys(courseData).includes(state.student)) {
+    var request1 = getStudentAssignments(tempState, setState);
+    var request2 = getStudentTextbookEngagementData(tempState, setState);
+    var request3 = getIndividualAssignmentSubmissions(
+      tempState,
+      setState,
+      false
+    );
+    axios
+      .all([request1, request2, request3])
+      .then(
+        axios.spread((...responses) => {
+          const responseOne = JSON.parse(responses[0].data);
+          const responseTwo = JSON.parse(responses[1].data);
+          const responseThree = JSON.parse(responses[2].data);
+          var key1 = Object.keys(responseOne)[0];
+          var val1 = Object.values(responseOne)[0];
+          var key2 = Object.keys(responseTwo)[0];
+          var val2 = Object.values(responseTwo)[0];
+          var key3 = Object.keys(responseThree)[0];
+          var val3 = Object.values(responseThree)[0];
+
+          tempState[key1] = val1;
+          tempState[key2] = val2;
+          tempState[key3] = val3;
+          var d = {};
+          d[key1] = val1;
+          d[key2] = val2;
+          d[key3] = val3;
+          courseData[state.student] = d;
+          writeToLocalStorage(state.courseId + "-chart", courseData);
+          setState({
+            ...tempState,
+            disableStudent: true,
+          });
+        })
+      )
+      .catch((errors) => {
+        console.log(errors);
+      });
+  } else {
+    var data = courseData[state.student];
+    Object.keys(data).forEach((key) => {
+      tempState[key] = data[key];
+    });
+    setState({
+      ...tempState,
+      disableStudent: true,
+    });
+  }
 }
 
 //gets the grades data for an individual assignment

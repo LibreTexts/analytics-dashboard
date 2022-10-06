@@ -108,7 +108,7 @@ export default function SelectWithApply({
           size="small"
           label="Clear Page"
           onClick={() =>
-            setState({ ...state, page: null, individualPageViews: null })
+            setState({ ...state, page: null, pageId: null, individualPageViews: null })
           }
           margin={{
             bottom: "small",

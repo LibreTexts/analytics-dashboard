@@ -1,6 +1,8 @@
 import { Grid, Grommet, Select } from "grommet";
 import infoText from "./allInfoText.js";
-import { handleIndividual, handleGrade } from "../functions/dataFetchingFunctions.js";
+import { handleIndividual, handleGrade, getFilteredChartData } from "../functions/dataFetchingFunctions.js";
+import { getAssignmentSubmissionsConfig } from "../functions/ltDataQueries.js";
+import { getSubmissionsByAssignment } from "../functions/ltDataQueries-individual.js";
 import DataToCSV from "./dataToCSV.js";
 import { changeBinVal, changePropValue } from "../functions/filterFunctions.js";
 import GradesPageView from "./gradesPageViewsChart.js";
@@ -85,7 +87,16 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               filterOptions={["Day", "Week", "2 Weeks", "Month"]}
               filterSelectLabel="Unit of Time:"
               filterFunction={changeBinVal}
-              clickFunction={handleIndividual}
+              clickFunction={getFilteredChartData}
+              clickFunctionAttributes={{
+                aggregateFunction: getAssignmentSubmissionsConfig,
+                individualFunction: getSubmissionsByAssignment,
+                key: "aggregateAssignmentViews",
+                isConfig: true,
+                individual: state.levelName,
+                bin: state.individualAssignmentBin,
+                unit: state.individualAssignmentUnit
+              }}
               type="individualAssignmentViews"
               axisType="individualAssignmentBinLabel"
               optionalLoadingTest={state.levelName}
