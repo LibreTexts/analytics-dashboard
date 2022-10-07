@@ -41,12 +41,17 @@ const router = express.Router();
  * This endpoint could optionally check if valid access tokens are already present and
  * skip straight to the Dashboard instead of generating new tokens.
  */
-app.get('/init', (_req, res) => {
+app.get('/init', (req, res) => {
   /* Generate a nonce to thwart CSRF and save it in browser to check later */
   const stateNonce = randomString.generate(10);
-  res.setHeader('Set-Cookie', [
+  const cookiesToSet = [
     `analytics_conductor_oauth_state=${stateNonce}; Path=/; Domain=localhost; HttpOnly; Secure;`,
-  ]);
+  ]
+  if (req.query.courseId) {
+    cookiesToSet.push(`analytics_conductor_course_id=${req.query.courseId}; Path=/; Domain=localhost; HttpOnly; Secure;`)
+    res.cookie('analytics_conductor_course_id', req.query.courseId)
+  }
+  res.setHeader('Set-Cookie', cookiesToSet);
   res.cookie('analytics_conductor_oauth_state', stateNonce)
   return res.redirect(`${CONDUCTOR_API_URL}/oauth2.0/authorize?client_id=${process.env.CONDUCTOR_API_CLIENT_ID}&response_type=code&state=${stateNonce}`);
 });
