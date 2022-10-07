@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { Grommet } from "grommet";
 import axios from "axios";
+import cookies from "js-cookie";
 
 import HeaderGrid from "./components/headerGrid.js";
 import StudentView from "./components/studentView.js";
@@ -165,6 +166,18 @@ function App() {
     } else {
       success = false;
     }
+
+    var analyticsCourseID = cookies.get('analytics_conductor_course_id');
+    axios({
+      method: "post",
+      url: state.homepage + "/conductorcourseinfo",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        courseID: analyticsCourseID
+      },
+    });
 
     //if the courses aren't in session storage or it didn't grab them all the first time
     //pull the courses from the endpoint on the express node server

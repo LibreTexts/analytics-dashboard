@@ -51,10 +51,16 @@ app.get('/init', (req, res) => {
     cookiesToSet.push(`analytics_conductor_course_id=${req.query.courseID}; Path=/; Domain=localhost; HttpOnly; Secure;`)
     res.cookie('analytics_conductor_course_id', req.query.courseID)
   }
-  res.setHeader('Set-Cookie', cookiesToSet);
+  //res.setHeader('Set-Cookie', cookiesToSet);
   res.cookie('analytics_conductor_oauth_state', stateNonce)
   return res.redirect(`${CONDUCTOR_API_URL}/oauth2.0/authorize?client_id=${process.env.CONDUCTOR_API_CLIENT_ID}&response_type=code&state=${stateNonce}`);
 });
+
+app.get('/conductorcourseinfo', (req, res) => {
+  axios('/api/v1/analytics/courses/'+req.body.courseID).then(response => {
+    console.log(response.data);
+  })
+})
 
 /**
  * Receive the authorization code from Conductor and exchange it for access and refresh tokens.
@@ -221,10 +227,6 @@ axios(assignmentConfig)
   .catch(function (error) {
     console.log(error);
   });
-//
-// const middleware = require("./routes/realCourses.js");
-// console.log(middleware)
-// app.use("/realcourses", middleware);
 
 let realCourseConfig = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
 let realCourseNames = [];
