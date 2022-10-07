@@ -2,7 +2,6 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { Grommet } from "grommet";
 import axios from "axios";
-import cookies from "js-cookie";
 
 import HeaderGrid from "./components/headerGrid.js";
 import StudentView from "./components/studentView.js";

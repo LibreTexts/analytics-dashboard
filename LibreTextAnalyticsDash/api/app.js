@@ -50,20 +50,11 @@ app.get('/init', (req, res) => {
   if (req.query.courseID) {
     cookiesToSet.push(`analytics_conductor_course_id=${req.query.courseID}; Path=/; Domain=localhost; HttpOnly; Secure;`)
     res.cookie('analytics_conductor_course_id', req.query.courseID)
-    axios(CONDUCTOR_API_URL+'/analytics/courses/'+req.query.courseID).then(response => {
-      console.log(response.data);
-    })
   }
   //res.setHeader('Set-Cookie', cookiesToSet);
   res.cookie('analytics_conductor_oauth_state', stateNonce)
   return res.redirect(`${CONDUCTOR_API_URL}/oauth2.0/authorize?client_id=${process.env.CONDUCTOR_API_CLIENT_ID}&response_type=code&state=${stateNonce}`);
 });
-
-// app.get('/conductorcourseinfo', (req, res) => {
-//   axios('/api/v1/analytics/courses/'+req.body.courseID).then(response => {
-//     console.log(response.data);
-//   })
-// })
 
 /**
  * Receive the authorization code from Conductor and exchange it for access and refresh tokens.
