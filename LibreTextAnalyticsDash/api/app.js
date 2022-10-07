@@ -47,11 +47,9 @@ app.get('/init', (req, res) => {
   const cookiesToSet = [
     `analytics_conductor_oauth_state=${stateNonce}; Path=/; Domain=localhost; HttpOnly; Secure;`,
   ]
-  console.log(req)
-  console.log(req.query)
-  if (req.query.courseId) {
-    cookiesToSet.push(`analytics_conductor_course_id=${req.query.courseId}; Path=/; Domain=localhost; HttpOnly; Secure;`)
-    res.cookie('analytics_conductor_course_id', req.query.courseId)
+  if (req.query.courseID) {
+    cookiesToSet.push(`analytics_conductor_course_id=${req.query.courseID}; Path=/; Domain=localhost; HttpOnly; Secure;`)
+    res.cookie('analytics_conductor_course_id', req.query.courseID)
   }
   res.setHeader('Set-Cookie', cookiesToSet);
   res.cookie('analytics_conductor_oauth_state', stateNonce)
