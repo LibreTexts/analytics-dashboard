@@ -221,6 +221,10 @@ axios(assignmentConfig)
   .catch(function (error) {
     console.log(error);
   });
+//
+// const middleware = require("./routes/realCourses.js");
+// console.log(middleware)
+// app.use("/realcourses", middleware);
 
 let realCourseConfig = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
 let realCourseNames = [];
