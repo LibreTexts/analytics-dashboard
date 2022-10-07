@@ -167,18 +167,6 @@ function App() {
       success = false;
     }
 
-    var analyticsCourseID = cookies.get('analytics_conductor_course_id');
-    axios({
-      method: "post",
-      url: state.homepage + "/conductorcourseinfo",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: {
-        courseID: analyticsCourseID
-      },
-    });
-
     //if the courses aren't in session storage or it didn't grab them all the first time
     //pull the courses from the endpoint on the express node server
     if (!sessionStorage.getItem("allCourses") || !success) {
