@@ -74,8 +74,7 @@ export function handleChange(
         localStorage.getItem(realCourses[value].courseId + "-filters")
       );
     }
-    var courseInfo = sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-info');
-    console.log(cookies.get('analytics_conductor_course_id'), courseInfo, courseInfo.start)
+    var courseInfo = JSON.parse(sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-info'));
     courseData["start"] = courseInfo.start
       ? new Date(courseInfo.start)
       : realCourses[value].startDate
