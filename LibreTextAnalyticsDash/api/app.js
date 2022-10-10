@@ -182,7 +182,6 @@ app.get('/courseinfo', (req, res) => {
   }).then((conductorRes) => {
     if (!conductorRes.data.err) {
       res.json(conductorRes.data)
-      console.log(conductorRes.data)
     } else {
       throw (new Error(conductorRes.data.errMsg)); // some error happened, more detail in msg
     }

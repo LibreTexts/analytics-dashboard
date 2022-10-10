@@ -10,6 +10,7 @@ import AdaptView from "./components/adaptView.js";
 import FilterView from "./components/filterView.js";
 import "react-table-6/react-table.css";
 import "./css/index.css";
+import cookies from "js-cookie";
 
 const theme = {
   global: {
@@ -141,6 +142,7 @@ function App() {
   const [click, setClick] = useState(false);
   const [realCourses, setRealCourses] = useState(null);
   const [count, setCount] = useState(0);
+  const [courseInfo, setCourseInfo] = useState(null);
 
   //put into a single object to easily pass it onto other components
   var queryVariables = {
@@ -155,9 +157,15 @@ function App() {
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     if (state.homepage !== "") {
-      axios(state.homepage + "/userinfo").then((response) => {
-        console.log(response.data)
-      });
+      var course = cookies.get('analytics_conductor_course_id');
+      var courseInfo = JSON.parse(sessionStorage.getItem(course));
+      if (!courseInfo) {
+        axios(state.homepage + "/courseinfo").then((response) => {
+          setCourseInfo(response.data)
+        });
+      } else {
+        setCourseInfo(courseInfo);
+      }
     }
 
     //grab the courses from session storage
