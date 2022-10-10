@@ -162,6 +162,7 @@ function App() {
       if (!courseInfo) {
         axios(state.homepage + "/courseinfo").then((response) => {
           setCourseInfo(response.data)
+          sessionStorage.setItem(course, response.data)
         });
       } else {
         setCourseInfo(courseInfo);
