@@ -75,6 +75,7 @@ export function handleChange(
       );
     }
     var courseInfo = sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-info');
+    console.log(cookies.get('analytics_conductor_course_id'), courseInfo, courseInfo.start)
     courseData["start"] = courseInfo.start
       ? new Date(courseInfo.start)
       : realCourses[value].startDate
