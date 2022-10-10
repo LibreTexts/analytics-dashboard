@@ -116,6 +116,8 @@ app.get('/oauth2.0/callback', (req, res) => {
         `analytics_conductor_access=${conductorRes.data.access_token}; Path=/; Domain=localhost; HttpOnly; Secure;`,
         `analytics_conductor_refresh=${conductorRes.data.refresh_token}; Path=/; Domain=localhost; HttpOnly; Secure;`,
       ]);
+      res.cookie(`analytics_conductor_access`, conductorRes.data.access_token)
+      res.cookie(`analytics_conductor_refresh`, conductorRes.data.refresh_token)
       return res.redirect('/analytics');
     }
 
@@ -138,7 +140,7 @@ app.get('/oauth2.0/callback', (req, res) => {
  */
 app.get('/userinfo', (req, res) => {
   if (!req.cookies.analytics_conductor_access || !req.cookies.analytics_conductor_refresh) {
-    return res.redirect('/api/init'); // need to sign in
+    return res.redirect('/analytics/api/init'); // need to sign in
   }
 
   return axios.get(`${CONDUCTOR_API_URL}/user/basicinfo`, {
@@ -169,7 +171,7 @@ app.get('/userinfo', (req, res) => {
 
 app.get('/courseinfo', (req, res) => {
   if (!req.cookies.analytics_conductor_access || !req.cookies.analytics_conductor_refresh) {
-    return res.redirect('/api/init'); // need to sign in
+    return res.redirect('/analytics/api/init'); // need to sign in
   }
   var courseID = req.cookies.analytics_conductor_course_id;
   return axios.get(`${CONDUCTOR_API_URL}/analytics/courses/`+courseID, {
