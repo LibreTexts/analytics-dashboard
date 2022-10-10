@@ -143,6 +143,7 @@ function App() {
   const [realCourses, setRealCourses] = useState(null);
   const [count, setCount] = useState(0);
   const [courseInfo, setCourseInfo] = useState(null);
+  const [enrollmentData, setEnrollmentData] = useState(null);
 
   //put into a single object to easily pass it onto other components
   var queryVariables = {
@@ -159,13 +160,27 @@ function App() {
     if (state.homepage !== "") {
       var course = cookies.get('analytics_conductor_course_id');
       var courseInfo = JSON.parse(sessionStorage.getItem(course));
+      var info = {};
+      var enrollment = [];
       if (!courseInfo) {
         axios(state.homepage + "/courseinfo").then((response) => {
-          setCourseInfo(response.data)
-          sessionStorage.setItem(course, response.data)
+          info = response.data.course;
+          // setCourseInfo(response.data.course);
+          // sessionStorage.setItem(course, JSON.stringify(response.data.course));
         });
+        axios(state.homepage + "/conductorenrollment").then((response) => {
+          enrollment = response.data.students;
+        });
+        setCourseInfo(info);
+        setEnrollmentData(enrollment);
+        var data = {
+          info: info,
+          enrollment: enrollment
+        }
+        sessionStorage.setItem(course, JSON.stringify(data));
       } else {
-        setCourseInfo(courseInfo);
+        setCourseInfo(courseInfo.info);
+        setEnrollmentData(courseInfo.enrollment);
       }
     }
 
