@@ -154,6 +154,12 @@ function App() {
 
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
+    if (state.homepage !== "") {
+      axios(state.homepage + "/courseinfo").then((response) => {
+        console.log(response.data)
+      });
+    }
+    
     //grab the courses from session storage
     var courses = JSON.parse(sessionStorage.getItem("allCourses"));
     //check to see if there are libretext courses stored,
