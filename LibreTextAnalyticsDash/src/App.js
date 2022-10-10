@@ -158,29 +158,29 @@ function App() {
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     if (state.homepage !== "") {
-      var course = cookies.get('analytics_conductor_course_id');
-      var courseInfo = JSON.parse(sessionStorage.getItem(course));
-      var info = {};
-      var enrollment = [];
+      var course = cookies.get("analytics_conductor_course_id");
+      var courseInfo = JSON.parse(sessionStorage.getItem(course + "-info"));
+      var enrollment = JSON.parse(
+        sessionStorage.getItem(course + "-enrollment")
+      );
       if (!courseInfo) {
         axios(state.homepage + "/courseinfo").then((response) => {
-          info = response.data.course;
-          // setCourseInfo(response.data.course);
-          // sessionStorage.setItem(course, JSON.stringify(response.data.course));
+          setCourseInfo(response.data.course);
+          sessionStorage.setItem(
+            course + "-info",
+            JSON.stringify(response.data.course)
+          );
         });
         axios(state.homepage + "/conductorenrollment").then((response) => {
-          enrollment = response.data.students;
+          setEnrollmentData(response.data.students);
+          sessionStorage.setItem(
+            course + "-enrollment",
+            JSON.stringify(response.data.students)
+          );
         });
-        setCourseInfo(info);
-        setEnrollmentData(enrollment);
-        var data = {
-          info: info,
-          enrollment: enrollment
-        }
-        sessionStorage.setItem(course, JSON.stringify(data));
       } else {
-        setCourseInfo(courseInfo.info);
-        setEnrollmentData(courseInfo.enrollment);
+        setCourseInfo(courseInfo);
+        setEnrollmentData(enrollment);
       }
     }
 
