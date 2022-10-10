@@ -1,4 +1,5 @@
 import React from "react";
+import cookies from "js-cookie";
 import { writeToLocalStorage } from "./helperFunctions.js";
 const FunctionContext = React.createContext();
 
@@ -73,10 +74,15 @@ export function handleChange(
         localStorage.getItem(realCourses[value].courseId + "-filters")
       );
     }
-    courseData["start"] = realCourses[value].startDate
+    var courseInfo = sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-info');
+    courseData["start"] = courseInfo.start
+      ? new Date(courseInfo.start)
+      : realCourses[value].startDate
       ? new Date(realCourses[value].startDate)
       : null;
-    courseData["end"] = realCourses[value].endDate
+    courseData["end"] = courseInfo.end
+      ? new Date(courseInfo.end)
+      : realCourses[value].endDate
       ? new Date(realCourses[value].endDate)
       : null;
     localStorage.setItem(
@@ -94,16 +100,24 @@ export function handleChange(
       disableCourse: false,
       chosenPaths: null,
       dataPath: null,
-      start: realCourses[value].startDate
+      start: courseInfo.start
+        ? new Date(courseInfo.start)
+        : realCourses[value].startDate
         ? new Date(realCourses[value].startDate)
         : null,
-      end: realCourses[value].endDate
+      end: courseInfo.end
+        ? new Date(courseInfo.end)
+        : realCourses[value].endDate
         ? new Date(realCourses[value].endDate)
         : null,
-      startDate: realCourses[value].startDate
+      startDate: courseInfo.start
+        ? new Date(courseInfo.start)
+        : realCourses[value].startDate
         ? new Date(realCourses[value].startDate)
         : null,
-      endDate: realCourses[value].endDate
+      endDate: courseInfo.end
+        ? new Date(courseInfo.end)
+        : realCourses[value].endDate
         ? new Date(realCourses[value].endDate)
         : null,
       ltCourse: realCourses[value].ltCourse,
