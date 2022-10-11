@@ -159,29 +159,20 @@ function App() {
   useEffect(() => {
     if (state.homepage !== "") {
       var course = cookies.get("analytics_conductor_course_id");
-      var courseInfo = JSON.parse(sessionStorage.getItem(course + "-info"));
-      var enrollment = JSON.parse(
-        sessionStorage.getItem(course + "-enrollment")
-      );
-      if (!courseInfo) {
-        axios(state.homepage + "/courseinfo").then((response) => {
-          setCourseInfo(response.data.course);
-          sessionStorage.setItem(
-            course + "-info",
-            JSON.stringify(response.data.course)
-          );
-        });
-        axios(state.homepage + "/conductorenrollment").then((response) => {
-          setEnrollmentData(response.data.students);
-          sessionStorage.setItem(
-            course + "-enrollment",
-            JSON.stringify(response.data.students)
-          );
-        });
-      } else {
-        setCourseInfo(courseInfo);
-        setEnrollmentData(enrollment);
-      }
+      axios(state.homepage + "/courseinfo").then((response) => {
+        setCourseInfo(response.data.course);
+        sessionStorage.setItem(
+          course + "-info",
+          JSON.stringify(response.data.course)
+        );
+      });
+      axios(state.homepage + "/conductorenrollment").then((response) => {
+        setEnrollmentData(response.data.students);
+        sessionStorage.setItem(
+          course + "-enrollment",
+          JSON.stringify(response.data.students)
+        );
+      });
     }
 
     //grab the courses from session storage
