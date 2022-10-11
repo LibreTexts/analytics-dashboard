@@ -18,8 +18,12 @@ import infoText from "./allInfoText.js";
 import "../css/index.css";
 
 //shows all of the possible filters that can be applied to the data
-export default function DataFilters({ state, setState, queryVariables, noEnrollmentData }) {
-
+export default function DataFilters({
+  state,
+  setState,
+  queryVariables,
+  noEnrollmentData,
+}) {
   return (
     <Box gridArea="filters" direction="column">
       {!state.showTableFilters &&
@@ -142,9 +146,11 @@ export default function DataFilters({ state, setState, queryVariables, noEnrollm
                         />
                       </Box>
                     </Box>
-                    <Box width="100%" alignSelf="center">
-                      <ParseRoster state={state} setState={setState}/>
-                    </Box>
+                    {state.environment === "development" && (
+                      <Box width="100%" alignSelf="center">
+                        <ParseRoster state={state} setState={setState} />
+                      </Box>
+                    )}
                   </>
                 )}
                 <Box direction="row" alignSelf="center" pad="small">
@@ -171,12 +177,19 @@ export default function DataFilters({ state, setState, queryVariables, noEnrollm
               <Box border={true}>
                 <InfoBox infoText={infoText.toggleText} color="#b0e0e6" />
                 <CheckBox
-                  label={state.accessibilityMode ? "Toggle to Charts" : "Toggle to Tables"}
+                  label={
+                    state.accessibilityMode
+                      ? "Toggle to Charts"
+                      : "Toggle to Tables"
+                  }
                   checked={state.accessibilityMode}
                   pad={{ left: "large", bottom: "small" }}
                   toggle={true}
                   onClick={() =>
-                    setState({ ...state, accessibilityMode: !state.accessibilityMode })
+                    setState({
+                      ...state,
+                      accessibilityMode: !state.accessibilityMode,
+                    })
                   }
                 />
                 <CheckBox

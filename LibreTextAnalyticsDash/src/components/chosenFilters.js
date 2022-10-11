@@ -20,7 +20,9 @@ export default function ChosenFilters({
     state.end ||
     state.chosenTag;
 
-  var enrollmentMessage = state.rosterFilterApplied
+  var enrollmentMessage = state.conductorRoster
+    ? "This course is using enrollment data from Conductor."
+    : state.rosterFilterApplied
     ? "This course is using enrollment data from a roster."
     : noEnrollmentData
     ? "This course has no enrollment data available."

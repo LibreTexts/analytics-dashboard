@@ -203,8 +203,14 @@ export async function handleClick(
         );
       }
       configs.push(getStudentChartConfig(tempState, setState));
-      configs.push(getAllStudentsConfig(tempState, setState));
-      tempState = await getData(configs, tempState, setState, path, tagData);
+      var hasRoster = false;
+      if (!state.roster) {
+        configs.push(getAllStudentsConfig(tempState, setState));
+      } else {
+        tempState['allStudents'] = state.roster;
+        hasRoster = true;
+      }
+      tempState = await getData(configs, tempState, setState, path, tagData, hasRoster);
       if (
         (type === "filterReset" || type === "courseId") &&
         !(state.adaptCourse && !state.ltCourse)

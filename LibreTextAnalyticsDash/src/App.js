@@ -135,7 +135,8 @@ function App() {
     roster: null,
     rosterFile: null,
     rosterFilterApplied: false,
-    accessibilityMode: false
+    accessibilityMode: false,
+    environment: "production"
   });
 
   //state variables on their own to use right away/have easy access

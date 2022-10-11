@@ -15,7 +15,7 @@ import {
 } from "./dataHandlingFunctions.js";
 
 //gets all of the data from the backend and mongoDB
-export async function getData(data, state, setState, path = false, tagData) {
+export async function getData(data, state, setState, path = false, tagData, hasRoster) {
   var promises = [];
   var tempState = JSON.parse(JSON.stringify(state));
   var course = state.courseId;
@@ -27,6 +27,10 @@ export async function getData(data, state, setState, path = false, tagData) {
 
   if (tagData !== null) {
     dropdownData["tagData"] = tagData;
+  }
+  if (hasRoster) {
+    dropdownData["allStudents"] = state.roster;
+    courseData["allStudents"] = state.roster;
   }
   //iterates through the configs and stores the data, sometimes calling
   //other functions to do specific things with the data, in dataHandlingFunctions.js

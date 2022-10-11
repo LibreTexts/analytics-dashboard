@@ -502,6 +502,7 @@ app.post("/data", async (req, res, next) => {
           if (rosterData) {
             if (rosterData.includes(decryptedStudent)) {
               newData["documents"][index]["isEnrolled"] = true;
+              newData["documents"][index]._id = decryptedStudent;
               rosterDataCopy.find((s, index) => {
                 if (s === decryptedStudent) {
                   rosterDataCopy.splice(index, 1);
@@ -509,6 +510,7 @@ app.post("/data", async (req, res, next) => {
               });
             } else {
               newData["documents"][index]["isEnrolled"] = false;
+              newData["documents"][index]._id = encryptedStudent;
             }
           } else if (enrollment.length > 0) {
             //check to see if the student is enrolled
@@ -521,9 +523,11 @@ app.post("/data", async (req, res, next) => {
                   studentEnrollment.splice(index, 1);
                 }
               });
+              newData["documents"][index]._id = decryptedStudent;
             } else {
               //mark the student as not enrolled
               newData["documents"][index]["isEnrolled"] = false;
+              newData["documents"][index]._id = encryptedStudent;
             }
             //add true to all students if there is no enrollment data so the entire table isn't grayed out
           } else if (enrollment.length === 0) {
@@ -531,7 +535,6 @@ app.post("/data", async (req, res, next) => {
           }
           newData["documents"][index]["hasData"] = true;
           newData["documents"][index]["displayModeStudent"] = encryptedStudent;
-          newData["documents"][index]._id = decryptedStudent;
         });
       }
       //if there is an enrolled student that has no data, add them to the table
