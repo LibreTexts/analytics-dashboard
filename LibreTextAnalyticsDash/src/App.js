@@ -224,7 +224,7 @@ function App() {
     } else {
       setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
     }
-  }, [state]);
+  }, [state.homepage, state.courseId, state.start, state.end, state.roster]);
 
   return (
     <>

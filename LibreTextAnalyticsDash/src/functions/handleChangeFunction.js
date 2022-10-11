@@ -75,12 +75,15 @@ export function handleChange(
       );
     }
     var courseInfo = JSON.parse(sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-info'));
-    courseData["start"] = courseInfo.start
+    //for now, send the students in the conductor roster as an array, eventually just use the array of objects given
+    var enrollmentData = JSON.parse(sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-enrollment'));
+    var enrolledStudents = enrollmentData && enrollmentData.length > 0 ? enrollmentData.map(d => d.email) : null;
+    courseData["start"] = courseInfo && courseInfo.start
       ? new Date(courseInfo.start)
       : realCourses[value].startDate
       ? new Date(realCourses[value].startDate)
       : null;
-    courseData["end"] = courseInfo.end
+    courseData["end"] = courseInfo && courseInfo.end
       ? new Date(courseInfo.end)
       : realCourses[value].endDate
       ? new Date(realCourses[value].endDate)
@@ -100,26 +103,30 @@ export function handleChange(
       disableCourse: false,
       chosenPaths: null,
       dataPath: null,
-      start: courseInfo.start
+      start: courseInfo && courseInfo.start
         ? new Date(courseInfo.start)
         : realCourses[value].startDate
         ? new Date(realCourses[value].startDate)
         : null,
-      end: courseInfo.end
+      end: courseInfo && courseInfo.end
         ? new Date(courseInfo.end)
         : realCourses[value].endDate
         ? new Date(realCourses[value].endDate)
         : null,
-      startDate: courseInfo.start
+      startDate: courseInfo && courseInfo.start
         ? new Date(courseInfo.start)
         : realCourses[value].startDate
         ? new Date(realCourses[value].startDate)
         : null,
-      endDate: courseInfo.end
+      endDate: courseInfo && courseInfo.end
         ? new Date(courseInfo.end)
         : realCourses[value].endDate
         ? new Date(realCourses[value].endDate)
         : null,
+      roster: enrolledStudents,
+      conductorRoster: enrollmentData && enrollmentData.length > 0
+        ? true
+        : false,
       ltCourse: realCourses[value].ltCourse,
       adaptCourse: realCourses[value].adaptCourse,
       hasAdapt: realCourses[value].adaptCourse,
