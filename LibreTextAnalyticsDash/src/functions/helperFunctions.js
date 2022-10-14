@@ -55,6 +55,7 @@ export function reactGrids(state) {
     { name: "timeline", start: [0, 2], end: [1, 2] },
   ];
   if (state.ltCourse && state.adaptCourse) {
+    grids.push({ name: "timeline", start: [0, 2], end: [1, 2] });
     grids.push({
       name: "studentTextbookEngagement",
       start: [0, 3],
@@ -71,16 +72,24 @@ export function reactGrids(state) {
       { name: "plots", start: [0, 1], end: [1, 1] },
       { name: "studentTextbookEngagement", start: [0, 2], end: [1, 2] },
     ];
+  } else if (!state.ltCourse && state.adaptCourse) {
+    grids.push({
+      name: "studentAdaptEngagement",
+      start: [0, 3],
+      end: [1, 3],
+    });
   }
   return grids;
 }
 
 //create rows for a grid based on whether there is libretext or adapt data
 export function reactRows(state) {
-  var rows = ["20%", "25%", "31%", "24%"];
+  var rows = ["23%", "22%", "27%", "28%"];
   if (state.ltCourse && state.adaptCourse) {
     rows = ["18%", "18%", "20%", "21%", "21%"];
     //["23%", "22%", "27%", "28%"]
+  } else if (state.ltCourse && !state.adaptCourse) {
+    rows = ["30%", "33%", "36%"];
   }
   return rows;
 }

@@ -213,24 +213,21 @@ export default function DataFilters({
                     setState({ ...state, displayMode: !state.displayMode })
                   }
                 />
-                {(state.start || state.end || noEnrollmentData) && (
-                  <Box margin={{ top: "medium" }}>
-                    {state.disable &&
-                      (!state.studentData || !state.display) && (
-                        <InfoBox
-                          infoText={infoText.loadingMessage}
-                          showIcon={true}
-                          icon={<Spinner />}
-                        />
-                      )}
-                    {state.display && (
-                      <DataFilterText
-                        data={state.studentData}
-                        noEnrollmentData={noEnrollmentData}
-                      />
-                    )}
-                  </Box>
-                )}
+                <Box margin={{ top: "medium" }}>
+                  {state.disable && (!state.studentData || !state.display) && (
+                    <InfoBox
+                      infoText={infoText.loadingMessage}
+                      showIcon={true}
+                      icon={<Spinner />}
+                    />
+                  )}
+                  {state.display && (
+                    <DataFilterText
+                      data={state.studentData}
+                      noEnrollmentData={noEnrollmentData}
+                    />
+                  )}
+                </Box>
               </Box>
             </Box>
           </Box>

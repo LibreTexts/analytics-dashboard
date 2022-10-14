@@ -17,7 +17,8 @@ export default function SelectWithApply({
   dropSize,
   queryVariables,
   selectLabel,
-  a11yTitle
+  a11yTitle,
+  initPage=false
 }) {
   var dropHeight = "small";
   if (dropSize) {
@@ -41,7 +42,7 @@ export default function SelectWithApply({
       <Select
         a11yTitle={a11yTitle}
         options={selectOptions}
-        margin={{ vertical: "xsmall", right: "large" }}
+        margin={{ vertical: initPage ? "xsmall" : "medium", right: "large" }}
         dropAlign={{
           top: "bottom",
           left: "left",
@@ -68,8 +69,7 @@ export default function SelectWithApply({
         disabled={disable}
         onClick={() => clickFunction(state, setState, type, queryVariables)}
         margin={{
-          bottom: "small",
-          top: "small",
+          vertical: initPage ? "small" : "medium",
           right: "medium",
         }}
       />
@@ -96,8 +96,7 @@ export default function SelectWithApply({
                 })
           }
           margin={{
-            bottom: "small",
-            top: "small",
+            vertical: "medium",
             right: "medium",
           }}
         />
@@ -111,8 +110,7 @@ export default function SelectWithApply({
             setState({ ...state, page: null, pageId: null, individualPageViews: null })
           }
           margin={{
-            bottom: "small",
-            top: "small",
+            vertical: "medium",
             right: "medium",
           }}
         />
@@ -128,8 +126,7 @@ export default function SelectWithApply({
             setState({ ...state, gradeLevelGroup: null, gradeLevelName: null, gradesPageView: null, disableGradesAssignment: true })
           }
           margin={{
-            bottom: "small",
-            top: "small",
+            vertical: "medium",
             right: "medium",
           }}
         />

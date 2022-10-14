@@ -46,7 +46,7 @@ export default function StudentView({ state, setState, queryVariables }) {
         />
       )}
       <Grid
-        height={state.ltCourse && state.adaptCourse ? "3230px" : "2000px"}
+        height={state.ltCourse && state.adaptCourse ? "3230px" : state.ltCourse && !state.adaptCourse ? "1900px" : "2500px"}
         rows={reactRows(state)}
         columns={["19%", "79%"]}
         gap="small"
@@ -199,7 +199,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                   }
                 />
               )}
-            {state.pageData && queryVariables.click && state.display && (
+            {state.pageData && queryVariables.click && state.display && state.ltCourse && (
               <LayeredComponent
                 gridArea="studentTextbookEngagement"
                 queryVariables={queryVariables}
@@ -269,7 +269,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                 }
               />
             )}
-            {state.aggregateAssignmentViews && (
+            {state.aggregateAssignmentViews && (state.hasAdapt || state.adaptCourse) && (
               <LayeredComponent
                 gridArea="studentAdaptEngagement"
                 queryVariables={queryVariables}

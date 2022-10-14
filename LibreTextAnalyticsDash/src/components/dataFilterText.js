@@ -8,9 +8,9 @@ export default function DataFilterText({ data, noEnrollmentData }) {
   let s_without_data = 0;
 
   data.forEach((s) => {
-    if (s.hasData === true) {
+    if (s.hasData === true && s.isEnrolled === true) {
       s_with_data += 1;
-    } else {
+    } else if (s.isEnrolled === true && s.hasData === false) {
       s_without_data += 1;
     }
   });

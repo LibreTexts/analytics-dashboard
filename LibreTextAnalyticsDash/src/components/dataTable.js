@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Text, Tip } from "grommet";
+import { Text } from "grommet";
 import { Download } from "grommet-icons";
 import { matchSorter } from "match-sorter";
 import { CSVLink } from "react-csv";
@@ -7,6 +7,7 @@ import ReactTable from "react-table-6";
 import "../css/index.css";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
+import { addStudentLibreTextColumns, addStudentAdaptColumns, addPageColumns } from "../functions/dataTableFunctions.js";
 
 export default function DataTable({
   tab,
@@ -76,7 +77,7 @@ export default function DataTable({
                 ? "Yellow"
                 : "Gainsboro",
             opacity: rowInfo.original.isEnrolled ? 1 : 0.4,
-            tabindex: "0"
+            tabIndex: 0,
           },
         };
       }
@@ -84,6 +85,7 @@ export default function DataTable({
     };
   }
 
+  //cannot use the resolveData attribute of ReactTable because the reformatted data needs to be exported
   var showData = JSON.parse(JSON.stringify(data));
   if (showNonStudents === false) {
     showData = showData.filter((o) => o.isEnrolled);
@@ -155,14 +157,14 @@ export default function DataTable({
         </a>
       );
     } else if (tab === "student" && hasData) {
-      return pageInfo.original[idAccessor];
+      return <a tabIndex={0} href="/#">{pageInfo.original[idAccessor]}</a>;
     } else if (tab === "student" && !hasData) {
-      return <Text weight="bold">{pageInfo.original[idAccessor]}</Text>;
+      return (
+        <a tabIndex={0} href="/#">
+          <Text weight="bold">{pageInfo.original[idAccessor]}</Text>
+        </a>
+      );
     }
-  }
-
-  function formatCells(idAccessor) {
-
   }
 
   function formatDate(val, type) {
@@ -185,7 +187,7 @@ export default function DataTable({
     {
       Header: (
         <Tippy content="Name" arrow={true}>
-          <Text>Name</Text>
+          <a tabIndex={0} href="/#">{<Text>Name</Text>}</a>
         </Tippy>
       ),
       width: 250,
@@ -200,301 +202,13 @@ export default function DataTable({
   //use different headers and accessors for the student table and page table
   //only need the adapt data for the student table; no page tab for adapt-only courses
   if (tab === "student" && ltCourse) {
-    headers.splice(1, 0, { label: "Is Enrolled", key: "enrolled" });
-    headers.push(
-      { label: "LT " + column3Label, key: "viewCount" },
-      { label: "LT Most Recent Page Load", key: "max" },
-      { label: "LT Unique Interaction Days", key: "dateCount" },
-      { label: "LT Hours on Site", key: "timeStudied" }
-    );
-    //inserting into the columns attribute to make "LibreText" and "ADAPT" headers above the other attributes
-    columns.push({
-      Header: "LibreText",
-      getHeaderProps: (state, rowInfo, column) => {
-        return {
-          style: {
-            background: "rgb(255, 255, 158)",
-          },
-        };
-      },
-      columns: [],
-    });
-
-    columns[1].columns.push(
-      {
-        Header: (
-          <Tippy content={column2Label}>
-            <Text>{column2Label}</Text>
-          </Tippy>
-        ),
-        headerClassName: "lt-data wordwrap",
-        accessor: "objectCount",
-        show: showColumns["LT " + column2Label],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(255, 255, 158, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["objectCount"] }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content={column3Label}>
-            <Text>{column3Label}</Text>
-          </Tippy>
-        ),
-        headerClassName: "lt-data wordwrap",
-        accessor: "viewCount",
-        show: showColumns["LT " + column3Label],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(255, 255, 158, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["viewCount"] }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content="Most Recent Page Load">
-            <Text>Most Recent Page Load</Text>
-          </Tippy>
-        ),
-        headerClassName: "lt-data wordwrap",
-        accessor: "max",
-        show: showColumns["LT Most Recent Page Load"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(255, 255, 158, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["max"] }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content="Unique Interaction Days">
-            <Text>Unique Interaction Days</Text>
-          </Tippy>
-        ),
-        headerClassName: "lt-data wordwrap",
-        accessor: "dateCount",
-        show: showColumns["LT Unique Interaction Days"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(255, 255, 158, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["dateCount"] }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content="Hours on Site">
-            <Text>Hours on Site</Text>
-          </Tippy>
-        ),
-        headerClassName: "lt-data wordwrap",
-        accessor: "timeStudied",
-        show: showColumns["LT Hours on Site"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(255, 255, 158, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["timeStudied"] }),
-        filterAll: true,
-      }
-    );
+    addStudentLibreTextColumns(columns, headers, column2Label, column3Label, showColumns, numMatch);
   } else if (tab === "page") {
-    headers.push(
-      { label: "Average Page Duration", key: "durationInMinutes" },
-      { label: "Average Percent Scrolled", key: "percentAvg" }
-    );
-    columns.push(
-      {
-        Header: column2Label,
-        accessor: "objectCount",
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["objectCount"] }),
-        filterAll: true,
-      },
-      {
-        Header: "Average Page Duration (minutes)",
-        accessor: "durationInMinutes",
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["durationInMinutes"] }),
-        filterAll: true,
-      },
-      {
-        Header: "Average Percent Scrolled",
-        accessor: "percentAvg",
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["percentAvg"] }),
-        filterAll: true,
-      }
-    );
+    addPageColumns(columns, headers, column2Label, numMatch);
   }
 
   if (tab === "student" && (hasAdapt || adaptCourse)) {
-    headers.push(
-      {
-        label: "ADAPT Unique Interaction Days",
-        key: "adaptUniqueInteractionDays",
-      },
-      { label: "ADAPT Unique Assignments", key: "adaptUniqueAssignments" },
-      { label: "ADAPT Most Recent Page Load", key: "mostRecentAdaptLoad" },
-      {
-        label: "ADAPT Average Percent Per Assignment",
-        key: "adaptAvgPercentScore",
-      },
-      {
-        label: "ADAPT Average Attempts Per Assignment",
-        key: "adaptAvgAttempts",
-      }
-    );
-    columns.push({
-      Header: "ADAPT",
-      getHeaderProps: (state, rowInfo, column) => {
-        return {
-          style: {
-            background: "rgb(171, 247, 177)",
-          },
-        };
-      },
-      columns: [],
-    });
-    //handling the index in case it is an adapt-only course
-    columns[ltCourse ? 2 : 1].columns.push(
-      {
-        Header: (
-          <Tippy content="Unique Interaction Days">
-            <Text>Unique Interaction Days</Text>
-          </Tippy>
-        ),
-        headerClassName: "adapt-data wordwrap",
-        accessor: "adaptUniqueInteractionDays",
-        show: showColumns["ADAPT Unique Interaction Days"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(171, 247, 177, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, {
-            keys: ["adaptUniqueInteractionDays"],
-          }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content="Unique Assignments">
-            <Text>Unique Assignments</Text>
-          </Tippy>
-        ),
-        headerClassName: "adapt-data wordwrap",
-        accessor: "adaptUniqueAssignments",
-        show: showColumns["ADAPT Unique Assignments"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(171, 247, 177, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          numMatch(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content="Most Recent Page Load">
-            <Text>Most Recent Page Load</Text>
-          </Tippy>
-        ),
-        headerClassName: "adapt-data wordwrap",
-        accessor: "mostRecentAdaptLoad",
-        show: showColumns["ADAPT Most Recent Page Load"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(171, 247, 177, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content="Average Percent Per Assignment">
-            <Text>Average Percent Per Assignment</Text>
-          </Tippy>
-        ),
-        headerClassName: "adapt-data wordwrap",
-        accessor: "adaptAvgPercentScore",
-        show: showColumns["ADAPT Average Percent Per Assignment"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(171, 247, 177, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["adaptAvgPercentScore"] }),
-        filterAll: true,
-      },
-      {
-        Header: (
-          <Tippy content="Average Attempts Per Assignment">
-            <Text>Average Attempts Per Assignment</Text>
-          </Tippy>
-        ),
-        headerClassName: "adapt-data wordwrap",
-        accessor: "adaptAvgAttempts",
-        show: showColumns["ADAPT Average Attempts Per Assignment"],
-        getProps: (state, rowInfo, column) => {
-          return {
-            style: {
-              background: "rgb(171, 247, 177, .5)",
-              tabindex: "0"
-            },
-          };
-        },
-        filterMethod: (filter, rows) =>
-          matchSorter(rows, filter.value, { keys: ["adaptAvgAttempts"] }),
-        filterAll: true,
-      }
-    );
+    addStudentAdaptColumns(columns, headers, ltCourse, showColumns, numMatch);
   }
 
   return (
@@ -517,7 +231,12 @@ export default function DataTable({
         pageSizeOptions={[10, 25, 50]}
       ></ReactTable>
       <div>
-        <CSVLink data={exportData} headers={headers} filename={filename} style={{marginLeft: "small"}}>
+        <CSVLink
+          data={exportData}
+          headers={headers}
+          filename={filename}
+          style={{ marginLeft: "small" }}
+        >
           <Download />
         </CSVLink>
       </div>

@@ -28,7 +28,8 @@ function individualGradePageViewsQuery(params, adaptCodes, dbInfo) {
       {
         "$group": {
           '_id': '$email',
-          'score': {'$first': '$assignment_percent'}
+          'score': {'$first': '$assignment_percent'},
+          'turned_in': {'$first': '$turned_in_assignment'}
         }
       }
     ]

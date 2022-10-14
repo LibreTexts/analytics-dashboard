@@ -181,6 +181,7 @@ export function getStudentChartConfig(state, setState) {
     hasAdapt: state.hasAdapt,
     adaptAxisValue: state.adaptStudentChartVal,
     tagFilter: state.chosenTag,
+    roster: state.roster
   };
 
   var config = getAxiosCall("/studentchart", data, state);

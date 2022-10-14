@@ -136,6 +136,7 @@ function App() {
     rosterFile: null,
     rosterFilterApplied: false,
     accessibilityMode: false,
+    conductorRoster: false,
     environment: "production"
   });
 

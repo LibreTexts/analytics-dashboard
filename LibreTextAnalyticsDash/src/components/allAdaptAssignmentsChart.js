@@ -22,17 +22,21 @@ export default class AllAdaptAssignmentsChart extends React.Component {
     //connecting the aggregate data to the individual data
     this.props.allData.forEach((d, index) => {
       if (this.props.data) {
-        var match = this.props.data.find((o) => o["level_name"] === d["_id"]);
+        var match = this.props.data.find((o) => o["_id"]["level_name"] === d["_id"]);
         if (match) {
           d["indivPercent"] = match["percent"];
-          d["submitted"] = moment(match["submitted"]).format(
-            "MMM Do YYYY h:mm a"
-          );
+          d["submitted"] = match["turned_in_assignment"] && match["adapt"] ?
+            moment(match["submitted"]).format(
+              "MMM Do YYYY h:mm a"
+            )
+            : match["turned_in_assignment"] === false
+            ? "Did Not Submit"
+            : "N/A";
           d["student"] = match["_id"]["student"];
           d["displayModeStudent"] = match["displayModeStudent"];
         } else {
           d["indivPercent"] = 0;
-          d["submitted"] = "N/A";
+          d["submitted"] = "Did Not Submit";
           d["student"] = student;
         }
       }
@@ -71,12 +75,12 @@ export default class AllAdaptAssignmentsChart extends React.Component {
         ];
         if (this.props.data) {
           var studentData = [
-            {
-              name: "Student",
-              value: !this.props.state.displayMode
-                ? props.payload[0].payload.student
-                : props.payload[0].payload.displayModeStudent,
-            },
+            // {
+            //   name: "Student",
+            //   value: !this.props.state.displayMode
+            //     ? props.payload[0].payload.student
+            //     : props.payload[0].payload.displayModeStudent,
+            // },
             {
               name: "Submitted",
               value: props.payload[0].payload.submitted,

@@ -386,11 +386,11 @@ app.post("/allstudents", (req, res, next) => {
       newData["documents"].forEach((d, index) => {
         var id = d._id;
         newData["documents"][index]["displayModeStudent"] = d._id;
-        newData["documents"][index]._id = helperFunctions.decryptStudent(d._id);
         if (studentEnrollment.length < 1) {
           newData["documents"][index]["isEnrolled"] = true;
         } else if (studentEnrollment.includes(id)) {
           newData["documents"][index]["isEnrolled"] = true;
+          newData["documents"][index]._id = helperFunctions.decryptStudent(d._id);
         } else {
           newData["documents"][index]["isEnrolled"] = false;
         }
@@ -652,6 +652,7 @@ app.post("/studentchart", (req, res, next) => {
       helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
     )
   );
+  var rosterEnrollment = req.body.roster;
   axios(config)
     .then(function (response) {
       let newData = response.data;
@@ -664,7 +665,17 @@ app.post("/studentchart", (req, res, next) => {
         }
         var allStudents = JSON.parse(JSON.stringify(student.students));
         student.students.forEach((s, i) => {
-          if (studentEnrollment.length > 0) {
+          if (rosterEnrollment && rosterEnrollment.length > 0) {
+            if (!rosterEnrollment.includes(s)) {
+              allStudents.find((st, n) => {
+                if (st === s) {
+                  allStudents.splice(n, 1);
+                }
+              });
+              newData["documents"][index].count =
+                newData["documents"][index].count - 1;
+            }
+          } else if (studentEnrollment.length > 0) {
             if (!studentEnrollment.includes(s)) {
               allStudents.find((st, n) => {
                 if (st === s) {
@@ -680,9 +691,11 @@ app.post("/studentchart", (req, res, next) => {
           }
         });
         var encryptedStudents = JSON.parse(JSON.stringify(allStudents));
-        allStudents.forEach((s, i) => {
-          allStudents[i] = helperFunctions.decryptStudent(s);
-        });
+        if ((studentEnrollment && studentEnrollment.length > 0) || rosterEnrollment) {
+          allStudents.forEach((s, i) => {
+            allStudents[i] = helperFunctions.decryptStudent(s);
+          });
+        }
         newData["documents"][index].students = allStudents;
         newData["documents"][index]["displayModeStudents"] = encryptedStudents;
       });
@@ -785,12 +798,12 @@ app.post("/studentassignments", (req, res, next) => {
   axios(config)
     .then(function (response) {
       let newData = response.data;
-      newData["documents"].forEach((d, index) => {
-        newData["documents"][index]["displayModeStudent"] = d["_id"]["student"];
-        newData["documents"][index]["_id"]["student"] = helperFunctions.decryptStudent(
-          d["_id"]["student"]
-        );
-      });
+      // newData["documents"].forEach((d, index) => {
+      //   newData["documents"][index]["displayModeStudent"] = d["_id"]["student"];
+      //   newData["documents"][index]["_id"]["student"] = helperFunctions.decryptStudent(
+      //     d["_id"]["student"]
+      //   );
+      // });
       newData["studentAssignments"] = newData["documents"];
       delete newData["documents"];
       newData = JSON.stringify(newData);

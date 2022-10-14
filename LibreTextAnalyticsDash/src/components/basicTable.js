@@ -1,24 +1,19 @@
 import React from "react";
-import { Button, Box, Text, Tip } from "grommet";
-import { Download } from "grommet-icons";
-import { matchSorter } from "match-sorter";
-import { CSVLink } from "react-csv";
+import { Box } from "grommet";
 import ReactTable from "react-table-6";
 import "../css/index.css";
-import Tippy from "@tippyjs/react";
-import "tippy.js/dist/tippy.css";
 
 export default function DataTable({
   data,
   gridArea,
   columnVals
 }) {
-  let reactTable = React.useRef(null);
   var columns = []
   Object.keys(columnVals).forEach((key) => {
     columns.push({
-      Header: key,
-      accessor: columnVals[key]
+      Header: <a tabIndex={0} href="/#">{key}</a>,
+      accessor: columnVals[key],
+      Cell: (val) => <a tabIndex={0} href="/#" a11ytitle={key}>{val.original[columnVals[key]]}</a>
     })
   })
 

@@ -117,8 +117,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                       options={state.adaptLevels[state.levelGroup]}
                       margin={{
                         right: "medium",
-                        left: "medium",
-                        vertical: "xsmall",
+                        vertical: "medium",
                       }}
                       value={state.levelName}
                       onChange={({ option }) =>
@@ -197,7 +196,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                       margin={{
                         right: "medium",
                         left: "medium",
-                        vertical: "xsmall",
+                        vertical: "medium",
                       }}
                       value={state.gradeLevelName}
                       onChange={({ option }) =>

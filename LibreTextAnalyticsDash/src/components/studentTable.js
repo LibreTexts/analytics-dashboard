@@ -296,7 +296,7 @@ export default class StudentTable extends React.Component {
           data={this.props.data}
           columns={columns}
           style={{ textAlign: "center", overflow: "hidden" }}
-          defaultPageSize={5}
+          defaultPageSize={this.props.hasAdapt && !this.props.ltCourse ? 6 : 8}
           gridArea="table"
           filterable={true}
         ></ReactTable>

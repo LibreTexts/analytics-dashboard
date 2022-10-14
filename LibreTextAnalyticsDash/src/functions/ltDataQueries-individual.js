@@ -42,6 +42,7 @@ export async function getStudentChartData(state, setState) {
         hasAdapt: state.hasAdapt,
         adaptAxisValue: state.adaptStudentChartVal,
         tagFilter: state.chosenTag,
+        roster: state.roster
       },
     }).then((response) => {
       courseData[adaptAxisValue + state.barXAxis + "studentChart"] = JSON.parse(

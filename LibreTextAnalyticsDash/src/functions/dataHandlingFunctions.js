@@ -194,6 +194,8 @@ export function handlePageLookup(value, tempState, courseData, allData) {
   courseData["pageData"] = pageData;
   tempState["pageData"] = pageData;
   tempState["pageLookup"] = value;
+  courseData["pageLookup"] = value;
+  allData["pageLookup"] = value;
   allData["pageData"] = pageData;
 }
 

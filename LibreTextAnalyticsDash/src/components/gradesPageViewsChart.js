@@ -43,6 +43,12 @@ export default function GradesPageView({
         binString: `${binMin} - ${binMax}%`,
       };
     }
+    dataBins[numberOfBins] = {
+      bin: "Did Not Submit",
+      Count: 0,
+      "Individual Count": 0,
+      binString: "Did Not Submit"
+    }
     // Inserting scores into bins
     var indivBins = [];
     if (individualData) {
@@ -52,8 +58,10 @@ export default function GradesPageView({
         if (i === numberOfBins) {
           i--;
         }
-        if (i < numberOfBins) {
+        if (i < numberOfBins && element.turned_in) {
           indivBins[i].Count++;
+        } else if (i < numberOfBins && !element.turned_in) {
+          indivBins[numberOfBins].Count++;
         }
       });
     }
@@ -77,6 +85,9 @@ export default function GradesPageView({
         elem["Individual Count"] = find.Count;
       }
     });
+    var notSubmitted = dataBins[numberOfBins];
+    dataBins.splice(numberOfBins, 1);
+    dataBins.splice(0, 0, notSubmitted);
   }
   var tableColumns = {"Percent": "binString", "Count": "Count"}
   if (individualData) {

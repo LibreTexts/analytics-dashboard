@@ -46,6 +46,7 @@ export default function CourseDropdown({
               width="300px"
               dropSize="medium"
               a11yTitle="Select a course"
+              initPage={initPage}
             />
             {!initPage && (
               <Button
@@ -54,7 +55,7 @@ export default function CourseDropdown({
                 color="#0047BA"
                 size="small"
                 style={{ height: "30px" }}
-                margin={{ top: "small" }}
+                margin={{ top: "30px" }}
                 onClick={() =>
                   handleClick(state, setState, "refresh", queryVariables)
                 }

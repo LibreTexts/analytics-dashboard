@@ -107,7 +107,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
         },
         {
           "$unwind": {
-            "path": "$scores"
+            "path": "$scores",
+            "preserveNullAndEmptyArrays": true
           }
         },
         {

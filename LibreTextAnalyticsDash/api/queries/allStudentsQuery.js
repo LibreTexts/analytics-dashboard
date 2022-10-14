@@ -8,7 +8,7 @@ function allStudentsQuery(params, dbInfo) {
     if (!params.ltCourse) {
       collection = dbInfo.adaptColl
       aggregationAttr = "$anon_student_id"
-      var courseMatch = '$class'
+      var courseMatch = '$course_id'
     }
     var data = {
       "collection": collection,

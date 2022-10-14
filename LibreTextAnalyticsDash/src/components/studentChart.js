@@ -55,14 +55,14 @@ export default function StudentChart({
     setActiveIndex(index);
     var data = [];
     var students = val.students;
-    while (index >= 0) {
+    //while (index >= 0) {
       students = original[index]["students"];
       students.forEach((student) => {
         let s = allData.find((o) => o._id === student);
         data.push(s);
       });
-      index = index - 1;
-    }
+    //   index = index - 1;
+    // }
     data = data.filter((element) => {
       return element !== undefined;
     });
@@ -136,7 +136,7 @@ export default function StudentChart({
                 {data.map((entry, index) => (
                   <Cell
                     cursor="pointer"
-                    fill={index <= activeIndex ? "#FFBF00" : "#0047BA"}
+                    fill={index === activeIndex ? "#FFBF00" : "#0047BA"}
                     key={`cell-${index}`}
                   />
                 ))}

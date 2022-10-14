@@ -91,14 +91,14 @@ function chapterChartQuery(params, dbInfo, encryptStudent, decryptStudent) {
         }
       })
       index = index + 1;
-      var length = data['pipeline'].length;
-      if (params.individual.includes("@")) {
-        data['pipeline'][length-2]['$addFields']['student'] = params.individual
-        data['pipeline'][length-2]['$addFields']['displayModeStudent'] = encryptStudent(params.individual)
-      } else {
-        data['pipeline'][length-2]['$addFields']['student'] = decryptStudent(params.individual)
-        data['pipeline'][length-2]['$addFields']['displayModeStudent'] = params.individual
-      }
+      // var length = data['pipeline'].length;
+      // if (params.individual.includes("@")) {
+      //   data['pipeline'][length-2]['$addFields']['student'] = params.individual
+      //   data['pipeline'][length-2]['$addFields']['displayModeStudent'] = encryptStudent(params.individual)
+      // } else {
+      //   data['pipeline'][length-2]['$addFields']['student'] = decryptStudent(params.individual)
+      //   data['pipeline'][length-2]['$addFields']['displayModeStudent'] = params.individual
+      // }
     }
     index = addFilters.splicePathFilter(index, params, data, true)
     addFilters.spliceTagFilter(index, params, data, index <= 4)
