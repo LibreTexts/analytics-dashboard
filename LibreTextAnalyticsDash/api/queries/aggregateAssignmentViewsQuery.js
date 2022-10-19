@@ -33,17 +33,22 @@ function aggregateAssignmentViewsQuery(params, dbInfo, adaptCodes) {
         {
           '$group': {
             '_id': '$date',
-            'students': {'$push': '$anon_student_id'}
+            'questions': {'$push': '$question_id'},
+            'uniqueAssignments': {'$addToSet': '$assignment_name'},
+            'uniqueQuestions': {'$addToSet': '$question_id'},
+            'uniqueStudents': {'$addToSet': '$anon_student_id'}
           }
         },
         {
           '$addFields': {
-            'count': {'$size': '$students'},
+            'count': {'$size': '$questions'},
+            'assignmentCount': {'$size': '$uniqueAssignments'},
+            'studentCount': {'$size': '$uniqueStudents'},
             'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]},
           }
         },
         {
-          '$unset': 'students'
+          '$unset': ['questions', 'uniqueStudents']
         },
         {
           "$sort": {"_id": 1}

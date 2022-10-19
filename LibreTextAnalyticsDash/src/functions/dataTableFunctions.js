@@ -152,7 +152,8 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
     {
       label: "ADAPT Average Attempts Per Assignment",
       key: "adaptAvgAttempts",
-    }
+    },
+    { label: "ADAPT Class Percentile", key: "percentile" }
   );
   columns.push({
     Header: (props) => <a href="/#" tabIndex={0}>{"ADAPT"}</a>,
@@ -285,6 +286,28 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
       Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="Adapt Average Attempts Per Assignment">{val.original["adaptAvgAttempts"]}</a>,
       filterMethod: (filter, rows) =>
         matchSorter(rows, filter.value, { keys: ["adaptAvgAttempts"] }),
+      filterAll: true,
+    },
+    {
+      Header: (
+        <Tippy content="ADAPT Class Percentile">
+          <a href="/#" tabIndex={0}>{<Text>ADAPT Class Percentile</Text>}</a>
+        </Tippy>
+      ),
+      headerClassName: "adapt-data wordwrap",
+      accessor: "percentile",
+      show: showColumns["ADAPT Class Percentile"],
+      getProps: (state, rowInfo, column) => {
+        return {
+          style: {
+            background: "rgb(171, 247, 177, .5)",
+            tabindex: "0",
+          },
+        };
+      },
+      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="ADAPT Class Percentile">{val.original["percentile"]}</a>,
+      filterMethod: (filter, rows) =>
+        matchSorter(rows, filter.value, { keys: ["percentile"] }),
       filterAll: true,
     }
   );

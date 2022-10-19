@@ -652,20 +652,23 @@ app.post("/studentchart", (req, res, next) => {
       helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
     )
   );
-  var rosterEnrollment = req.body.roster;
+  var rosterEnrollment = null;
+  if (req.body.roster) {
+    rosterEnrollment = req.body.roster.map(s => helperFunctions.encryptStudent(s));
+  }
   axios(config)
     .then(function (response) {
       let newData = response.data;
       //newData["documents"].map(o => console.log(o.students))
       //console.log(newData)
       var hasMaxPage = false;
-      newData["documents"].forEach((student, index) => {
-        if (groupBy === "objectCount" && student._id === maxPageCount) {
+      newData["documents"].forEach((entry, index) => {
+        if (groupBy === "objectCount" && entry._id === maxPageCount) {
           hasMaxPage = true;
         }
-        var allStudents = JSON.parse(JSON.stringify(student.students));
-        student.students.forEach((s, i) => {
-          if (rosterEnrollment && rosterEnrollment.length > 0) {
+        var allStudents = JSON.parse(JSON.stringify(entry.students));
+        if (rosterEnrollment && rosterEnrollment.length > 0) {
+          entry.students.forEach((s, i) => {
             if (!rosterEnrollment.includes(s)) {
               allStudents.find((st, n) => {
                 if (st === s) {
@@ -675,21 +678,21 @@ app.post("/studentchart", (req, res, next) => {
               newData["documents"][index].count =
                 newData["documents"][index].count - 1;
             }
-          } else if (studentEnrollment.length > 0) {
+          })
+        } else if (studentEnrollment && studentEnrollment.length > 0) {
+          entry.students.forEach((s, i) => {
             if (!studentEnrollment.includes(s)) {
-              allStudents.find((st, n) => {
-                if (st === s) {
-                  allStudents.splice(n, 1);
-                }
-              });
-              newData["documents"][index].count =
-                newData["documents"][index].count - 1;
-            }
-            // else {
-            //   newData['documents'][index].students[i] = helperFunctions.decryptStudent(s)
-            // }
-          }
-        });
+             allStudents.find((st, n) => {
+               if (st === s) {
+                 allStudents.splice(n, 1);
+               }
+             });
+             newData["documents"][index].count =
+               newData["documents"][index].count - 1;
+           }
+          })
+        }
+        //});
         var encryptedStudents = JSON.parse(JSON.stringify(allStudents));
         if ((studentEnrollment && studentEnrollment.length > 0) || rosterEnrollment) {
           allStudents.forEach((s, i) => {

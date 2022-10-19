@@ -1,9 +1,7 @@
 import { Grid, Box, Spinner } from "grommet";
 import AllAdaptAssignmentsChart from "./allAdaptAssignmentsChart.js";
 import infoText from "./allInfoText.js";
-import {
-  getFilteredChartData
-} from "../functions/dataFetchingFunctions.js";
+import { getFilteredChartData } from "../functions/dataFetchingFunctions.js";
 import { getIndividualAssignmentSubmissions } from "../functions/adaptDataQueries.js";
 import DataTable from "./dataTable.js";
 import DataToCSV from "./dataToCSV.js";
@@ -21,8 +19,15 @@ import {
 } from "../functions/helperFunctions.js";
 import InfoBox from "./infoBox.js";
 import LayeredComponent from "./layeredComponent.js";
-import { getPageViewConfig, getAssignmentSubmissionsConfig } from "../functions/ltDataQueries.js";
-import { getStudentChartData, getStudentTextbookEngagementData } from "../functions/ltDataQueries-individual.js";
+import {
+  getPageViewConfig,
+  getAssignmentSubmissionsConfig,
+} from "../functions/ltDataQueries.js";
+import {
+  getStudentChartData,
+  getStudentTextbookEngagementData,
+  studentChartAxiosCall,
+} from "../functions/ltDataQueries-individual.js";
 import StudentChart from "./studentChart.js";
 import StudentTextbookEngagementChart from "./studentTextbookEngagementChart.js";
 import PageViewsChart from "./pageViewsChart.js";
@@ -46,7 +51,13 @@ export default function StudentView({ state, setState, queryVariables }) {
         />
       )}
       <Grid
-        height={state.ltCourse && state.adaptCourse ? "3230px" : state.ltCourse && !state.adaptCourse ? "1900px" : "2500px"}
+        height={
+          state.ltCourse && state.adaptCourse
+            ? "3230px"
+            : state.ltCourse && !state.adaptCourse
+            ? "1900px"
+            : "2500px"
+        }
         rows={reactRows(state)}
         columns={["19%", "79%"]}
         gap="small"
@@ -121,9 +132,28 @@ export default function StudentView({ state, setState, queryVariables }) {
                 filterOptions={getStudentChartFilters(state)}
                 filterSelectLabel="Data:"
                 filterFunction={changeBarXAxis}
-                clickFunction={getStudentChartData}
+                clickFunction={getFilteredChartData}
+                clickFunctionAttributes={{
+                  aggregateFunction: studentChartAxiosCall,
+                  individualFunction: null,
+                  key: "studentChart",
+                  isConfig: false,
+                  individual: null,
+                }}
                 type="barXAxisLabel"
                 axisType="barXAxisLabel"
+                downloadComponent={
+                  <DataToCSV
+                    data={state.studentChart}
+                    filename={state.barXAxisLabel + "-studentChart.csv"}
+                    headers={[
+                      { label: state.barXAxisLabel, key: "_id" },
+                      { label: "Students", key: "students" },
+                      { label: "Count", key: "count" },
+                    ]}
+                    separator="; "
+                  />
+                }
               />
             )}
             {queryVariables.click &&
@@ -167,9 +197,13 @@ export default function StudentView({ state, setState, queryVariables }) {
                   downloadComponent={
                     <DataToCSV
                       data={
-                        state.student
-                          ? state.studentAssignments
-                          : state.allAdaptAssignments
+                        state.student && state.studentAssignments
+                          ? state.studentAssignments.filter(
+                              (o) => o.due !== "Not Found"
+                            )
+                          : state.allAdaptAssignments.filter(
+                              (o) => o.due !== "Not Found"
+                            )
                       }
                       filename={
                         state.student
@@ -179,11 +213,12 @@ export default function StudentView({ state, setState, queryVariables }) {
                       headers={
                         state.student
                           ? [
-                              { label: "Level/Assignment", key: "level_name" },
+                              {
+                                label: "Level/Assignment",
+                                key: "_id.level_name",
+                              },
                               { label: "Due Date", key: "due" },
                               { label: "Submitted", key: "submitted" },
-                              { label: "Points Possible", key: "levelpoints" },
-                              { label: "Points Earned", key: "Sum" },
                               { label: "Percent Score", key: "percent" },
                             ]
                           : [
@@ -199,135 +234,169 @@ export default function StudentView({ state, setState, queryVariables }) {
                   }
                 />
               )}
-            {state.pageData && queryVariables.click && state.display && state.ltCourse && (
-              <LayeredComponent
-                gridArea="studentTextbookEngagement"
-                queryVariables={queryVariables}
-                title="Textbook Activity"
-                selectedInfoText={
-                  infoText.aggregatePageViewsChart1 +
-                  infoText.studentTextbookEngagement +
-                  state.courseName +
-                  infoText.aggregatePageViewsChart2
-                }
-                filterLabel="Bar Chart Display Filters"
-                state={state}
-                setState={setState}
-                loading={infoText.loadingMessage}
-                component={
-                  <StudentTextbookEngagementChart
-                    data={state.aggregateTextbookEngagement}
-                    individualData={state.textbookEngagementData}
-                    type="aggregateStudent"
-                    xaxis="_id"
-                    yaxis="count"
-                    binLabel={state.individualStudentBinLabel}
-                    width={980}
-                    student={state.studentForTextbookEngagement}
-                    accessibilityMode={state.accessibilityMode}
-                  />
-                }
-                data={state.aggregateTextbookEngagement}
-                label={state.individualStudentBinLabel}
-                filterOptions={["Day", "Week", "2 Weeks", "Month"]}
-                filterSelectLabel="Unit of Time:"
-                filterFunction={changeBinVal}
-                clickFunction={getFilteredChartData}
-                clickFunctionAttributes={{
-                  aggregateFunction: getPageViewConfig,
-                  individualFunction: getStudentTextbookEngagementData,
-                  key: "aggregateTextbookEngagement",
-                  isConfig: true,
-                  individual: state.student,
-                  bin: state.individualStudentBin,
-                  unit: state.individualStudentUnit
-                }}
-                type="textbookEngagement"
-                axisType="binLabel"
-                downloadComponent={
-                  <DataToCSV
-                    data={
-                      state.textbookEngagementData
-                        ? state.textbookEngagementData
-                        : state.pageViews
-                    }
-                    filename={
-                      state.textbookEngagementData
-                        ? state.studentForTextbookEngagement +
-                          "-individual-page-views.csv"
-                        : "aggregate-page-views.csv"
-                    }
-                    headers={[
-                      { label: "Date", key: "dateString" },
-                      { label: "Number of Views", key: "count" },
-                      {
-                        label: "Number of Unique Pages",
-                        key: "uniquePageCount",
-                      },
-                    ]}
-                  />
-                }
-              />
-            )}
-            {state.aggregateAssignmentViews && (state.hasAdapt || state.adaptCourse) && (
-              <LayeredComponent
-                gridArea="studentAdaptEngagement"
-                queryVariables={queryVariables}
-                disable={state.disableAssignment}
-                loading={infoText.loadingMessage}
-                title="ADAPT Engagement"
-                selectedInfoText={infoText.individualAssignmentsChart}
-                filterLabel="Bar Chart Display Filters"
-                state={state}
-                setState={setState}
-                component={
-                  <PageViewsChart
-                    data={state.aggregateAdaptEngagement}
-                    individualData={state.individualAssignmentSubmissions}
-                    state={state}
-                    type="individualStudent"
-                    xaxis="_id"
-                    yaxis="count"
-                    binLabel={state.individualAdaptEngagementBinLabel}
-                    width={980}
-                    height={500}
-                    accessibilityMode={state.accessibilityMode}
-                  />
-                }
-                data={state.aggregateAdaptEngagement}
-                label={state.individualAdaptEngagementBinLabel}
-                filterOptions={["Day", "Week", "2 Weeks", "Month"]}
-                filterSelectLabel="Unit of Time:"
-                filterFunction={changeBinVal}
-                clickFunction={getFilteredChartData}
-                clickFunctionAttributes={{
-                  aggregateFunction: getAssignmentSubmissionsConfig,
-                  individualFunction: getIndividualAssignmentSubmissions,
-                  key: "aggregateAdaptEngagement",
-                  isConfig: true,
-                  individual: state.student,
-                  bin: state.individualAdaptEngagmentBin,
-                  unit: state.individualAdaptEngagementUnit
-                }}
-                type="adaptEngagement"
-                axisType="individualAdaptEngagementBinLabel"
-                topMargin="large"
-                downloadComponent={
-                  <DataToCSV
-                    data={state.individualAssignmentSubmissions}
-                    filename={state.student + "-submissions.csv"}
-                    headers={[
-                      { label: "Date", key: "dateString" },
-                      { label: "Number of Views", key: "count" },
-                      {
-                        label: "Number of Unique Students",
-                        key: "uniqueStudents.length",
-                      },
-                    ]}
-                  />
-                }
-              />
-            )}
+            {state.pageData &&
+              queryVariables.click &&
+              state.display &&
+              state.ltCourse && (
+                <LayeredComponent
+                  gridArea="studentTextbookEngagement"
+                  queryVariables={queryVariables}
+                  title="Textbook Activity"
+                  selectedInfoText={
+                    infoText.aggregatePageViewsChart1 +
+                    infoText.studentTextbookEngagement +
+                    state.courseName +
+                    infoText.aggregatePageViewsChart2
+                  }
+                  filterLabel="Bar Chart Display Filters"
+                  state={state}
+                  setState={setState}
+                  loading={infoText.loadingMessage}
+                  component={
+                    <StudentTextbookEngagementChart
+                      data={state.aggregateTextbookEngagement}
+                      individualData={state.textbookEngagementData}
+                      type="aggregateStudent"
+                      xaxis="_id"
+                      yaxis="count"
+                      binLabel={state.individualStudentBinLabel}
+                      width={980}
+                      student={state.studentForTextbookEngagement}
+                      accessibilityMode={state.accessibilityMode}
+                    />
+                  }
+                  data={state.aggregateTextbookEngagement}
+                  label={state.individualStudentBinLabel}
+                  filterOptions={["Day", "Week", "2 Weeks", "Month"]}
+                  filterSelectLabel="Unit of Time:"
+                  filterFunction={changeBinVal}
+                  clickFunction={getFilteredChartData}
+                  clickFunctionAttributes={{
+                    aggregateFunction: getPageViewConfig,
+                    individualFunction: getStudentTextbookEngagementData,
+                    key: "aggregateTextbookEngagement",
+                    isConfig: true,
+                    individual: state.student,
+                    bin: state.individualStudentBin,
+                    unit: state.individualStudentUnit,
+                  }}
+                  type="textbookEngagement"
+                  axisType="binLabel"
+                  downloadComponent={
+                    <DataToCSV
+                      data={
+                        state.textbookEngagementData
+                          ? state.textbookEngagementData
+                          : state.pageViews
+                      }
+                      filename={
+                        state.textbookEngagementData
+                          ? state.student + "-individual-page-views.csv"
+                          : "aggregate-page-views.csv"
+                      }
+                      headers={[
+                        { label: "Date", key: "dateString" },
+                        { label: "Number of Views", key: "count" },
+                        {
+                          label: "Number of Unique Pages",
+                          key: "uniquePageCount",
+                        },
+                      ]}
+                    />
+                  }
+                />
+              )}
+            {state.aggregateAssignmentViews &&
+              (state.hasAdapt || state.adaptCourse) && (
+                <LayeredComponent
+                  gridArea="studentAdaptEngagement"
+                  queryVariables={queryVariables}
+                  disable={state.disableAssignment}
+                  loading={infoText.loadingMessage}
+                  title="ADAPT Engagement"
+                  selectedInfoText={infoText.individualAssignmentsChart}
+                  filterLabel="Bar Chart Display Filters"
+                  state={state}
+                  setState={setState}
+                  component={
+                    <PageViewsChart
+                      data={state.aggregateAdaptEngagement}
+                      individualData={state.individualAssignmentSubmissions}
+                      state={state}
+                      type="individualStudent"
+                      xaxis="_id"
+                      yaxis="count"
+                      binLabel={state.individualAdaptEngagementBinLabel}
+                      width={980}
+                      height={500}
+                      accessibilityMode={state.accessibilityMode}
+                    />
+                  }
+                  data={state.aggregateAdaptEngagement}
+                  label={state.individualAdaptEngagementBinLabel}
+                  filterOptions={["Day", "Week", "2 Weeks", "Month"]}
+                  filterSelectLabel="Unit of Time:"
+                  filterFunction={changeBinVal}
+                  clickFunction={getFilteredChartData}
+                  clickFunctionAttributes={{
+                    aggregateFunction: getAssignmentSubmissionsConfig,
+                    individualFunction: getIndividualAssignmentSubmissions,
+                    key: "aggregateAdaptEngagement",
+                    isConfig: true,
+                    individual: state.student,
+                    bin: state.individualAdaptEngagmentBin,
+                    unit: state.individualAdaptEngagementUnit,
+                  }}
+                  type="adaptEngagement"
+                  axisType="individualAdaptEngagementBinLabel"
+                  topMargin="large"
+                  downloadComponent={
+                    <DataToCSV
+                      data={
+                        state.individualAssignmentSubmissions
+                          ? state.individualAssignmentSubmissions
+                          : state.aggregateAdaptEngagement
+                      }
+                      filename={
+                        state.individualAssignmentSubmissions
+                          ? state.student + "-submissions.csv"
+                          : "aggregate-assignment-submissions.csv"
+                      }
+                      headers={
+                        state.individualAssignmentSubmissions
+                          ? [
+                              { label: "Date", key: "dateString" },
+                              { label: "Number of Submissions", key: "count" },
+                              {
+                                label: "Number of Unique Assignments",
+                                key: "assignmentCount",
+                              },
+                              {
+                                label: "Number of Unique Questions",
+                                key: "uniqueQuestions.length",
+                              },
+                            ]
+                          : [
+                              { label: "Date", key: "dateString" },
+                              { label: "Number of Submissions", key: "count" },
+                              {
+                                label: "Number of Unique Assignments",
+                                key: "assignmentCount",
+                              },
+                              {
+                                label: "Number of Unique Questions",
+                                key: "uniqueQuestions.length",
+                              },
+                              {
+                                label: "Number of Students",
+                                key: "studentCount",
+                              },
+                            ]
+                      }
+                    />
+                  }
+                />
+              )}
           </>
         )}
       </Grid>

@@ -220,6 +220,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                           key: "uniqueViewCount",
                         },
                       ]}
+                      type="chapterData"
                     />
                   }
                 />

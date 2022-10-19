@@ -265,52 +265,28 @@ export default function LayeredComponent({
             </Box>
           )}
         </Box>
-        <Box
-          gridArea="plot"
-          justify="center"
-          direction="row"
-          overflowY="scroll"
-          responsive={true}
-          border={false}
-          height={chartHeight}
-        >
-          {data && type !== "chapterData" && (
-            <Button
-              alignSelf="start"
-              secondary
-              onClick={() => setShowFilter(true)}
-              icon={<Filter />}
-              margin={{ top: "small", left: "small" }}
-            />
-          )}
-          {showFilter && (
-            <Layer
-              onEsc={() =>
-                closeFilter(
-                  state,
-                  setShowFilter,
-                  axisLabel,
-                  filterFunction,
-                  click,
-                  type
-                )
-              }
-              onClickOutside={() =>
-                closeFilter(
-                  state,
-                  setShowFilter,
-                  axisLabel,
-                  filterFunction,
-                  click,
-                  type
-                )
-              }
-              position="left"
-              margin={{ left: "large" }}
-            >
+        <Box direction="column">
+          <Box
+            gridArea="plot"
+            justify="center"
+            direction="row"
+            overflowY="scroll"
+            responsive={true}
+            border={false}
+            height={chartHeight}
+          >
+            {data && type !== "chapterData" && (
               <Button
-                icon={<Close />}
-                onClick={() =>
+                alignSelf="start"
+                secondary
+                onClick={() => setShowFilter(true)}
+                icon={<Filter />}
+                margin={{ top: "small", left: "small" }}
+              />
+            )}
+            {showFilter && (
+              <Layer
+                onEsc={() =>
                   closeFilter(
                     state,
                     setShowFilter,
@@ -320,96 +296,122 @@ export default function LayeredComponent({
                     type
                   )
                 }
-              />
-              <Box direction="column" alignSelf="center" margin="large">
-                <Text size="medium" weight="bold" textAlign="center">
-                  {filterLabel}
-                </Text>
-                {filterType === "dropdown" && (
-                  <>
-                    <Text>{filterSelectLabel}</Text>
-                    <Select
-                      options={filterOptions}
-                      margin={{
-                        right: "medium",
-                        left: "medium",
-                      }}
-                      value={label}
-                      onChange={({ option }) =>
-                        changeOptions(
-                          option,
+                onClickOutside={() =>
+                  closeFilter(
+                    state,
+                    setShowFilter,
+                    axisLabel,
+                    filterFunction,
+                    click,
+                    type
+                  )
+                }
+                position="left"
+                margin={{ left: "large" }}
+              >
+                <Button
+                  icon={<Close />}
+                  onClick={() =>
+                    closeFilter(
+                      state,
+                      setShowFilter,
+                      axisLabel,
+                      filterFunction,
+                      click,
+                      type
+                    )
+                  }
+                />
+                <Box direction="column" alignSelf="center" margin="large">
+                  <Text size="medium" weight="bold" textAlign="center">
+                    {filterLabel}
+                  </Text>
+                  {filterType === "dropdown" && (
+                    <>
+                      <Text>{filterSelectLabel}</Text>
+                      <Select
+                        options={filterOptions}
+                        margin={{
+                          right: "medium",
+                          left: "medium",
+                        }}
+                        value={label}
+                        onChange={({ option }) =>
+                          changeOptions(
+                            option,
+                            state,
+                            setState,
+                            type,
+                            data,
+                            setDisableFilter,
+                            setClick
+                          )
+                        }
+                      />
+                    </>
+                  )}
+                  {filterType === "slider" && (
+                    <>
+                      <Text>
+                        {filterSelectLabel} {label}
+                      </Text>
+                      <RangeInput
+                        min={filterOptions[0]}
+                        max={filterOptions[1].length}
+                        margin={{ right: "medium", left: "medium" }}
+                        value={label}
+                        onChange={(event) =>
+                          changeOptions(
+                            "",
+                            state,
+                            setState,
+                            type,
+                            data,
+                            setDisableFilter,
+                            setClick,
+                            event
+                          )
+                        }
+                      />
+                    </>
+                  )}
+                  {type !== "studentAssignments" && (
+                    <Button
+                      primary
+                      label="Apply"
+                      disabled={disableFilter}
+                      onClick={() =>
+                        apply(
                           state,
                           setState,
                           type,
-                          data,
-                          setDisableFilter,
-                          setClick
-                        )
-                      }
-                    />
-                  </>
-                )}
-                {filterType === "slider" && (
-                  <>
-                    <Text>
-                      {filterSelectLabel} {label}
-                    </Text>
-                    <RangeInput
-                      min={filterOptions[0]}
-                      max={filterOptions[1].length}
-                      margin={{ right: "medium", left: "medium" }}
-                      value={label}
-                      onChange={(event) =>
-                        changeOptions(
-                          "",
-                          state,
-                          setState,
-                          type,
+                          axisType,
                           data,
                           setDisableFilter,
                           setClick,
-                          event
+                          clickFunctionAttributes
                         )
                       }
+                      margin="large"
                     />
-                  </>
-                )}
-                {type !== "studentAssignments" && (
-                  <Button
-                    primary
-                    label="Apply"
-                    disabled={disableFilter}
-                    onClick={() =>
-                      apply(
-                        state,
-                        setState,
-                        type,
-                        axisType,
-                        data,
-                        setDisableFilter,
-                        setClick,
-                        clickFunctionAttributes
-                      )
-                    }
-                    margin="large"
+                  )}
+                </Box>
+              </Layer>
+            )}
+            {optionalLoadingTest && disableButton && !data && (
+              <InfoBox infoText={loading} showIcon={true} icon={<Spinner />} />
+            )}
+            {data && data.length > 0
+              ? component
+              : data &&
+                disableButton && (
+                  <InfoBox
+                    infoText={infoText.noDataMessage}
+                    count={queryVariables.count}
+                    setCount={queryVariables.setCount}
                   />
                 )}
-              </Box>
-            </Layer>
-          )}
-          {optionalLoadingTest && disableButton && !data && (
-            <InfoBox infoText={loading} showIcon={true} icon={<Spinner />} />
-          )}
-          {data && data.length > 0
-            ? component
-            : data &&
-              disableButton && (
-                <InfoBox
-                  infoText={infoText.noDataMessage}
-                  count={queryVariables.count}
-                  setCount={queryVariables.setCount}
-                />
-              )}
+          </Box>
           {downloadComponent}
         </Box>
       </Grid>

@@ -101,37 +101,9 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               axisType="individualAssignmentBinLabel"
               optionalLoadingTest={state.levelName}
               topMargin="large"
-              selectComponent={
-                <SelectWithApply
-                  selectOptions={Object.keys(state.adaptLevels)}
-                  value={state.levelGroup}
-                  dropdownFunction={handleChange}
-                  clickFunction={handleIndividual}
-                  queryVariables={queryVariables}
-                  state={state}
-                  setState={setState}
-                  type="pageLevelGroup"
-                  disable={state.disableAssignment}
-                  optionalSelect={
-                    <Select
-                      options={state.adaptLevels[state.levelGroup]}
-                      margin={{
-                        right: "medium",
-                        vertical: "medium",
-                      }}
-                      value={state.levelName}
-                      onChange={({ option }) =>
-                        handleChange("pageLevelName", option, state, setState)
-                      }
-                    />
-                  }
-                  renderSelect={state.levelGroup}
-                  selectLabel="Choose an ADAPT assignment:"
-                />
-              }
               downloadComponent={
                 <DataToCSV
-                  data={state.individualAssignmentViews}
+                  data={state.aggregateAssignmentViews}
                   filename={
                     state.levelGroup + "-" + state.levelName + "-views.csv"
                   }
@@ -179,43 +151,9 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               axisType="sliderValue"
               optionalLoadingTest={state.gradeLevelName}
               topMargin="large"
-              selectComponent={
-                <SelectWithApply
-                  selectOptions={Object.keys(state.adaptLevels)}
-                  value={state.gradeLevelGroup}
-                  dropdownFunction={handleChange}
-                  clickFunction={handleGrade}
-                  queryVariables={queryVariables}
-                  state={state}
-                  setState={setState}
-                  type="gradesPageLevelGroup"
-                  disable={state.disableGradesAssignment}
-                  optionalSelect={
-                    <Select
-                      options={state.adaptLevels[state.gradeLevelGroup]}
-                      margin={{
-                        right: "medium",
-                        left: "medium",
-                        vertical: "medium",
-                      }}
-                      value={state.gradeLevelName}
-                      onChange={({ option }) =>
-                        handleChange(
-                          "gradesPageLevelName",
-                          option,
-                          state,
-                          setState
-                        )
-                      }
-                    />
-                  }
-                  renderSelect={state.gradeLevelGroup}
-                  selectLabel="Choose an ADAPT assignment:"
-                />
-              }
               downloadComponent={
                 <DataToCSV
-                  data={state.gradesPageView}
+                  data={state.allAssignmentGrades}
                   filename={
                     state.gradeLevelGroup +
                     "-" +

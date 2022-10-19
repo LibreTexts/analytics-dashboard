@@ -19,6 +19,8 @@ import {
   getIndividualPageViewData,
   getMetaTags,
   getStudentTextbookEngagementData,
+  getGradesByAssignment,
+  getSubmissionsByAssignment
 } from "./ltDataQueries-individual.js";
 import { writeToLocalStorage } from "./helperFunctions.js";
 import axios from "axios";
@@ -36,11 +38,9 @@ export async function handleClick(
   if (queryVariables) {
     queryVariables.setClick(true);
   }
-  console.log("handle click function", state.courseId)
   //sets state to what it needs to be depending on whether it's a first click or a refresh
   //generally sets the data to null so if the data is not pulled it won't use the data from the last course
   if (state.courseId) {
-    console.log("here")
     var tempState = JSON.parse(JSON.stringify(state));
     //if it isn't applying filters (course apply, filter or course reset)
     if (!isFilter) {
@@ -113,7 +113,6 @@ export async function handleClick(
         };
       }
     } else {
-      console.log("here instead")
       tempState = {
         ...tempState,
         openFilter: false,
@@ -142,7 +141,7 @@ export async function handleClick(
         tempState["chosenPath"] = JSON.stringify(path);
       }
     }
-    console.log("here")
+
     setState(tempState);
     var courseData = {};
     if (Object.keys(localStorage).includes(state.courseId + "-table")) {
@@ -164,7 +163,6 @@ export async function handleClick(
     // - user hit refresh in header or reset button in filters
     //
     // Otherwise pull course data from local storage
-    console.log(courseData, type, isFilter)
     if (
       !courseData ||
       Object.keys(courseData).length < 1 ||
@@ -173,7 +171,6 @@ export async function handleClick(
       isFilter ||
       type === "filterReset"
     ) {
-      console.log("getting data")
       var configs = []; // holds a bundle of requests to be run by getData
       configs.push(getAllDataConfig(tempState, setState, "student"));
       if (state.ltCourse) {
@@ -226,7 +223,6 @@ export async function handleClick(
         localStorage.setItem(state.courseId + "-filters", JSON.stringify({}));
       }
     } else {
-      console.log("pulling from local storage")
       getDataFromLocalStorage(state.courseId + "-table", tempState);
       getDataFromLocalStorage(state.courseId + "-chart", tempState);
       getDataFromLocalStorage(state.courseId + "-dropdown", tempState);
@@ -239,7 +235,6 @@ export async function handleClick(
   } else {
     alert("Please choose a course.");
   }
-  console.log("reached the end of the function 2")
 }
 
 function getDataFromLocalStorage(course, tempState) {
@@ -394,6 +389,55 @@ export function getIndividualStudentData(state, setState, type) {
     setState({
       ...tempState,
       disableStudent: true,
+    });
+  }
+}
+
+export function getIndividualAssignmentData(state, setState, type) {
+  setState({
+    ...state,
+    disableAssignment: true,
+  });
+  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
+  var tempState = JSON.parse(JSON.stringify(state));
+  if (!Object.keys(courseData).includes(state.levelGroup+state.levelName)) {
+    var request1 = getSubmissionsByAssignment(tempState, setState);
+    var request2 = getGradesByAssignment(tempState, setState);
+    axios
+      .all([request1, request2])
+      .then(
+        axios.spread((...responses) => {
+          const responseOne = JSON.parse(responses[0].data);
+          const responseTwo = JSON.parse(responses[1].data);
+          var key1 = Object.keys(responseOne)[0];
+          var val1 = Object.values(responseOne)[0];
+          var key2 = Object.keys(responseTwo)[0];
+          var val2 = Object.values(responseTwo)[0];
+
+          tempState[key1] = val1;
+          tempState["gradesPageView"] = val2;
+          var d = {};
+          d[key1] = val1;
+          d["gradesPageView"] = val2;
+          courseData[state.levelGroup+state.levelName] = d;
+          writeToLocalStorage(state.courseId + "-chart", courseData);
+          setState({
+            ...tempState,
+            disableAssignment: true,
+          });
+        })
+      )
+      .catch((errors) => {
+        console.log(errors);
+      });
+  } else {
+    var data = courseData[state.levelGroup+state.levelName];
+    Object.keys(data).forEach((key) => {
+      tempState[key] = data[key];
+    });
+    setState({
+      ...tempState,
+      disableAssignment: true,
     });
   }
 }

@@ -3,6 +3,7 @@
 
 //creates the data table column values to show or hide
 export function handleStudentData(key, value, tempState, courseData, allData) {
+  percentile(value)
   if (tempState.adaptCourse && tempState.ltCourse) {
     tempState["hasAdapt"] = true;
     courseData["hasAdapt"] = true;
@@ -18,7 +19,8 @@ export function handleStudentData(key, value, tempState, courseData, allData) {
       "ADAPT Unique Assignments": true,
       "ADAPT Most Recent Page Load": true,
       "ADAPT Average Percent Per Assignment": true,
-      "ADAPT Average Attempts Per Assignment": true,
+      "ADAPT Average Attempts Per Assignment": false,
+      "ADAPT Class Percentile": true
     };
   } else if (tempState.adaptCourse && !tempState.ltCourse) {
     tempState["hasAdapt"] = true;
@@ -30,7 +32,8 @@ export function handleStudentData(key, value, tempState, courseData, allData) {
       "ADAPT Unique Assignments": true,
       "ADAPT Most Recent Page Load": true,
       "ADAPT Average Percent Per Assignment": true,
-      "ADAPT Average Attempts Per Assignment": true,
+      "ADAPT Average Attempts Per Assignment": false,
+      "ADAPT Class Percentile": true
     };
   } else {
     columns = {
@@ -102,7 +105,12 @@ export function handlePageTimelineData(value, tempState, courseData, allData) {
   courseData["allPageIds"] = pageIds;
 }
 
-export function handleAggregateAssignmentViews(value, tempState, courseData, allData) {
+export function handleAggregateAssignmentViews(
+  value,
+  tempState,
+  courseData,
+  allData
+) {
   tempState["aggregateAssignmentViews"] = value;
   tempState["aggregateAdaptEngagement"] = value;
   courseData["aggregateAssignmentViews"] = value;
@@ -139,37 +147,47 @@ export function handleChapters(value, tempState, courseData, allData) {
   allData["allChapters"] = courseStructure;
 }
 
-export function handleChapterChart(value, tempState, courseData, allData, stateName="aggregateChapterData", individual=false) {
+export function handleChapterChart(
+  value,
+  tempState,
+  courseData,
+  allData,
+  stateName = "aggregateChapterData",
+  individual = false
+) {
   var chapterData = tempState[stateName];
   var pages = tempState["pageLookup"];
   var binData = [];
   var chapterNames = [];
   chapterData.forEach((page, index) => {
-    var pageInfo = pages.find(v => v._id === page._id);
+    var pageInfo = pages.find((v) => v._id === page._id);
     if (pageInfo) {
-      chapterData[index]['chapter'] = pageInfo.chapter;
-      if (!chapterNames.includes(pageInfo.chapter) && pageInfo.chapter !== null) {
+      chapterData[index]["chapter"] = pageInfo.chapter;
+      if (
+        !chapterNames.includes(pageInfo.chapter) &&
+        pageInfo.chapter !== null
+      ) {
         chapterNames.push(pageInfo.chapter);
       }
     } else {
-      chapterData[index]['chapter'] = null;
+      chapterData[index]["chapter"] = null;
     }
-  })
+  });
   chapterNames.forEach((chapter, index) => {
-    var data = chapterData.filter(p => p.chapter === chapter);
+    var data = chapterData.filter((p) => p.chapter === chapter);
     var views = 0;
     var uniqueViews = 0;
     //console.log("data", data)
     data.forEach((d, i) => {
       views = views + d.viewCount;
       uniqueViews = uniqueViews + d.uniqueViewCount;
-    })
+    });
     binData.push({
       _id: chapter,
       viewCount: views,
-      uniqueViewCount: uniqueViews
-    })
-  })
+      uniqueViewCount: uniqueViews,
+    });
+  });
   tempState[stateName] = binData;
   if (!individual) {
     courseData[stateName] = binData;
@@ -178,19 +196,19 @@ export function handleChapterChart(value, tempState, courseData, allData, stateN
 }
 
 export function handlePageLookup(value, tempState, courseData, allData) {
-  var pageData = tempState['pageData'];
+  var pageData = tempState["pageData"];
   pageData.forEach((page, index) => {
-    var pageInfo = value.find(v => v._id === page._id);
+    var pageInfo = value.find((v) => v._id === page._id);
     //console.log(pageInfo)
     if (pageInfo) {
-      pageData[index]['pageTitle'] = pageInfo['pageTitle'];
-      pageData[index]['pageURL'] = pageInfo['pageURL'];
+      pageData[index]["pageTitle"] = pageInfo["pageTitle"];
+      pageData[index]["pageURL"] = pageInfo["pageURL"];
     } else {
-      pageData[index]['pageTitle'] = null;
-      pageData[index]['pageURL'] = null;
+      pageData[index]["pageTitle"] = null;
+      pageData[index]["pageURL"] = null;
     }
-  })
-  pageData = pageData.filter(p => p.pageTitle !== null);
+  });
+  pageData = pageData.filter((p) => p.pageTitle !== null);
   courseData["pageData"] = pageData;
   tempState["pageData"] = pageData;
   tempState["pageLookup"] = value;
@@ -222,4 +240,20 @@ function calculateCourseStructure(data) {
   });
 
   return chapter;
+}
+
+function percentile(studentData) {
+  var i, count, percent;
+  var arr = studentData.map(s => s.adaptCourseGrade);
+  var n = arr.length;
+  for (i = 0; i < n; i++) {
+    count = 0;
+    for (var j = 0; j < n; j++) {
+      if (arr[i] > arr[j]) {
+        count++;
+      }
+    }
+    percent = (count * 100) / (n - 1);
+    studentData[i]['percentile'] = Math.round(percent);
+  }
 }

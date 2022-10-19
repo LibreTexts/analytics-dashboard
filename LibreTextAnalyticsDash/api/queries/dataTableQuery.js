@@ -68,7 +68,8 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
             "adaptPercent": '$adapt.adaptPercent',
             "adaptAttempts": '$adapt.adaptAttempts',
             "adaptAvgAttempts": {'$round': ['$adapt.adaptAvgAttempts', 1]},
-            "adaptAvgPercentScore": {'$round': ['$adapt.adaptAvgPercentScore', 1]}
+            "adaptAvgPercentScore": {'$round': ['$adapt.adaptAvgPercentScore', 1]},
+            "adaptCourseGrade": '$adapt.courseGrade'
           }
         },
         {

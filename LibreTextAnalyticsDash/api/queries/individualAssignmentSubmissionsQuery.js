@@ -47,6 +47,8 @@ function individualAssignmentSubmissionsQuery(params, adaptCodes, dbInfo) {
         "$group": {
           '_id': '$date',
           'submissions': {'$push': '$question_id' },
+          'uniqueAssignments': {'$addToSet': '$assignment_name'},
+          'uniqueQuestions': {'$addToSet': '$question_id'},
           'due': {'$first': '$due'}
         }
       },
@@ -54,6 +56,7 @@ function individualAssignmentSubmissionsQuery(params, adaptCodes, dbInfo) {
       {
         "$addFields": {
           'count': {'$size': '$submissions'},
+          'assignmentCount': {'$size': '$uniqueAssignments'},
           'dateString': {'$substrBytes': [{'$dateToString': {'date': '$_id'}}, 0, 10]},
           'uniqueSubmissions' : {'$setUnion' : ['$submissions', []]}
         }

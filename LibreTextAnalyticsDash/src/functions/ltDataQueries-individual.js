@@ -77,6 +77,28 @@ export async function getStudentChartData(state, setState) {
   return tempState;
 }
 
+export function studentChartAxiosCall(state, setState) {
+  return axios({
+    method: "post",
+    url: state.homepage + "/studentchart",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      course: state.course,
+      courseId: state.courseId,
+      groupBy: state.barXAxis,
+      start: state.start,
+      end: state.end,
+      path: state.dataPath,
+      hasAdapt: state.hasAdapt,
+      adaptAxisValue: state.adaptStudentChartVal,
+      tagFilter: state.chosenTag,
+      roster: state.roster
+    },
+  })
+}
+
 export async function getPageViewData(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state));
 
@@ -263,6 +285,27 @@ export function getSubmissionsByAssignment(state, setState) {
       levelName: state.levelName,
       tagFilter: state.chosenTag,
       type: "pages",
+    },
+  });
+}
+
+export function getGradesByAssignment(state, setState) {
+  return axios({
+    method: "post",
+    url: state.homepage + "/gradepageviews",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      bin: state.individualAssignmentBin,
+      unit: state.individualAssignmentUnit,
+      courseId: state.courseId,
+      start: state.start,
+      end: state.end,
+      path: state.dataPath,
+      levelGroup: state.levelGroup,
+      levelName: state.levelName,
+      tagFilter: state.chosenTag,
     },
   });
 }

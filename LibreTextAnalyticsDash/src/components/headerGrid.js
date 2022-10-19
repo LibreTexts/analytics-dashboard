@@ -13,8 +13,13 @@ import Tabs from "./tabs.js";
 import InfoBox from "./infoBox.js";
 import ChosenFilters from "./chosenFilters.js";
 import CheckBoxGroup from "./checkBoxGroup.js";
+import SelectWithApply from "./selectWithApply.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
-import { getIndividualStudentData } from "../functions/dataFetchingFunctions.js";
+import {
+  getIndividualStudentData,
+  handleIndividual,
+  getIndividualAssignmentData,
+} from "../functions/dataFetchingFunctions.js";
 import infoText from "./allInfoText.js";
 import { changeColumns } from "../functions/filterFunctions.js";
 
@@ -30,8 +35,7 @@ export default function HeaderGrid({
 }) {
   //setting up the grommet grid: changes with the tabs so it can fit different components
   var gridAreas = [
-    { name: "courses", start: [0, 0], end: [1, 0] },
-    { name: "legend", start: [1, 0], end: [2, 0] },
+    { name: "courses", start: [0, 0], end: [2, 0] },
     { name: "filters", start: [0, 1], end: [2, 1] },
     { name: "checks", start: [0, 2], end: [2, 2] },
   ];
@@ -39,7 +43,7 @@ export default function HeaderGrid({
   var rows = ["auto", "auto", "auto"];
   var columns = ["77%", "23%"];
   if (state.tab !== "student" && !initPage) {
-    gridAreas.splice(3, 1);
+    gridAreas.splice(2, 1);
     rows.pop();
   } else if (initPage) {
     gridAreas = [{ name: "courses", start: [0, 0], end: [2, 0] }];
@@ -47,6 +51,11 @@ export default function HeaderGrid({
   }
 
   if (state.tab === "filters") {
+    gridAreas = [
+      { name: "courses", start: [0, 0], end: [1, 0] },
+      { name: "legend", start: [1, 0], end: [2, 0] },
+      { name: "filters", start: [0, 1], end: [2, 1] },
+    ];
     columns = ["65%", "35%"];
   }
 
@@ -63,12 +72,13 @@ export default function HeaderGrid({
           margin="medium"
           overflow="hidden"
         >
-          {state.environment === "development" && queryVariables.realCourses && (
+          {queryVariables.realCourses && (
             <CourseDropdown
               state={state}
               setState={setState}
               queryVariables={queryVariables}
               initPage={initPage}
+              height={initPage ? "200px" : "150px"}
             />
           )}
           {!initPage && state.tab === "filters" && (
@@ -85,23 +95,21 @@ export default function HeaderGrid({
             (data.length > 1 || data === true) &&
             state.tab !== "filters" && (
               <>
-                <Legend
-                  state={state}
-                  setState={setState}
-                  queryVariables={queryVariables}
-                />
+                {false && (
+                  <Legend
+                    state={state}
+                    setState={setState}
+                    queryVariables={queryVariables}
+                  />
+                )}
                 {
                   //the following are specific to the student tab
                   //dropdown to choose a student to view data for, checkboxes to be able to choose table columns
                 }
                 {!initPage && state.tab === "student" && queryVariables.click && (
                   <>
-                    <Box align="center">
-                      <Box
-                        direction="column"
-                        style={{ width: "350px" }}
-                        align="center"
-                      >
+                    <Box align="center" gridArea="filters">
+                      <Box direction="row" align="center">
                         <Text weight="bold">Choose a student: </Text>
                         <Select
                           options={
@@ -109,7 +117,7 @@ export default function HeaderGrid({
                               ? state.encryptedStudents
                               : state.allStudents
                           }
-                          margin={{ vertical: "small" }}
+                          margin={{ vertical: "small", horizontal: "small" }}
                           dropAlign={{
                             top: "bottom",
                             left: "left",
@@ -141,7 +149,7 @@ export default function HeaderGrid({
                             )
                           }
                           margin={{
-                            bottom: "small",
+                            right: "small",
                           }}
                           style={{ width: "175px" }}
                         />
@@ -155,7 +163,7 @@ export default function HeaderGrid({
                               student: null,
                               studentAssignments: null,
                               textbookEngagementData: null,
-                              individualAssignmentSubmissions: null
+                              individualAssignmentSubmissions: null,
                             })
                           }
                           style={{ width: "125px" }}
@@ -190,6 +198,41 @@ export default function HeaderGrid({
                       )}
                     </Box>
                   </>
+                )}
+                {state.tab === "assignment" && (
+                  <Box align="center" gridArea="filters">
+                    <SelectWithApply
+                      selectOptions={Object.keys(state.adaptLevels)}
+                      value={state.levelGroup}
+                      dropdownFunction={handleChange}
+                      clickFunction={getIndividualAssignmentData}
+                      queryVariables={queryVariables}
+                      state={state}
+                      setState={setState}
+                      type="pageLevelGroup"
+                      disable={state.disableAssignment}
+                      optionalSelect={
+                        <Select
+                          options={state.adaptLevels[state.levelGroup]}
+                          margin={{
+                            right: "medium",
+                            vertical: "medium",
+                          }}
+                          value={state.levelName}
+                          onChange={({ option }) =>
+                            handleChange(
+                              "pageLevelName",
+                              option,
+                              state,
+                              setState
+                            )
+                          }
+                        />
+                      }
+                      renderSelect={state.levelGroup}
+                      selectLabel="Choose an ADAPT assignment:"
+                    />
+                  </Box>
                 )}
               </>
             )}

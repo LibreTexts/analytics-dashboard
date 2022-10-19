@@ -121,9 +121,7 @@ export default function SelectWithApply({
           size="small"
           label="Clear Assignment"
           onClick={() =>
-            type === "pageLevelGroup" ?
-            setState({ ...state, levelGroup: null, levelName: null, individualAssignmentViews: null, disableAssignment: true }) :
-            setState({ ...state, gradeLevelGroup: null, gradeLevelName: null, gradesPageView: null, disableGradesAssignment: true })
+            setState({ ...state, levelGroup: null, levelName: null, individualAssignmentViews: null, gradesPageView: null, disableAssignment: true })
           }
           margin={{
             vertical: "medium",

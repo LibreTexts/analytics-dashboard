@@ -11,9 +11,10 @@ export default function CourseDropdown({
   setState,
   queryVariables,
   initPage = false,
+  height = "150px",
 }) {
   return (
-    <Box gridArea="courses" height="200px" margin={{ top: "small" }}>
+    <Box gridArea="courses" height={height} margin={{ top: "small" }}>
       <Box width="100%" responsive={true}>
         {state.showInfoBox && (
           <InfoBox
@@ -33,21 +34,23 @@ export default function CourseDropdown({
           fill
         >
           <Box direction="row">
-            <SelectWithApply
-              selectOptions={Object.keys(queryVariables.realCourses)}
-              value={state.courseName}
-              dropdownFunction={handleChange}
-              clickFunction={handleClick}
-              queryVariables={queryVariables}
-              state={state}
-              setState={setState}
-              type="courseId"
-              disable={state.disableCourse}
-              width="300px"
-              dropSize="medium"
-              a11yTitle="Select a course"
-              initPage={initPage}
-            />
+            {state.environment === "development" && (
+              <SelectWithApply
+                selectOptions={Object.keys(queryVariables.realCourses)}
+                value={state.courseName}
+                dropdownFunction={handleChange}
+                clickFunction={handleClick}
+                queryVariables={queryVariables}
+                state={state}
+                setState={setState}
+                type="courseId"
+                disable={state.disableCourse}
+                width="300px"
+                dropSize="medium"
+                a11yTitle="Select a course"
+                initPage={initPage}
+              />
+            )}
             {!initPage && (
               <Button
                 label="Reload Course"

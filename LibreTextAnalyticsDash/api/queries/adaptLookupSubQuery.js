@@ -121,7 +121,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
               '$push': '$pageIds'
             },
             'adaptAvgAttempts': {'$avg': '$attempts'},
-            'adaptAvgPercentScore': {'$avg': '$scores.assignment_percent'}
+            'adaptAvgPercentScore': {'$avg': '$scores.assignment_percent'},
+            'courseGrade': {'$max': '$scores.overall_course_percent'}
           }
         },
         {
