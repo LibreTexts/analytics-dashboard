@@ -36,9 +36,11 @@ export async function handleClick(
   if (queryVariables) {
     queryVariables.setClick(true);
   }
+  console.log("handle click function", state.courseId)
   //sets state to what it needs to be depending on whether it's a first click or a refresh
   //generally sets the data to null so if the data is not pulled it won't use the data from the last course
   if (state.courseId) {
+    console.log("here")
     var tempState = JSON.parse(JSON.stringify(state));
     //if it isn't applying filters (course apply, filter or course reset)
     if (!isFilter) {
@@ -111,6 +113,7 @@ export async function handleClick(
         };
       }
     } else {
+      console.log("here instead")
       tempState = {
         ...tempState,
         openFilter: false,
@@ -139,7 +142,7 @@ export async function handleClick(
         tempState["chosenPath"] = JSON.stringify(path);
       }
     }
-
+    console.log("here")
     setState(tempState);
     var courseData = {};
     if (Object.keys(localStorage).includes(state.courseId + "-table")) {
@@ -169,6 +172,7 @@ export async function handleClick(
       isFilter ||
       type === "filterReset"
     ) {
+      console.log("getting data")
       var configs = []; // holds a bundle of requests to be run by getData
       configs.push(getAllDataConfig(tempState, setState, "student"));
       if (state.ltCourse) {
@@ -221,6 +225,7 @@ export async function handleClick(
         localStorage.setItem(state.courseId + "-filters", JSON.stringify({}));
       }
     } else {
+      console.log("pulling from local storage")
       getDataFromLocalStorage(state.courseId + "-table", tempState);
       getDataFromLocalStorage(state.courseId + "-chart", tempState);
       getDataFromLocalStorage(state.courseId + "-dropdown", tempState);
@@ -233,6 +238,7 @@ export async function handleClick(
   } else {
     alert("Please choose a course.");
   }
+  console.log("reached the end of the function 2")
 }
 
 function getDataFromLocalStorage(course, tempState) {

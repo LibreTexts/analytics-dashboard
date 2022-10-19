@@ -184,6 +184,7 @@ export function filterReset(state, setState) {
 }
 
 export function setCourseFromConductor(state, setState, courseId, realCourses, queryVariables) {
+  console.log("conductor function")
   var value = Object.keys(realCourses).find(courseName => realCourses[courseName].courseId === courseId);
   var courseData = {};
   if (Object.keys(localStorage).includes(courseId + "-filters")) {
@@ -268,5 +269,6 @@ export function setCourseFromConductor(state, setState, courseId, realCourses, q
     filterTab: false,
   }
   queryVariables.setClick(false);
+  console.log("made it to the end of 1")
   return tempState;
 }
