@@ -164,6 +164,7 @@ export async function handleClick(
     // - user hit refresh in header or reset button in filters
     //
     // Otherwise pull course data from local storage
+    console.log(courseData, type, isFilter)
     if (
       !courseData ||
       Object.keys(courseData).length < 1 ||
