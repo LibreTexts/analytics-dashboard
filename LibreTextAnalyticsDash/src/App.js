@@ -205,7 +205,7 @@ function App() {
       console.log("no axios call")
       setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
     }
-  });
+  }, [sessionStorage.getItem("allCourses")]);
 
   useEffect(() => {
     if (state.environment === "production") {
