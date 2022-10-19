@@ -168,9 +168,8 @@ function App() {
         .all([request1, request2])
         .then(
           axios.spread((...responses) => {
-            const responseOne = JSON.parse(responses[0].data);
-            const responseTwo = JSON.parse(responses[1].data);
-            console.log(responseOne, responseTwo);
+            const responseOne = responses[0].data;
+            const responseTwo = responses[1].data;
             setState({
               ...state,
               conductorCourseInfo: responseOne.course,
@@ -210,7 +209,6 @@ function App() {
         .all([request1, request2])
         .then(
           axios.spread((...responses) => {
-            console.log(responses)
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
             var courses = responseOne.concat(responseTwo);
@@ -238,14 +236,12 @@ function App() {
 
   useEffect(() => {
     if (state.environment === "production") {
-      console.log(cookies.get("analytics_conductor_course_id"), JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")))
       var courses = JSON.parse(sessionStorage.getItem("allCourses"));
-      console.log(realCourses, queryVariables.realCourses, courses, state)
       var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
       var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
       handleClick(tempState, setState, "courseId", queryVariables);
     }
-  }, [cookies.get("analytics_conductor_course_id")])
+  }, [cookies.get("analytics_conductor_course_id"), realCourses])
 
   return (
     <>
