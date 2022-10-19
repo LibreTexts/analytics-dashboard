@@ -63,7 +63,7 @@ export default function HeaderGrid({
           margin="medium"
           overflow="hidden"
         >
-          {queryVariables.realCourses && (
+          {state.environment === "development" && queryVariables.realCourses && (
             <CourseDropdown
               state={state}
               setState={setState}
