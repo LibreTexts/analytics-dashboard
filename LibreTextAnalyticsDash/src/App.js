@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Grommet, Notification, Spinner } from "grommet";
+import { Grommet, Notification, Spinner, Text } from "grommet";
 import axios from "axios";
 
 import HeaderGrid from "./components/headerGrid.js";
@@ -141,6 +141,7 @@ function App() {
     rosterFilterApplied: false,
     accessibilityMode: false,
     conductorRoster: false,
+    noDataAvailable: false,
     environment: "production"
   });
 
@@ -226,10 +227,18 @@ function App() {
             );
             var courses = JSON.parse(sessionStorage.getItem("allCourses"));
             var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
-            var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
-            tempState['conductorCourseInfo'] = responseOne.course;
-            tempState['conductorEnrollmentData'] = responseTwo.students;
-            handleClick(tempState, setState, "courseId", queryVariables);
+            var hasData = Object.values(courses).find(obj => obj.courseId === textbookID);
+            if (hasData !== null) {
+              var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
+              tempState['conductorCourseInfo'] = responseOne.course;
+              tempState['conductorEnrollmentData'] = responseTwo.students;
+              handleClick(tempState, setState, "courseId", queryVariables);
+            } else {
+              setState({
+                ...state,
+                noDataAvailable: true
+              })
+            }
           })
         )
         .catch((errors) => {
@@ -245,7 +254,7 @@ function App() {
         //the HeaderGrid component has the dropdown for the courses
       }
       <Grommet theme={theme} full style={{ overflowX: "hidden" }}>
-        {state.environment === "development" && realCourses && !state.studentData && (
+        {state.environment === "development" && realCourses && !state.studentData && !state.noDataAvailable && (
           <HeaderGrid
             state={state}
             setState={setState}
@@ -254,13 +263,18 @@ function App() {
             initPage={true}
           />
         )}
-        {state.environment === "production" && realCourses && !state.studentData && (
+        {state.environment === "production" && realCourses && !state.studentData && !state.noDataAvailable && (
           <InfoBox
             infoText={infoText.loadingMessage}
             showIcon={true}
             icon={<Spinner />}
           />
         )}
+        {state.noDataAvailable &&
+          <Text size="large">
+            There is no Libretext or ADAPT data available for this course.
+          </Text>
+        }
         {state.filterTab && (
           <FilterView
             state={state}
