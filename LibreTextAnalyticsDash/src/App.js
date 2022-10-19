@@ -161,13 +161,16 @@ function App() {
 
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
+    console.log("useEffect 1: grabbing lt and adapt courses")
     //grab the courses from session storage
     var courses = JSON.parse(sessionStorage.getItem("allCourses"));
+    console.log("courses in session storage: ", courses)
     //check to see if there are libretext courses stored,
     //currently an error where libretext courses don't show up right away
     //if the courses aren't in session storage or it didn't grab them all the first time
     //pull the courses from the endpoint on the express node server
     if (!sessionStorage.getItem("allCourses")) {
+      console.log("make an axios call")
       let realCourses = {};
       //libretext and adapt courses have two different queries because they
       //come from two different mongodb collections and have no direct variable to link them
@@ -177,6 +180,7 @@ function App() {
         .all([request1, request2])
         .then(
           axios.spread((...responses) => {
+            console.log("setting real courses from axios")
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
             var courses = responseOne.concat(responseTwo);
@@ -198,6 +202,7 @@ function App() {
           console.log(errors);
         });
     } else {
+      console.log("no axios call")
       setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
     }
   }, [state.homepage, state.courseId, state.start, state.end, state.roster]);
@@ -207,13 +212,14 @@ function App() {
       var course = cookies.get("analytics_conductor_course_id");
       var request1 = axios(state.homepage + "/courseinfo");
       var request2 = axios(state.homepage + "/conductorenrollment");
-
+      console.log("grabbing information from conductor for ", course)
       axios
         .all([request1, request2])
         .then(
           axios.spread((...responses) => {
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
+            console.log("setting the information")
             sessionStorage.setItem(
               course + "-info",
               JSON.stringify(responseOne.course)
@@ -222,12 +228,18 @@ function App() {
               course + "-enrollment",
               JSON.stringify(responseTwo.students)
             );
+            console.log("courses")
             var courses = JSON.parse(sessionStorage.getItem("allCourses"));
+            console.log("textbookID")
             var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
+            console.log("setting course from conductor")
             var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
+            console.log("success")
             tempState['conductorCourseInfo'] = responseOne.course;
             tempState['conductorEnrollmentData'] = responseTwo.students;
+            console.log("handling click")
             handleClick(tempState, setState, "courseId", queryVariables);
+            console.log("second success")
           })
         )
         .catch((errors) => {
