@@ -184,7 +184,7 @@ export function filterReset(state, setState) {
 }
 
 export function setCourseFromConductor(state, setState, courseId, realCourses, queryVariables) {
-  var value = realCourses.find(course => course.courseId === courseId);
+  var value = Object.keys(realCourses).find(courseName => realCourses[courseName].courseId === courseId);
   var courseData = {};
   if (Object.keys(localStorage).includes(courseId + "-filters")) {
     courseData = JSON.parse(localStorage.getItem(courseId + "-filters"));
