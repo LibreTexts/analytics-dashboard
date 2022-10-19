@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Grommet } from "grommet";
+import { Grommet, Notification } from "grommet";
 import axios from "axios";
 
 import HeaderGrid from "./components/headerGrid.js";
@@ -243,13 +243,18 @@ function App() {
         //the HeaderGrid component has the dropdown for the courses
       }
       <Grommet theme={theme} full style={{ overflowX: "hidden" }}>
-        {realCourses && !state.studentData && (
+        {state.environment === "development" && realCourses && !state.studentData && (
           <HeaderGrid
             state={state}
             setState={setState}
             queryVariables={queryVariables}
             data={state.studentData}
             initPage={true}
+          />
+        )}
+        {state.environment === "production" && realCourses && !state.studentData && (
+          <Notification
+            title="Loading, please wait"
           />
         )}
         {state.filterTab && (
