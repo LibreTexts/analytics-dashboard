@@ -159,84 +159,91 @@ function App() {
     setRealCourses: setRealCourses,
   };
 
-  //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     if (state.homepage !== "") {
       var course = cookies.get("analytics_conductor_course_id");
-      axios(state.homepage + "/courseinfo").then((response) => {
-        setCourseInfo(response.data.course);
-        sessionStorage.setItem(
-          course + "-info",
-          JSON.stringify(response.data.course)
-        );
-      });
-      axios(state.homepage + "/conductorenrollment").then((response) => {
-        setEnrollmentData(response.data.students);
-        sessionStorage.setItem(
-          course + "-enrollment",
-          JSON.stringify(response.data.students)
-        );
-      });
+      var request1 = axios(state.homepage + "/courseinfo");
+      var request2 = axios(state.homepage + "/conductorenrollment");
+      axios
+        .all([request1, request2])
+        .then(
+          axios.spread((...responses) => {
+            const responseOne = JSON.parse(responses[0].data);
+            const responseTwo = JSON.parse(responses[1].data);
+            console.log(responseOne, responseTwo);
+            setState({
+              ...state,
+              conductorCourseInfo: responseOne.course,
+              conductorEnrollmentData: responseTwo.students
+            })
+            sessionStorage.setItem(
+              course + "-info",
+              JSON.stringify(responseOne.course)
+            );
+            sessionStorage.setItem(
+              course + "-enrollment",
+              JSON.stringify(responseTwo.students)
+            );
+          })
+        )
+        .catch((errors) => {
+          console.log(errors);
+        });
     }
+  }, [cookies.get("analytics_conductor_course_id")]);
 
+  //pull the courses in useEffect so it happens right away on the initial page
+  useEffect(() => {
     //grab the courses from session storage
     var courses = JSON.parse(sessionStorage.getItem("allCourses"));
     //check to see if there are libretext courses stored,
     //currently an error where libretext courses don't show up right away
-    if (courses) {
-      var success = Object.keys(courses).find(
-        (key) => courses[key].ltCourse === true
-      );
-    } else {
-      success = false;
-    }
-
     //if the courses aren't in session storage or it didn't grab them all the first time
     //pull the courses from the endpoint on the express node server
-    if (!sessionStorage.getItem("allCourses") || !success) {
+    if (!sessionStorage.getItem("allCourses")) {
       let realCourses = {};
       //libretext and adapt courses have two different queries because they
       //come from two different mongodb collections and have no direct variable to link them
-      axios(state.homepage + "/realcourses").then((response) => {
-        let x = {};
-        response.data.forEach((course) => {
-          x[course.course] = {
-            courseId: course._id,
-            ltCourse: course.ltCourse,
-            adaptCourse: course.adaptCourse,
-            startDate: course.startDate,
-            endDate: course.endDate,
-          };
+      var request1 = axios(state.homepage + "/realcourses");
+      var request2 = axios(state.homepage + "/adaptcourses");
+      axios
+        .all([request1, request2])
+        .then(
+          axios.spread((...responses) => {
+            console.log(responses)
+            const responseOne = responses[0].data;
+            const responseTwo = responses[1].data;
+            var courses = responseOne.concat(responseTwo);
+            let x = {};
+            courses.forEach((course) => {
+              x[course.course] = {
+                courseId: course._id,
+                ltCourse: course.ltCourse,
+                adaptCourse: course.adaptCourse,
+                startDate: course.startDate,
+                endDate: course.endDate,
+              };
+            });
+            setRealCourses(x);
+            sessionStorage.setItem("allCourses", JSON.stringify(x));
+          })
+        )
+        .catch((errors) => {
+          console.log(errors);
         });
-        realCourses = x;
-      });
-
-      axios(state.homepage + "/adaptcourses").then((response) => {
-        let x = JSON.parse(JSON.stringify(realCourses));
-        response.data.forEach((course) => {
-          x[course.course] = {
-            courseId: course._id,
-            ltCourse: course.ltCourse,
-            adaptCourse: course.adaptCourse,
-            startDate: course.startDate,
-            endDate: course.endDate,
-          };
-        });
-        setRealCourses(x);
-        sessionStorage.setItem("allCourses", JSON.stringify(x));
-      });
     } else {
       setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
     }
   }, [state.homepage, state.courseId, state.start, state.end, state.roster]);
 
-    useEffect(() => {
-      if (state.environment === "production") {
-        var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
-        var tempState = setCourseFromConductor(state, setState, textbookID, realCourses, queryVariables);
-        handleClick(tempState, setState, "courseId", queryVariables);
-      }
-    }, [cookies.get("analytics_conductor_course_id")])
+  useEffect(() => {
+    if (state.environment === "production") {
+      console.log(cookies.get("analytics_conductor_course_id"), sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info"))
+      var textbookID = sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info").textbookID;
+      var tempState = setCourseFromConductor(state, setState, textbookID, queryVariables.realCourses, queryVariables);
+      handleClick(tempState, setState, "courseId", queryVariables);
+    }
+  }, [cookies.get("analytics_conductor_course_id")])
 
   return (
     <>
