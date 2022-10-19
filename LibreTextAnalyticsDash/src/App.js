@@ -239,9 +239,10 @@ function App() {
   useEffect(() => {
     if (state.environment === "production") {
       console.log(cookies.get("analytics_conductor_course_id"), JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")))
-      console.log(realCourses, queryVariables.realCourses, state)
+      var courses = JSON.parse(sessionStorage.getItem("allCourses"));
+      console.log(realCourses, queryVariables.realCourses, courses, state)
       var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
-      var tempState = setCourseFromConductor(state, setState, textbookID, queryVariables.realCourses, queryVariables);
+      var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
       handleClick(tempState, setState, "courseId", queryVariables);
     }
   }, [cookies.get("analytics_conductor_course_id")])
