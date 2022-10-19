@@ -232,7 +232,7 @@ function App() {
 
     useEffect(() => {
       if (state.environment === "production") {
-        var textbookID = sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info").textbookID;
+        var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
         var tempState = setCourseFromConductor(state, setState, textbookID, realCourses, queryVariables);
         handleClick(tempState, setState, "courseId", queryVariables);
       }
