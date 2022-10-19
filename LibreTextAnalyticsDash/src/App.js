@@ -159,38 +159,6 @@ function App() {
     setRealCourses: setRealCourses,
   };
 
-  useEffect(() => {
-    if (state.homepage !== "") {
-      var course = cookies.get("analytics_conductor_course_id");
-      var request1 = axios(state.homepage + "/courseinfo");
-      var request2 = axios(state.homepage + "/conductorenrollment");
-      axios
-        .all([request1, request2])
-        .then(
-          axios.spread((...responses) => {
-            const responseOne = responses[0].data;
-            const responseTwo = responses[1].data;
-            setState({
-              ...state,
-              conductorCourseInfo: responseOne.course,
-              conductorEnrollmentData: responseTwo.students
-            })
-            sessionStorage.setItem(
-              course + "-info",
-              JSON.stringify(responseOne.course)
-            );
-            sessionStorage.setItem(
-              course + "-enrollment",
-              JSON.stringify(responseTwo.students)
-            );
-          })
-        )
-        .catch((errors) => {
-          console.log(errors);
-        });
-    }
-  }, [cookies.get("analytics_conductor_course_id")]);
-
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     //grab the courses from session storage
@@ -236,12 +204,37 @@ function App() {
 
   useEffect(() => {
     if (state.environment === "production") {
-      var courses = JSON.parse(sessionStorage.getItem("allCourses"));
-      var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
-      var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
-      handleClick(tempState, setState, "courseId", queryVariables);
+      var course = cookies.get("analytics_conductor_course_id");
+      var request1 = axios(state.homepage + "/courseinfo");
+      var request2 = axios(state.homepage + "/conductorenrollment");
+
+      axios
+        .all([request1, request2])
+        .then(
+          axios.spread((...responses) => {
+            const responseOne = responses[0].data;
+            const responseTwo = responses[1].data;
+            sessionStorage.setItem(
+              course + "-info",
+              JSON.stringify(responseOne.course)
+            );
+            sessionStorage.setItem(
+              course + "-enrollment",
+              JSON.stringify(responseTwo.students)
+            );
+            var courses = JSON.parse(sessionStorage.getItem("allCourses"));
+            var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
+            var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
+            tempState['conductorCourseInfo'] = responseOne.course;
+            tempState['conductorEnrollmentData'] = responseTwo.students;
+            handleClick(tempState, setState, "courseId", queryVariables);
+          })
+        )
+        .catch((errors) => {
+          console.log(errors);
+        });
     }
-  }, [cookies.get("analytics_conductor_course_id"), realCourses])
+  }, [cookies.get("analytics_conductor_course_id")])
 
   return (
     <>
