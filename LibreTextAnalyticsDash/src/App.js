@@ -11,6 +11,8 @@ import FilterView from "./components/filterView.js";
 import "react-table-6/react-table.css";
 import "./css/index.css";
 import cookies from "js-cookie";
+import { handleClick } from "./functions/dataFetchingFunctions.js";
+import { setCourseFromConductor } from "./functions/helperFunctions.js";
 
 const theme = {
   global: {
@@ -119,7 +121,7 @@ function App() {
       "LT Hours on Site": true,
     },
     gridHeight: "small",
-    homepage: "/api",
+    homepage: "/analytics/api",
     showNonEnrolledStudents: false,
     ltCourse: false,
     adaptCourse: false,
@@ -227,6 +229,14 @@ function App() {
       setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
     }
   }, [state.homepage, state.courseId, state.start, state.end, state.roster]);
+
+    useEffect(() => {
+      if (state.environment === "production") {
+        var textbookID = sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info").textbookID;
+        var tempState = setCourseFromConductor(state, setState, textbookID, realCourses, queryVariables);
+        handleClick(tempState, setState, "courseId", queryVariables);
+      }
+    }, [cookies.get("analytics_conductor_course_id")])
 
   return (
     <>
