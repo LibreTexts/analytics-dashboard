@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Grommet, Notification, Spinner, Text } from "grommet";
+import { Grommet, Notification, Spinner, Text, Box } from "grommet";
 import axios from "axios";
 
 import HeaderGrid from "./components/headerGrid.js";
@@ -270,11 +270,13 @@ function App() {
             icon={<Spinner />}
           />
         )}
-        {state.noDataAvailable &&
-          <Text size="large">
-            There is no Libretext or ADAPT data available for this course.
-          </Text>
-        }
+        {state.noDataAvailable && (
+          <Box align="center" width="100%">
+            <Text size="large" margin={{ top: "large" }}>
+              There is no Libretext or ADAPT data available for this course.
+            </Text>
+          </Box>
+        )}
         {state.filterTab && (
           <FilterView
             state={state}
