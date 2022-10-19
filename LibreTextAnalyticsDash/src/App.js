@@ -228,8 +228,7 @@ function App() {
             var courses = JSON.parse(sessionStorage.getItem("allCourses"));
             var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
             var hasData = Object.values(courses).find(obj => obj.courseId === textbookID);
-            console.log(hasData)
-            if (hasData !== null) {
+            if (hasData !== undefined) {
               var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
               tempState['conductorCourseInfo'] = responseOne.course;
               tempState['conductorEnrollmentData'] = responseTwo.students;
