@@ -70,49 +70,51 @@ export default function DataFilters({
                     Data Filters{" "}
                   </Text>
                 </Box>
-                <Box
-                  pad="small"
-                  direction="row"
-                  width="550px"
-                  alignSelf="center"
-                >
-                  <Text margin={{ vertical: "small", right: "xsmall" }}>
-                    Start:
-                  </Text>
-                  <DateInput
-                    format="mm/dd/yyyy"
-                    value={state.start}
-                    onChange={({ value }) => {
-                      handleChange("start", value, state, setState);
-                    }}
-                  />
-                  <Text
-                    margin={{
-                      vertical: "small",
-                      right: "xsmall",
-                      left: "xsmall",
-                    }}
+                {state.environment === "development" && (
+                  <Box
+                    pad="small"
+                    direction="row"
+                    width="550px"
+                    alignSelf="center"
                   >
-                    End:
-                  </Text>
-                  <DateInput
-                    format="mm/dd/yyyy"
-                    value={state.end}
-                    onChange={({ value }) => {
-                      handleChange("end", value, state, setState);
-                    }}
-                  />
-                  <Button
-                    size="small"
-                    margin={{
-                      left: "medium",
-                    }}
-                    style={{ height: 50, width: 75 }}
-                    label="Reset Dates"
-                    onClick={() => clearDates(state, setState)}
-                    color="#0047BA"
-                  />
-                </Box>
+                    <Text margin={{ vertical: "small", right: "xsmall" }}>
+                      Start:
+                    </Text>
+                    <DateInput
+                      format="mm/dd/yyyy"
+                      value={state.start}
+                      onChange={({ value }) => {
+                        handleChange("start", value, state, setState);
+                      }}
+                    />
+                    <Text
+                      margin={{
+                        vertical: "small",
+                        right: "xsmall",
+                        left: "xsmall",
+                      }}
+                    >
+                      End:
+                    </Text>
+                    <DateInput
+                      format="mm/dd/yyyy"
+                      value={state.end}
+                      onChange={({ value }) => {
+                        handleChange("end", value, state, setState);
+                      }}
+                    />
+                    <Button
+                      size="small"
+                      margin={{
+                        left: "medium",
+                      }}
+                      style={{ height: 50, width: 75 }}
+                      label="Reset Dates"
+                      onClick={() => clearDates(state, setState)}
+                      color="#0047BA"
+                    />
+                  </Box>
+                )}
                 {state.tagData && (
                   <>
                     <Box>
@@ -145,9 +147,14 @@ export default function DataFilters({
                             setOptions(state.tagData);
                           }}
                           onSearch={(text) => {
-                            const escapedText = text.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
+                            const escapedText = text.replace(
+                              /[-\\^$*+?.()|[\]{}]/g,
+                              "\\$&"
+                            );
                             const exp = new RegExp(escapedText, "i");
-                            setOptions(state.tagData.filter((o) => exp.test(o)));
+                            setOptions(
+                              state.tagData.filter((o) => exp.test(o))
+                            );
                           }}
                         />
                         <Button
