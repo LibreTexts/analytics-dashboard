@@ -28,9 +28,9 @@ export default function CourseDropdown({
       <Box direction="row">
         <Box
           gridArea="courses"
-          alignContent={state.environment === "production" ? "start" : "center"}
-          align={state.environment === "production" ? "start" : "center"}
-          alignSelf={state.environment === "production" ? "start" : "center"}
+          alignContent={state.environment === "production" ? "end" : "center"}
+          align={state.environment === "production" ? "end" : "center"}
+          alignSelf={state.environment === "production" ? "end" : "center"}
           fill
         >
           <Box direction="row">
