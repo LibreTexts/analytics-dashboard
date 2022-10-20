@@ -93,7 +93,7 @@ export default function LayeredComponent({
     }
   }
   if (type === "chapterData") {
-    rows = ["25%", "75%"];
+    rows = ["20%", "80%"];
   }
 
   function closeFilter(

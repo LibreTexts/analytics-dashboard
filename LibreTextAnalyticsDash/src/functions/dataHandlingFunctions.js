@@ -3,7 +3,7 @@
 
 //creates the data table column values to show or hide
 export function handleStudentData(key, value, tempState, courseData, allData) {
-  percentile(value)
+  percentile(value.filter(student => student.isEnrolled === true));
   if (tempState.adaptCourse && tempState.ltCourse) {
     tempState["hasAdapt"] = true;
     courseData["hasAdapt"] = true;

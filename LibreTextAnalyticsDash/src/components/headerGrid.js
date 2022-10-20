@@ -78,7 +78,7 @@ export default function HeaderGrid({
               setState={setState}
               queryVariables={queryVariables}
               initPage={initPage}
-              height={initPage ? "200px" : "150px"}
+              height={initPage ? "200px" : state.environment === "production" ? "50px" : "150px"}
             />
           )}
           {!initPage && state.tab === "filters" && (

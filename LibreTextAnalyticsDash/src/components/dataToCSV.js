@@ -6,9 +6,9 @@ import { Download } from "grommet-icons";
 //creates a csv download button
 export default function DataToCSV({ data, filename, headers, separator, type }) {
   var margin = {bottom: "medium", left: "small"};
-  // if (type === "chapterData") {
-  //   margin = {bottom: "medium", left: "large"};
-  // }
+  if (type === "chapterData") {
+    margin = {top: "large", left: "small"};
+  }
   return (
     <Box margin={margin} width="4%">
       {data && (
