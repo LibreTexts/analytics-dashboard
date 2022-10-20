@@ -277,7 +277,26 @@ strong {
     outline-width: 0;
 }
 
-/*
-svg:hover {
-  fill: #FFBF00;
-} */
+.button1 {
+  background-color: white; /* Green */
+  color: black;
+  border: 2px solid #4CAF50;
+  padding: 10px 24px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  transition-duration: 0.4s;
+}
+
+.button1:hover {
+  background-color: #0047BA;
+  color: white;
+}
+
+.button2 {border: 2px solid #0047BA; width: 150px; height: 40px} /* Blue */
+.button3 {background-color: #f44336;} /* Red */
+.button4 {background-color: #e7e7e7; color: black;} /* Gray */
+.button5 {background-color: #555555;} /* Black */
