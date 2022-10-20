@@ -4,6 +4,8 @@ import { handleChange } from "../functions/handleChangeFunction.js";
 import { handleClick } from "../functions/dataFetchingFunctions.js";
 import InfoBox from "./infoBox.js";
 import infoText from "./allInfoText.js";
+import "../css/index.css";
+import BasicCSSButton from "./basicCSSButton.js";
 
 // Used to load all courses to select from
 export default function CourseDropdown({
@@ -51,7 +53,7 @@ export default function CourseDropdown({
                 initPage={initPage}
               />
             )}
-            {!initPage && (
+            {!initPage && state.environment === "development" && (
               <Button
                 label="Reload Course"
                 secondary
@@ -63,6 +65,9 @@ export default function CourseDropdown({
                   handleClick(state, setState, "refresh", queryVariables)
                 }
               />
+            )}
+            {!initPage && state.environment === "production" && (
+              <BasicCSSButton label="Reload Course" onClickFunction={() => handleClick(state, setState, 'refresh', queryVariables)}/>
             )}
           </Box>
         </Box>

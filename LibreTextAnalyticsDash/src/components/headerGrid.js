@@ -7,6 +7,7 @@ import {
   Text,
   Select,
 } from "grommet";
+import React, { useState } from "react";
 import Legend from "./legend.js";
 import CourseDropdown from "./courseDropdown.js";
 import Tabs from "./tabs.js";
@@ -33,6 +34,11 @@ export default function HeaderGrid({
   initPage = false,
   noEnrollmentData,
 }) {
+  const [options, setOptions] = useState(
+    state.displayMode ? state.encryptedStudents : state.allStudents
+  );
+  var defaultOptions = state.displayMode ? state.encryptedStudents : state.allStudents;
+
   //setting up the grommet grid: changes with the tabs so it can fit different components
   var gridAreas = [
     { name: "courses", start: [0, 0], end: [2, 0] },
@@ -59,6 +65,12 @@ export default function HeaderGrid({
     columns = ["65%", "35%"];
   }
 
+  function matchString(options, text) {
+    var matches = [];
+    matches = options.filter((o) => o.toLowerCase().match(text.toLowerCase()));
+    setOptions(matches)
+  }
+
   return (
     <>
       {!initPage && <Tabs state={state} setState={setState} />}
@@ -78,7 +90,13 @@ export default function HeaderGrid({
               setState={setState}
               queryVariables={queryVariables}
               initPage={initPage}
-              height={initPage ? "200px" : state.environment === "production" ? "50px" : "150px"}
+              height={
+                initPage
+                  ? "200px"
+                  : state.environment === "production"
+                  ? "50px"
+                  : "150px"
+              }
             />
           )}
           {!initPage && state.tab === "filters" && (
@@ -112,21 +130,25 @@ export default function HeaderGrid({
                       <Box direction="row" align="center">
                         <Text weight="bold">Choose a student: </Text>
                         <Select
-                          options={
-                            state.displayMode
-                              ? state.encryptedStudents
-                              : state.allStudents
-                          }
+                          options={options}
                           margin={{ vertical: "small", horizontal: "small" }}
                           dropAlign={{
                             top: "bottom",
                             left: "left",
                             right: "right",
                           }}
+                          onClose={() => {
+                            setOptions(state.displayMode ? state.encryptedStudents : state.allStudents);
+                          }}
+                          onSearch={(text) => {
+                            const escapedText = text.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
+                            const exp = new RegExp(escapedText, "i");
+                            setOptions(defaultOptions.filter((o) => exp.test(o)));
+                          }}
                           dropHeight={"medium"}
                           value={state.student}
                           a11yTitle="Choose a student"
-                          onChange={({ option }) =>
+                          onChange={({ option }) => {
                             handleChange(
                               "studentAssignments",
                               option,
@@ -134,8 +156,9 @@ export default function HeaderGrid({
                               setState,
                               queryVariables.realCourses,
                               queryVariables
-                            )
-                          }
+                            );
+                            setOptions(state.displayMode ? state.encryptedStudents : state.allStudents);
+                          }}
                         />
                         <Button
                           primary
@@ -211,24 +234,9 @@ export default function HeaderGrid({
                       setState={setState}
                       type="pageLevelGroup"
                       disable={state.disableAssignment}
-                      optionalSelect={
-                        <Select
-                          options={state.adaptLevels[state.levelGroup]}
-                          margin={{
-                            right: "medium",
-                            vertical: "medium",
-                          }}
-                          value={state.levelName}
-                          onChange={({ option }) =>
-                            handleChange(
-                              "pageLevelName",
-                              option,
-                              state,
-                              setState
-                            )
-                          }
-                        />
-                      }
+                      optionalSelectOptions={state.adaptLevels[state.levelGroup]}
+                      optionalSelectValue={state.levelName}
+                      optionalSelectType="pageLevelName"
                       renderSelect={state.levelGroup}
                       selectLabel="Choose an ADAPT assignment:"
                     />

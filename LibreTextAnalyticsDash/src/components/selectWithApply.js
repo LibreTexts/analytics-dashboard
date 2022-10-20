@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Button, Select, Text } from "grommet";
+import { handleChange } from "../functions/handleChangeFunction.js";
 
 //dropdown component with apply button
 export default function SelectWithApply({
@@ -18,7 +19,10 @@ export default function SelectWithApply({
   queryVariables,
   selectLabel,
   a11yTitle,
-  initPage=false
+  optionalSelectOptions = null,
+  optionalSelectType,
+  optionalSelectValue,
+  initPage = false,
 }) {
   var dropHeight = "small";
   if (dropSize) {
@@ -34,23 +38,40 @@ export default function SelectWithApply({
     selectOptions = state.encryptedStudents;
   }
 
+  const [options, setOptions] = useState(selectOptions);
+  const [secondSelectOptions, setSecondSelectOptions] = useState(optionalSelectOptions);
+
+  function matchString(options, text) {
+    var matches = [];
+    matches = options.filter((o) => o.toLowerCase().match(text.toLowerCase()));
+    setOptions(matches);
+  }
+
   return (
     <Box direction="row">
-      <Text alignSelf="center" margin={{right: "small"}}>
+      <Text alignSelf="center" margin={{ right: "small" }}>
         {selectLabel}
       </Text>
       <Select
         a11yTitle={a11yTitle}
-        options={selectOptions}
+        options={options}
         margin={{ vertical: initPage ? "xsmall" : "medium", right: "large" }}
         dropAlign={{
           top: "bottom",
           left: "left",
           right: "right",
         }}
+        onClose={() => {
+          setOptions(selectOptions);
+        }}
+        onSearch={(text) => {
+          const escapedText = text.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
+          const exp = new RegExp(escapedText, "i");
+          setOptions(selectOptions.filter((o) => exp.test(o)));
+        }}
         dropHeight={dropHeight}
         value={value}
-        onChange={({ option }) =>
+        onChange={({ option }) => {
           dropdownFunction(
             type,
             option,
@@ -58,11 +79,37 @@ export default function SelectWithApply({
             setState,
             queryVariables.realCourses,
             queryVariables
-          )
-        }
+          );
+          setOptions(selectOptions);
+        }}
         style={{ width: width }}
       />
-      {renderSelect && optionalSelect}
+      {renderSelect &&
+        <Select
+          options={secondSelectOptions}
+          margin={{
+            right: "medium",
+            vertical: "medium",
+          }}
+          value={optionalSelectValue}
+          onClose={() => {
+            setSecondSelectOptions(optionalSelectOptions);
+          }}
+          onSearch={(text) => {
+            const escapedText = text.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
+            const exp = new RegExp(escapedText, "i");
+            setSecondSelectOptions(optionalSelectOptions.filter((o) => exp.test(o)));
+          }}
+          onChange={({ option }) => {
+            handleChange(
+              optionalSelectType,
+              option,
+              state,
+              setState
+            );
+            setSecondSelectOptions(optionalSelectOptions);
+          }}
+        />}
       <Button
         primary
         label="Apply"
@@ -107,7 +154,12 @@ export default function SelectWithApply({
           size="small"
           label="Clear Page"
           onClick={() =>
-            setState({ ...state, page: null, pageId: null, individualPageViews: null })
+            setState({
+              ...state,
+              page: null,
+              pageId: null,
+              individualPageViews: null,
+            })
           }
           margin={{
             vertical: "medium",
@@ -121,7 +173,14 @@ export default function SelectWithApply({
           size="small"
           label="Clear Assignment"
           onClick={() =>
-            setState({ ...state, levelGroup: null, levelName: null, individualAssignmentViews: null, gradesPageView: null, disableAssignment: true })
+            setState({
+              ...state,
+              levelGroup: null,
+              levelName: null,
+              individualAssignmentViews: null,
+              gradesPageView: null,
+              disableAssignment: true,
+            })
           }
           margin={{
             vertical: "medium",

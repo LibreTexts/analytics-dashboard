@@ -7,7 +7,7 @@ import {
   Spinner,
   Select,
 } from "grommet";
-
+import { useState } from "react";
 import { handleClick } from "../functions/dataFetchingFunctions.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
 import { clearDates, clearTags } from "../functions/helperFunctions.js";
@@ -24,6 +24,13 @@ export default function DataFilters({
   queryVariables,
   noEnrollmentData,
 }) {
+  const [options, setOptions] = useState(state.tagData);
+
+  function matchString(options, text) {
+    var matches = [];
+    matches = options.filter((o) => o.toLowerCase().match(text.toLowerCase()));
+    setOptions(matches);
+  }
   return (
     <Box gridArea="filters" direction="column">
       {!state.showTableFilters &&
@@ -128,11 +135,20 @@ export default function DataFilters({
                         <Select
                           style={{ height: 50 }}
                           margin={{ vertical: "small" }}
-                          options={state.tagData}
+                          options={options}
                           value={state.chosenTag}
-                          onChange={({ value }) =>
-                            handleChange("chosenTag", value, state, setState)
-                          }
+                          onChange={({ value }) => {
+                            handleChange("chosenTag", value, state, setState);
+                            setOptions(state.tagData);
+                          }}
+                          onClose={() => {
+                            setOptions(state.tagData);
+                          }}
+                          onSearch={(text) => {
+                            const escapedText = text.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
+                            const exp = new RegExp(escapedText, "i");
+                            setOptions(state.tagData.filter((o) => exp.test(o)));
+                          }}
                         />
                         <Button
                           size="small"
