@@ -20,7 +20,7 @@ import {
   getMetaTags,
   getStudentTextbookEngagementData,
   getGradesByAssignment,
-  getSubmissionsByAssignment
+  getSubmissionsByAssignment,
 } from "./ltDataQueries-individual.js";
 import { writeToLocalStorage } from "./helperFunctions.js";
 import axios from "axios";
@@ -209,10 +209,17 @@ export async function handleClick(
       if (!state.roster) {
         configs.push(getAllStudentsConfig(tempState, setState));
       } else {
-        tempState['allStudents'] = state.roster;
+        tempState["allStudents"] = state.roster;
         hasRoster = true;
       }
-      tempState = await getData(configs, tempState, setState, path, tagData, hasRoster);
+      tempState = await getData(
+        configs,
+        tempState,
+        setState,
+        path,
+        tagData,
+        hasRoster
+      );
       if (
         (type === "filterReset" || type === "courseId") &&
         !(state.adaptCourse && !state.ltCourse)
@@ -245,40 +252,13 @@ function getDataFromLocalStorage(course, tempState) {
   });
 }
 
-// rerenders chart data for
-// (Page) Aggregate Page Views Chart: on selecting a page
-// (ADAPT) Single Assignment Views Over Time: on selecting a assignment
-export function handleIndividual(state, setState, type) {
-  var tempState = JSON.parse(JSON.stringify(state));
-  tempState["noChartData"] = false;
-  if (state.tab === "student") {
-    if (!state.student) {
-      alert("Please choose a student.");
-    } else {
-      tempState["studentAssignments"] = null;
-      tempState["disableStudent"] = true;
-    }
-  } else if (state.tab === "page") {
-    tempState["individualPageViews"] = null;
-    tempState["disablePage"] = true;
-  } else if (state.tab === "assignment") {
-    tempState["individualAssignmentViews"] = null;
-    tempState["disableAssignment"] = true;
-  }
-  if (type === "studentAssignments") {
-    tempState = getStudentAssignments(tempState, setState);
-    return tempState;
-  } else {
-    getIndividualPageViewData(tempState, setState);
-  }
-}
-
 //get data for the page view charts
 export function pageViewCharts(state, setState, type) {
   setState({
     ...state,
     gridHeight: "large",
   });
+  console.log(type)
   //get aggregate data unless type is individual
   if (type === "aggregatePageViews" || type === "textbookEngagement") {
     getPageViewData(state, setState);
@@ -314,7 +294,6 @@ export function getFilteredChartData(
     .then(
       axios.spread((...responses) => {
         const responseOne = JSON.parse(responses[0].data);
-        var key1 = Object.keys(responseOne)[0];
         var val1 = Object.values(responseOne)[0];
         tempState[key] = val1;
         if (individual) {
@@ -400,7 +379,7 @@ export function getIndividualAssignmentData(state, setState, type) {
   });
   var courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
   var tempState = JSON.parse(JSON.stringify(state));
-  if (!Object.keys(courseData).includes(state.levelGroup+state.levelName)) {
+  if (!Object.keys(courseData).includes(state.levelGroup + state.levelName)) {
     var request1 = getSubmissionsByAssignment(tempState, setState);
     var request2 = getGradesByAssignment(tempState, setState);
     axios
@@ -411,7 +390,6 @@ export function getIndividualAssignmentData(state, setState, type) {
           const responseTwo = JSON.parse(responses[1].data);
           var key1 = Object.keys(responseOne)[0];
           var val1 = Object.values(responseOne)[0];
-          var key2 = Object.keys(responseTwo)[0];
           var val2 = Object.values(responseTwo)[0];
 
           tempState[key1] = val1;
@@ -419,7 +397,7 @@ export function getIndividualAssignmentData(state, setState, type) {
           var d = {};
           d[key1] = val1;
           d["gradesPageView"] = val2;
-          courseData[state.levelGroup+state.levelName] = d;
+          courseData[state.levelGroup + state.levelName] = d;
           writeToLocalStorage(state.courseId + "-chart", courseData);
           setState({
             ...tempState,
@@ -431,7 +409,7 @@ export function getIndividualAssignmentData(state, setState, type) {
         console.log(errors);
       });
   } else {
-    var data = courseData[state.levelGroup+state.levelName];
+    var data = courseData[state.levelGroup + state.levelName];
     Object.keys(data).forEach((key) => {
       tempState[key] = data[key];
     });

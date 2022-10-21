@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Select, Text } from "grommet";
 import { handleChange } from "../functions/handleChangeFunction.js";
 
@@ -40,12 +40,10 @@ export default function SelectWithApply({
 
   const [options, setOptions] = useState(selectOptions);
   const [secondSelectOptions, setSecondSelectOptions] = useState(optionalSelectOptions);
-
-  function matchString(options, text) {
-    var matches = [];
-    matches = options.filter((o) => o.toLowerCase().match(text.toLowerCase()));
-    setOptions(matches);
-  }
+  
+  useEffect(() => {
+    setSecondSelectOptions(optionalSelectOptions);
+  }, [optionalSelectOptions])
 
   return (
     <Box direction="row">
@@ -84,7 +82,7 @@ export default function SelectWithApply({
         }}
         style={{ width: width }}
       />
-      {renderSelect &&
+      {renderSelect && secondSelectOptions &&
         <Select
           options={secondSelectOptions}
           margin={{

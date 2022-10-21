@@ -6,77 +6,6 @@ import { handleChapterChart } from "./dataHandlingFunctions.js";
 //each function updates state and uses tempState to pass through
 //so that state is updated correctly without overwriting any changes to state
 
-export async function getStudentChartData(state, setState) {
-  var tempState = JSON.parse(JSON.stringify(state));
-  setState({
-    ...state,
-    studentChart: null,
-  });
-  tempState = {
-    ...tempState,
-    studentChart: null,
-  };
-  var courseData = {};
-  if (Object.keys(localStorage).includes(state.courseId + "-chart")) {
-    courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
-  }
-  var adaptAxisValue = state.adaptStudentChartVal ? "adapt" : "lt";
-  if (
-    !Object.keys(courseData).includes(
-      adaptAxisValue + state.barXAxis + "studentChart"
-    )
-  ) {
-    await axios({
-      method: "post",
-      url: state.homepage + "/studentchart",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: {
-        course: state.course,
-        courseId: state.courseId,
-        groupBy: state.barXAxis,
-        start: state.start,
-        end: state.end,
-        path: state.dataPath,
-        hasAdapt: state.hasAdapt,
-        adaptAxisValue: state.adaptStudentChartVal,
-        tagFilter: state.chosenTag,
-        roster: state.roster
-      },
-    }).then((response) => {
-      courseData[adaptAxisValue + state.barXAxis + "studentChart"] = JSON.parse(
-        response.data
-      )["studentChart"];
-      if (
-        state.adaptStudentChartVal === false &&
-        state.barXAxis === "dateCount"
-      ) {
-        courseData["studentChart"] = JSON.parse(response.data)["studentChart"];
-      }
-      writeToLocalStorage(state.courseId + "-chart", courseData);
-
-      tempState = {
-        ...tempState,
-        studentChart: JSON.parse(response.data)["studentChart"],
-      };
-      setState({
-        ...tempState,
-      });
-    });
-  } else {
-    tempState["studentChart"] =
-      courseData[adaptAxisValue + state.barXAxis + "studentChart"];
-    setState({
-      ...tempState,
-    });
-    courseData["studentChart"] =
-      courseData[adaptAxisValue + state.barXAxis + "studentChart"];
-    writeToLocalStorage(state.courseId + "-chart", courseData);
-  }
-  return tempState;
-}
-
 export function studentChartAxiosCall(state, setState) {
   return axios({
     method: "post",
@@ -167,6 +96,7 @@ export function getIndividualPageViewData(state, setState) {
     setState({
       ...state,
       individualPageViews: null,
+      disablePage: true,
     });
     p = state.pageId;
   } else if (state.tab === "assignment") {
@@ -222,6 +152,7 @@ export function getIndividualPageViewData(state, setState) {
           courseData["individual" + bin + unit + lgroup + lname] = value;
         }
         tempState["noChartData"] = false;
+        tempState["disablePage"] = true;
 
         setState(tempState);
         localStorage.setItem(
@@ -242,6 +173,7 @@ export function getIndividualPageViewData(state, setState) {
     setState({
       ...tempState,
       noChartData: false,
+      disablePage: true
     });
   }
 }

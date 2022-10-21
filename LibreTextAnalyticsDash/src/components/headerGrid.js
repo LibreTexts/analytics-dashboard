@@ -18,7 +18,6 @@ import SelectWithApply from "./selectWithApply.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
 import {
   getIndividualStudentData,
-  handleIndividual,
   getIndividualAssignmentData,
 } from "../functions/dataFetchingFunctions.js";
 import infoText from "./allInfoText.js";
@@ -63,12 +62,6 @@ export default function HeaderGrid({
       { name: "filters", start: [0, 1], end: [2, 1] },
     ];
     columns = ["65%", "35%"];
-  }
-
-  function matchString(options, text) {
-    var matches = [];
-    matches = options.filter((o) => o.toLowerCase().match(text.toLowerCase()));
-    setOptions(matches)
   }
 
   return (

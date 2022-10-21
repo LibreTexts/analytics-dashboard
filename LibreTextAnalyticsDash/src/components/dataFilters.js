@@ -25,12 +25,7 @@ export default function DataFilters({
   noEnrollmentData,
 }) {
   const [options, setOptions] = useState(state.tagData);
-
-  function matchString(options, text) {
-    var matches = [];
-    matches = options.filter((o) => o.toLowerCase().match(text.toLowerCase()));
-    setOptions(matches);
-  }
+  
   return (
     <Box gridArea="filters" direction="column">
       {!state.showTableFilters &&

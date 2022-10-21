@@ -1,6 +1,6 @@
 import React from "react";
 import { CSVLink } from "react-csv";
-import { Button, Box } from "grommet";
+import { Box } from "grommet";
 import { Download } from "grommet-icons";
 
 //creates a csv download button

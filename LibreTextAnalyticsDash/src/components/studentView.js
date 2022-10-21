@@ -24,7 +24,6 @@ import {
   getAssignmentSubmissionsConfig,
 } from "../functions/ltDataQueries.js";
 import {
-  getStudentChartData,
   getStudentTextbookEngagementData,
   studentChartAxiosCall,
 } from "../functions/ltDataQueries-individual.js";

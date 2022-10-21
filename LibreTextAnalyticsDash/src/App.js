@@ -1,6 +1,6 @@
 import React from "react";
-import { useEffect, useState } from "react";
-import { Grommet, Notification, Spinner, Text, Box } from "grommet";
+import { useEffect, useState, useRef } from "react";
+import { Grommet, Spinner, Text, Box } from "grommet";
 import axios from "axios";
 
 import HeaderGrid from "./components/headerGrid.js";
@@ -144,13 +144,13 @@ function App() {
     noDataAvailable: false,
     environment: "production"
   });
+  //making a useRef so state can be used in useEffect without passing it to the dependency array & re-rendering constantly
+  const stateRef = useRef(state);
 
   //state variables on their own to use right away/have easy access
   const [click, setClick] = useState(false);
   const [realCourses, setRealCourses] = useState(null);
   const [count, setCount] = useState(0);
-  const [courseInfo, setCourseInfo] = useState(null);
-  const [enrollmentData, setEnrollmentData] = useState(null);
 
   //put into a single object to easily pass it onto other components
   var queryVariables = {
@@ -161,7 +161,15 @@ function App() {
     realCourses: realCourses,
     setRealCourses: setRealCourses,
   };
+  const queryRef = useRef(queryVariables);
 
+  useEffect(() => {
+    stateRef.current = state;
+    queryRef.current = queryVariables;
+  })
+
+  var allCourses = sessionStorage.getItem("allCourses");
+  var conductorCourseId = cookies.get("analytics_conductor_course_id");
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     //grab the courses from session storage
@@ -170,8 +178,7 @@ function App() {
     //currently an error where libretext courses don't show up right away
     //if the courses aren't in session storage or it didn't grab them all the first time
     //pull the courses from the endpoint on the express node server
-    if (!sessionStorage.getItem("allCourses")) {
-      let realCourses = {};
+    if (!courses) {
       //libretext and adapt courses have two different queries because they
       //come from two different mongodb collections and have no direct variable to link them
       var request1 = axios(state.homepage + "/realcourses");
@@ -203,7 +210,7 @@ function App() {
     } else {
       setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
     }
-  }, [sessionStorage.getItem("allCourses")]);
+  }, [allCourses, state.homepage]);
 
   useEffect(() => {
     if (state.environment === "production") {
@@ -226,18 +233,31 @@ function App() {
               JSON.stringify(responseTwo.students)
             );
             var courses = JSON.parse(sessionStorage.getItem("allCourses"));
-            var textbookID = JSON.parse(sessionStorage.getItem(cookies.get("analytics_conductor_course_id")+"-info")).textbookID;
-            var hasData = Object.values(courses).find(obj => obj.courseId === textbookID);
+            var textbookID = JSON.parse(
+              sessionStorage.getItem(
+                cookies.get("analytics_conductor_course_id") + "-info"
+              )
+            ).textbookID;
+            var hasData = Object.values(courses).find(
+              (obj) => obj.courseId === textbookID
+            );
             if (hasData !== undefined) {
-              var tempState = setCourseFromConductor(state, setState, textbookID, courses, queryVariables);
-              tempState['conductorCourseInfo'] = responseOne.course;
-              tempState['conductorEnrollmentData'] = responseTwo.students;
-              handleClick(tempState, setState, "courseId", queryVariables);
+              var tempState = setCourseFromConductor(
+                stateRef.current,
+                setState,
+                textbookID,
+                courses,
+                queryRef.current
+              );
+              tempState["conductorCourseInfo"] = responseOne.course;
+              tempState["conductorEnrollmentData"] = responseTwo.students;
+              handleClick(tempState, setState, "courseId", queryRef.current);
             } else {
-              setState({
-                ...state,
-                noDataAvailable: true
-              })
+              //functional update of state without needing state in the dependency array
+              setState(s => ({
+                ...s,
+                noDataAvailable: true,
+              }));
             }
           })
         )
@@ -245,7 +265,7 @@ function App() {
           console.log(errors);
         });
     }
-  }, [cookies.get("analytics_conductor_course_id")])
+  }, [conductorCourseId, state.environment, state.homepage]);
 
   return (
     <>
@@ -254,22 +274,28 @@ function App() {
         //the HeaderGrid component has the dropdown for the courses
       }
       <Grommet theme={theme} full style={{ overflowX: "hidden" }}>
-        {state.environment === "development" && realCourses && !state.studentData && !state.noDataAvailable && (
-          <HeaderGrid
-            state={state}
-            setState={setState}
-            queryVariables={queryVariables}
-            data={state.studentData}
-            initPage={true}
-          />
-        )}
-        {state.environment === "production" && realCourses && !state.studentData && !state.noDataAvailable && (
-          <InfoBox
-            infoText={infoText.loadingMessage}
-            showIcon={true}
-            icon={<Spinner />}
-          />
-        )}
+        {state.environment === "development" &&
+          realCourses &&
+          !state.studentData &&
+          !state.noDataAvailable && (
+            <HeaderGrid
+              state={state}
+              setState={setState}
+              queryVariables={queryVariables}
+              data={state.studentData}
+              initPage={true}
+            />
+          )}
+        {state.environment === "production" &&
+          realCourses &&
+          !state.studentData &&
+          !state.noDataAvailable && (
+            <InfoBox
+              infoText={infoText.loadingMessage}
+              showIcon={true}
+              icon={<Spinner />}
+            />
+          )}
         {state.noDataAvailable && (
           <Box align="center" width="100%">
             <Text size="large" margin={{ top: "large" }}>

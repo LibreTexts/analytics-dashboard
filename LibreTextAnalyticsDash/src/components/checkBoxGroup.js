@@ -12,6 +12,7 @@ export default function CheckBoxGroup({
     Object.keys(data).forEach((c) => {
       checks.push(
         <CheckBox
+          key={c}
           label={c}
           a11yTitle={c}
           pad="small"

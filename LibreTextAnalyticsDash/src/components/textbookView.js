@@ -1,6 +1,6 @@
 import { Grid, Box, Spinner } from "grommet";
 import infoText from "./allInfoText.js";
-import { handleIndividual, pageViewCharts, getFilteredChartData } from "../functions/dataFetchingFunctions.js";
+import { pageViewCharts, getFilteredChartData } from "../functions/dataFetchingFunctions.js";
 import DataToCSV from "./dataToCSV.js";
 import DataTable from "./dataTable.js";
 import { changeBinVal } from "../functions/filterFunctions.js";
@@ -8,7 +8,7 @@ import { handleChange } from "../functions/handleChangeFunction.js";
 import HeaderGrid from "./headerGrid.js";
 import InfoBox from "./infoBox.js";
 import { getPageViewConfig } from "../functions/ltDataQueries.js";
-import { getIndividualChapterData, getIndividualPageViews } from "../functions/ltDataQueries-individual.js";
+import { getIndividualChapterData, getIndividualPageViews, getIndividualPageViewData } from "../functions/ltDataQueries-individual.js";
 import LayeredComponent from "./layeredComponent.js";
 import PageViewsChart from "./pageViewsChart.js";
 import SelectWithApply from "./selectWithApply.js";
@@ -114,7 +114,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                     selectOptions={state.allPages}
                     value={state.page}
                     dropdownFunction={handleChange}
-                    clickFunction={handleIndividual}
+                    clickFunction={getIndividualPageViewData}
                     state={state}
                     setState={setState}
                     type="page"
