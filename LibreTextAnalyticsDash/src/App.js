@@ -240,10 +240,10 @@ function App() {
               )
             ).textbookID;
             var dataChanged = false;
-            if (responseOne.start !== courseInfo.start) {
+            if (courseInfo.start !== null && responseOne.start !== courseInfo.start) {
               dataChanged = true;
             }
-            if (responseOne.end !== courseInfo.end) {
+            if (courseInfo.end !== null && responseOne.end !== courseInfo.end) {
               dataChanged = true;
             }
             var hasData = Object.values(courses).find(
