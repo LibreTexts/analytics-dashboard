@@ -1,14 +1,12 @@
 import { Grid, Box, Spinner } from "grommet";
 import infoText from "./allInfoText.js";
-import { pageViewCharts, getFilteredChartData } from "../functions/dataFetchingFunctions.js";
+import { getFilteredChartData, getIndividualData } from "../functions/dataFetchingFunctions.js";
 import DataToCSV from "./dataToCSV.js";
 import DataTable from "./dataTable.js";
 import { changeBinVal } from "../functions/filterFunctions.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
 import HeaderGrid from "./headerGrid.js";
 import InfoBox from "./infoBox.js";
-import { getPageViewConfig } from "../functions/ltDataQueries.js";
-import { getIndividualChapterData, getIndividualPageViews, getIndividualPageViewData } from "../functions/ltDataQueries-individual.js";
 import LayeredComponent from "./layeredComponent.js";
 import PageViewsChart from "./pageViewsChart.js";
 import SelectWithApply from "./selectWithApply.js";
@@ -99,13 +97,24 @@ export default function TextbookView({ state, setState, queryVariables }) {
                 filterFunction={changeBinVal}
                 clickFunction={getFilteredChartData}
                 clickFunctionAttributes={{
-                  aggregateFunction: getPageViewConfig,
-                  individualFunction: getIndividualPageViews,
+                  payloadAttributes: {
+                    bin: state.bin,
+                    unit: state.unit,
+                    path: state.dataPath,
+                    tagFilter: state.chosenTag,
+                  },
+                  path: "/pageviews",
+                  individualPayloadAttributes: {
+                    bin: state.bin,
+                    unit: state.unit,
+                    path: state.dataPath,
+                    individual: state.pageId,
+                    tagFilter: state.chosenTag,
+                    type: "pages",
+                  },
+                  individualPath: "/individualpageviews",
                   key: "pageViews",
-                  isConfig: true,
                   individual: state.pageId,
-                  bin: state.bin,
-                  unit: state.unit
                 }}
                 type="aggregatePageViews"
                 axisType="binLabel"
@@ -114,7 +123,19 @@ export default function TextbookView({ state, setState, queryVariables }) {
                     selectOptions={state.allPages}
                     value={state.page}
                     dropdownFunction={handleChange}
-                    clickFunction={getIndividualPageViewData}
+                    clickFunction={getIndividualData}
+                    pathsWithAttributes={{
+                      "/individualpageviews": {
+                        bin: state.bin,
+                        unit: state.unit,
+                        path: state.dataPath,
+                        individual: state.pageId,
+                        tagFilter: state.chosenTag,
+                        type: "pages",
+                      }
+                    }}
+                    disableName="disablePage"
+                    individual={state.pageId}
                     state={state}
                     setState={setState}
                     type="page"
@@ -179,10 +200,6 @@ export default function TextbookView({ state, setState, queryVariables }) {
                   }
                   data={state.aggregateChapterData}
                   label={state.individualPageBinLabel}
-                  filterOptions={["Day", "Week", "2 Weeks", "Month"]}
-                  filterSelectLabel="Unit of Time:"
-                  filterFunction={changeBinVal}
-                  clickFunction={pageViewCharts}
                   type="chapterData"
                   axisType="individualPageBinLabel"
                   selectComponent={
@@ -190,7 +207,16 @@ export default function TextbookView({ state, setState, queryVariables }) {
                       selectOptions={state.allStudents}
                       value={state.studentForChapterChart}
                       dropdownFunction={handleChange}
-                      clickFunction={getIndividualChapterData}
+                      clickFunction={getIndividualData}
+                      pathsWithAttributes={{
+                        "/individualchapterdata": {
+                          path: state.dataPath,
+                          individual: state.studentForChapterChart,
+                          tagFilter: state.chosenTag,
+                        }
+                      }}
+                      disableName="disableChapterChart"
+                      individual={state.studentForChapterChart}
                       state={state}
                       setState={setState}
                       type="studentForChapterChart"

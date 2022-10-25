@@ -1,3 +1,5 @@
+const addFilters = require("../helper/addFilters.js");
+
 function adaptLookupSubQuery(codeFound, params, dbInfo) {
   var adaptLookup = {
     //getting adapt variables
@@ -164,6 +166,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
       '$eq': ['$level_name', params.adaptLevelName]
     })
   }
+  addFilters.spliceDateFilter(1, params, adaptLookup["$lookup"], true);
 
   return adaptLookup
 }

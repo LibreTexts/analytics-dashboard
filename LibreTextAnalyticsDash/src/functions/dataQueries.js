@@ -11,7 +11,8 @@ import {
   handlePageLookup,
   handleChapterChart,
   handleAggregateAssignmentViews,
-  handlePageViews
+  handlePageViews,
+  handleGradebookData
 } from "./dataHandlingFunctions.js";
 
 //gets all of the data from the backend and mongoDB
@@ -67,6 +68,10 @@ export async function getData(data, state, setState, path = false, tagData, hasR
             handleChapterChart(value, tempState, chartData, courseData);
           } else if (key === "aggregateAssignmentViews") {
             handleAggregateAssignmentViews(value, tempState, chartData, courseData);
+          } else if (key === "allAssignmentGrades") {
+            //look in here, use a datahandling function to check for 0s
+            //if it's all 0s, splice in a query to grab scores from the adapt endpoint instead
+            handleGradebookData(value, tempState);
           } else {
             chartData[key] = value;
           }
@@ -88,6 +93,38 @@ export async function getData(data, state, setState, path = false, tagData, hasR
   return tempState;
 }
 
+export async function getMetaTags(state, setState) {
+  var tempState = JSON.parse(JSON.stringify(state));
+
+  var courseData = {};
+  if (Object.keys(localStorage).includes(state.courseId + "-dropdown")) {
+    courseData = JSON.parse(localStorage.getItem(state.courseId + "-dropdown"));
+  }
+  await axios({
+    method: "post",
+    url: state.homepage + "/tags",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      pageIds: state.allPageIds,
+    },
+  }).then((response) => {
+    var data = JSON.parse(response.data)["tags"];
+    var metaTags = [];
+    data.forEach((tag) => {
+      metaTags.push(tag._id);
+    });
+    tempState["tagData"] = metaTags;
+    setState({
+      ...tempState,
+    });
+    courseData["tagData"] = metaTags;
+    writeToLocalStorage(state.courseId + "-dropdown", courseData);
+  });
+  return tempState;
+}
+
 function getAxiosCall(url, data, state) {
   var config = {
     method: "post",
@@ -97,6 +134,20 @@ function getAxiosCall(url, data, state) {
     },
     data: data,
   };
+  return config;
+}
+
+export function getConfig(state, path, payloadAttributes) {
+  var data = {
+    courseId: state.courseId,
+    startDate: state.start,
+    endDate: state.end,
+    roster: state.roster
+  }
+  Object.keys(payloadAttributes).forEach(key => {
+    data[key] = payloadAttributes[key]
+  })
+  var config = getAxiosCall(path, data, state);
   return config;
 }
 

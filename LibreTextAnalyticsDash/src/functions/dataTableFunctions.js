@@ -1,9 +1,17 @@
 import Tippy from "@tippyjs/react";
 import { Text } from "grommet";
 import { matchSorter } from "match-sorter";
+import moment from "moment";
 
-export function addStudentLibreTextColumns(columns, headers, column2Label, column3Label, showColumns, numMatch) {
-  headers.splice(1, 0, { label: "Is Enrolled", key: "enrolled" });
+export function addStudentLibreTextColumns(
+  columns,
+  headers,
+  column2Label,
+  column3Label,
+  showColumns,
+  numMatch
+) {
+  //headers.splice(1, 0, { label: "Is Enrolled", key: "enrolled" });
   headers.push(
     { label: "LT " + column3Label, key: "viewCount" },
     { label: "LT Most Recent Page Load", key: "max" },
@@ -12,7 +20,11 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
   );
   //inserting into the columns attribute to make "LibreText" and "ADAPT" headers above the other attributes
   columns.push({
-    Header: (props) => <a href="/#" tabIndex={0}>{"LibreText"}</a>,
+    Header: (props) => (
+      <a href="/#" tabIndex={0}>
+        {"LibreText"}
+      </a>
+    ),
     getHeaderProps: (state, rowInfo, column) => {
       return {
         style: {
@@ -27,7 +39,9 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
     {
       Header: (
         <Tippy content={column2Label}>
-          <a href="/#" tabIndex={0}>{<Text>{column2Label}</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>{column2Label}</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "lt-data wordwrap",
@@ -41,7 +55,11 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
           },
         };
       },
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle={"LT "+column2Label}>{val.original["objectCount"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle={"LT " + column2Label}>
+          {val.original["objectCount"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["objectCount"] }),
       filterAll: true,
@@ -49,7 +67,9 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
     {
       Header: (
         <Tippy content={column3Label}>
-          <a href="/#" tabIndex={0}>{<Text>{column3Label}</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>{column3Label}</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "lt-data wordwrap",
@@ -63,7 +83,11 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
           },
         };
       },
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle={"LT "+column3Label}>{val.original["viewCount"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle={"LT " + column3Label}>
+          {val.original["viewCount"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["viewCount"] }),
       filterAll: true,
@@ -71,7 +95,9 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
     {
       Header: (
         <Tippy content="Most Recent Page Load">
-          <a href="/#" tabIndex={0}>{<Text>Most Recent Page Load</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Most Recent Page Load</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "lt-data wordwrap",
@@ -85,7 +111,11 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
           },
         };
       },
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="LT Most Recent Page Load">{val.original["max"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle="LT Most Recent Page Load">
+          {val.original.max}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         matchSorter(rows, filter.value, { keys: ["max"] }),
       filterAll: true,
@@ -93,7 +123,9 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
     {
       Header: (
         <Tippy content="Unique Interaction Days">
-          <a href="/#" tabIndex={0}>{<Text>Unique Interaction Days</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Unique Interaction Days</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "lt-data wordwrap",
@@ -107,7 +139,11 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
           },
         };
       },
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="LT Unique Interaction Days">{val.original["dateCount"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle="LT Unique Interaction Days">
+          {val.original["dateCount"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["dateCount"] }),
       filterAll: true,
@@ -115,7 +151,9 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
     {
       Header: (
         <Tippy content="Hours on Site">
-          <a href="/#" tabIndex={0}>{<Text>Hours on Site</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Hours on Site</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "lt-data wordwrap",
@@ -129,7 +167,11 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
           },
         };
       },
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="LT Hours on Site">{val.original["timeStudied"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle="LT Hours on Site">
+          {val.original["timeStudied"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["timeStudied"] }),
       filterAll: true,
@@ -137,7 +179,13 @@ export function addStudentLibreTextColumns(columns, headers, column2Label, colum
   );
 }
 
-export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, numMatch) {
+export function addStudentAdaptColumns(
+  columns,
+  headers,
+  ltCourse,
+  showColumns,
+  numMatch
+) {
   headers.push(
     {
       label: "ADAPT Unique Interaction Days",
@@ -156,7 +204,11 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
     { label: "ADAPT Class Percentile", key: "percentile" }
   );
   columns.push({
-    Header: (props) => <a href="/#" tabIndex={0}>{"ADAPT"}</a>,
+    Header: (props) => (
+      <a href="/#" tabIndex={0}>
+        {"ADAPT"}
+      </a>
+    ),
     getHeaderProps: (state, rowInfo, column) => {
       return {
         style: {
@@ -171,7 +223,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
     {
       Header: (
         <Tippy content="Unique Interaction Days">
-          <a href="/#" tabIndex={0}>{<Text>Unique Interaction Days</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Unique Interaction Days</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "adapt-data wordwrap",
@@ -186,7 +240,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Adapt Unique Interation Days">{val.original["adaptUniqueInteractionDays"]}</a>
+        <a href="/#" tabIndex={0} a11ytitle="Adapt Unique Interation Days">
+          {val.original["adaptUniqueInteractionDays"]}
+        </a>
       ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, {
@@ -197,7 +253,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
     {
       Header: (
         <Tippy content="Unique Assignments">
-          <a href="/#" tabIndex={0}>{<Text>Unique Assignments</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Unique Assignments</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "adapt-data wordwrap",
@@ -212,7 +270,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Adapt Unique Assignments">{val.original["adaptUniqueAssignments"]}</a>
+        <a href="/#" tabIndex={0} a11ytitle="Adapt Unique Assignments">
+          {val.original["adaptUniqueAssignments"]}
+        </a>
       ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["adaptUniqueAssignments"] }),
@@ -221,7 +281,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
     {
       Header: (
         <Tippy content="Most Recent Page Load">
-          <a href="/#" tabIndex={0}>{<Text>Most Recent Page Load</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Most Recent Page Load</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "adapt-data wordwrap",
@@ -236,7 +298,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Adapt Most Recent Page Load">{val.original["mostRecentAdaptLoad"]}</a>
+        <a href="/#" tabIndex={0} a11ytitle="Adapt Most Recent Page Load">
+          {val.original.mostRecentAdaptLoad}
+        </a>
       ),
       filterMethod: (filter, rows) =>
         matchSorter(rows, filter.value, { keys: ["mostRecentAdaptLoad"] }),
@@ -245,7 +309,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
     {
       Header: (
         <Tippy content="Average Percent Per Assignment">
-          <a href="/#" tabIndex={0}>{<Text>Average Percent Per Assignment</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Average Percent Per Assignment</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "adapt-data wordwrap",
@@ -260,7 +326,13 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Adapt Average Percent Per Assignment">{val.original["adaptAvgPercentScore"]}</a>
+        <a
+          href="/#"
+          tabIndex={0}
+          a11ytitle="Adapt Average Percent Per Assignment"
+        >
+          {val.original["adaptAvgPercentScore"]}
+        </a>
       ),
       filterMethod: (filter, rows) =>
         matchSorter(rows, filter.value, { keys: ["adaptAvgPercentScore"] }),
@@ -269,7 +341,9 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
     {
       Header: (
         <Tippy content="Average Attempts Per Assignment">
-          <a href="/#" tabIndex={0}>{<Text>Average Attempts Per Assignment</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>Average Attempts Per Assignment</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "adapt-data wordwrap",
@@ -283,15 +357,25 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
           },
         };
       },
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="Adapt Average Attempts Per Assignment">{val.original["adaptAvgAttempts"]}</a>,
+      Cell: (val) => (
+        <a
+          href="/#"
+          tabIndex={0}
+          a11ytitle="Adapt Average Attempts Per Assignment"
+        >
+          {val.original["adaptAvgAttempts"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         matchSorter(rows, filter.value, { keys: ["adaptAvgAttempts"] }),
       filterAll: true,
     },
     {
       Header: (
-        <Tippy content="ADAPT Class Percentile">
-          <a href="/#" tabIndex={0}>{<Text>ADAPT Class Percentile</Text>}</a>
+        <Tippy content="Class Percentile">
+          <a href="/#" tabIndex={0}>
+            {<Text>Class Percentile</Text>}
+          </a>
         </Tippy>
       ),
       headerClassName: "adapt-data wordwrap",
@@ -305,7 +389,11 @@ export function addStudentAdaptColumns(columns, headers, ltCourse, showColumns, 
           },
         };
       },
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="ADAPT Class Percentile">{val.original["percentile"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle="ADAPT Class Percentile">
+          {val.original["percentile"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         matchSorter(rows, filter.value, { keys: ["percentile"] }),
       filterAll: true,
@@ -322,11 +410,17 @@ export function addPageColumns(columns, headers, column2Label, numMatch) {
     {
       Header: (
         <Tippy content={column2Label}>
-          <a href="/#" tabIndex={0}>{<Text>{column2Label}</Text>}</a>
+          <a href="/#" tabIndex={0}>
+            {<Text>{column2Label}</Text>}
+          </a>
         </Tippy>
       ),
       accessor: "objectCount",
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle={column2Label}>{val.original["objectCount"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle={column2Label}>
+          {val.original["objectCount"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["objectCount"] }),
       filterAll: true,
@@ -340,7 +434,11 @@ export function addPageColumns(columns, headers, column2Label, numMatch) {
         </Tippy>
       ),
       accessor: "durationInMinutes",
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="Average Page Duration in Minutes">{val.original["durationInMinutes"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle="Average Page Duration in Minutes">
+          {val.original["durationInMinutes"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["durationInMinutes"] }),
       filterAll: true,
@@ -354,7 +452,11 @@ export function addPageColumns(columns, headers, column2Label, numMatch) {
         </Tippy>
       ),
       accessor: "percentAvg",
-      Cell: (val) => <a href="/#" tabIndex={0} a11ytitle="Average Percent Scrolled">{val.original["percentAvg"]}</a>,
+      Cell: (val) => (
+        <a href="/#" tabIndex={0} a11ytitle="Average Percent Scrolled">
+          {val.original["percentAvg"]}
+        </a>
+      ),
       filterMethod: (filter, rows) =>
         numMatch(rows, filter.value, { keys: ["percentAvg"] }),
       filterAll: true,

@@ -118,15 +118,19 @@ export default function ChosenFilters({
               <ListItem item={formatPathList(state.chosenPaths)} />
             </Box>
           )}
-          {state.start && (
-            <Text margin="small">
-              Start Date: {moment(state.start).format("MMM Do YYYY")}
-            </Text>
-          )}
-          {state.end && (
-            <Text margin={{ horizontal: "small", bottom: "small" }}>
-              End Date: {moment(state.end).format("MMM Do YYYY")}
-            </Text>
+          {state.environment === "development" && (
+            <>
+              {state.start && (
+                <Text margin="small">
+                  Start Date: {moment(state.start).format("MMM Do YYYY")}
+                </Text>
+              )}
+              {state.end && (
+                <Text margin={{ horizontal: "small", bottom: "small" }}>
+                  End Date: {moment(state.end).format("MMM Do YYYY")}
+                </Text>
+              )}
+            </>
           )}
           {state.chosenTag && (
             <Text margin={{ horizontal: "small", bottom: "small" }}>

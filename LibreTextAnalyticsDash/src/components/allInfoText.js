@@ -15,7 +15,7 @@ const infoText = {
   individualAssignmentsChart:
     "This plot shows interaction and performance metrics for a single assignment over time. Switch the unit of time using the filters to the left.",
   assignmentGradesChart:
-    "This graph shows grade distribution of a selected assignment. Grade ranges do not include the max value, except for the last bin.",
+    "This graph shows grade distribution of a selected assignment.",
   courseText:
     "Please choose a course.",
   loadingMessage:

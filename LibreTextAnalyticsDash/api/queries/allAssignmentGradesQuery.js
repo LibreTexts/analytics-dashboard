@@ -32,6 +32,11 @@ function allAssignmentGradesQuery(params, dbInfo, adaptCodes) {
             '_id': '$email',
             'score': {'$first': '$overall_course_percent'}
           }
+        },
+        {
+          '$addFields': {
+            "fromGradebook": true
+          }
         }
       ]
     }

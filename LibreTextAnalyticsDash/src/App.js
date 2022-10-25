@@ -38,14 +38,12 @@ function App() {
     filterTab: false,
     start: null,
     end: null,
-    showFilter: false,
     tab: "initial",
     disable: true,
     disableCourse: false,
     disablePage: true,
     disableStudent: true,
     disableAssignment: true,
-    disableGradesAssignment: true,
     disableStudentTextbookEngagement: true,
     disableChapterChart: true,
     course: null,
@@ -142,6 +140,7 @@ function App() {
     accessibilityMode: false,
     conductorRoster: false,
     noDataAvailable: false,
+    gradesFromGradebook: false,
     environment: "production"
   });
   //making a useRef so state can be used in useEffect without passing it to the dependency array & re-rendering constantly
@@ -170,6 +169,7 @@ function App() {
 
   var allCourses = sessionStorage.getItem("allCourses");
   var conductorCourseId = cookies.get("analytics_conductor_course_id");
+  var courseInfo = JSON.parse(sessionStorage.getItem(conductorCourseId+"-info")) ? JSON.parse(sessionStorage.getItem(conductorCourseId+"-info")) : {start: null, end: null};
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     //grab the courses from session storage
@@ -212,6 +212,7 @@ function App() {
     }
   }, [allCourses, state.homepage]);
 
+//need to add start and end dates to the dependency array
   useEffect(() => {
     if (state.environment === "production") {
       var course = cookies.get("analytics_conductor_course_id");
@@ -238,6 +239,13 @@ function App() {
                 cookies.get("analytics_conductor_course_id") + "-info"
               )
             ).textbookID;
+            var dataChanged = false;
+            if (responseOne.start !== courseInfo.start) {
+              dataChanged = true;
+            }
+            if (responseOne.end !== courseInfo.end) {
+              dataChanged = true;
+            }
             var hasData = Object.values(courses).find(
               (obj) => obj.courseId === textbookID
             );
@@ -251,7 +259,11 @@ function App() {
               );
               tempState["conductorCourseInfo"] = responseOne.course;
               tempState["conductorEnrollmentData"] = responseTwo.students;
-              handleClick(tempState, setState, "courseId", queryRef.current);
+              if (dataChanged) {
+                handleClick(tempState, setState, "refresh", queryRef.current);
+              } else {
+                handleClick(tempState, setState, "courseId", queryRef.current);
+              }
             } else {
               //functional update of state without needing state in the dependency array
               setState(s => ({
@@ -265,7 +277,7 @@ function App() {
           console.log(errors);
         });
     }
-  }, [conductorCourseId, state.environment, state.homepage]);
+  }, [conductorCourseId, state.environment, state.homepage, courseInfo.start, courseInfo.end]);
 
   return (
     <>

@@ -1,16 +1,12 @@
-import { Grid, Grommet, Select } from "grommet";
+import { Grid, Grommet } from "grommet";
 import infoText from "./allInfoText.js";
-import { handleIndividual, handleGrade, getFilteredChartData } from "../functions/dataFetchingFunctions.js";
-import { getAssignmentSubmissionsConfig } from "../functions/ltDataQueries.js";
-import { getSubmissionsByAssignment } from "../functions/ltDataQueries-individual.js";
+import { getFilteredChartData } from "../functions/dataFetchingFunctions.js";
 import DataToCSV from "./dataToCSV.js";
 import { changeBinVal, changePropValue } from "../functions/filterFunctions.js";
 import GradesPageView from "./gradesPageViewsChart.js";
-import { handleChange } from "../functions/handleChangeFunction.js";
 import HeaderGrid from "./headerGrid.js";
 import LayeredComponent from "./layeredComponent.js";
 import PageViewsChart from "./pageViewsChart.js";
-import SelectWithApply from "./selectWithApply.js";
 
 // Key Components:
 // Header: Legend?
@@ -89,13 +85,23 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               filterFunction={changeBinVal}
               clickFunction={getFilteredChartData}
               clickFunctionAttributes={{
-                aggregateFunction: getAssignmentSubmissionsConfig,
-                individualFunction: getSubmissionsByAssignment,
+                payloadAttributes: {
+                  bin: state.individualAssignmentBin,
+                  unit: state.individualAssignmentUnit
+                },
+                path: "/aggregateassignmentviews",
+                individualPayloadAttributes: {
+                  bin: state.individualAssignmentBin,
+                  unit: state.individualAssignmentUnit,
+                  path: state.dataPath,
+                  levelGroup: state.levelGroup,
+                  levelName: state.levelName,
+                  tagFilter: state.chosenTag,
+                  type: "pages",
+                },
+                individualPath: "/individualpageviews",
                 key: "aggregateAssignmentViews",
-                isConfig: true,
                 individual: state.levelName,
-                bin: state.individualAssignmentBin,
-                unit: state.individualAssignmentUnit
               }}
               type="individualAssignmentViews"
               axisType="individualAssignmentBinLabel"
@@ -123,10 +129,13 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
             <LayeredComponent
               gridArea="gradesChart"
               queryVariables={queryVariables}
-              disable={state.disableGradesAssignment}
               loading={infoText.loadingMessage}
               title="Assignment Performance"
-              selectedInfoText={infoText.assignmentGradesChart}
+              selectedInfoText={
+                state.gradesFromGradebook
+                ? infoText.assignmentGradesChart
+                : infoText.assignmentGradesChart
+                +" "+ state.course +" has no gradebook data available. Data is being pulled from ADAPT. The grades are unweighted and may be inaccurate."}
               filterLabel="Grades Histogram Filters"
               filterType="slider"
               state={state}

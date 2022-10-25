@@ -29,6 +29,8 @@ export default function GradesPageView({
   if (height) {
     chartHeight = Math.max(chartHeight, height);
   }
+  // console.log(data.length)
+  // console.log(data.filter(s => s.score === 0).length)
 
   if (data != null) {
     dataBins = [];

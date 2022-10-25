@@ -2,7 +2,6 @@ import { Grid, Box, Spinner } from "grommet";
 import AllAdaptAssignmentsChart from "./allAdaptAssignmentsChart.js";
 import infoText from "./allInfoText.js";
 import { getFilteredChartData } from "../functions/dataFetchingFunctions.js";
-import { getIndividualAssignmentSubmissions } from "../functions/adaptDataQueries.js";
 import DataTable from "./dataTable.js";
 import DataToCSV from "./dataToCSV.js";
 import {
@@ -20,13 +19,8 @@ import {
 import InfoBox from "./infoBox.js";
 import LayeredComponent from "./layeredComponent.js";
 import {
-  getPageViewConfig,
-  getAssignmentSubmissionsConfig,
-} from "../functions/ltDataQueries.js";
-import {
-  getStudentTextbookEngagementData,
-  studentChartAxiosCall,
-} from "../functions/ltDataQueries-individual.js";
+  getConfig
+} from "../functions/dataQueries.js";
 import StudentChart from "./studentChart.js";
 import StudentTextbookEngagementChart from "./studentTextbookEngagementChart.js";
 import PageViewsChart from "./pageViewsChart.js";
@@ -133,10 +127,18 @@ export default function StudentView({ state, setState, queryVariables }) {
                 filterFunction={changeBarXAxis}
                 clickFunction={getFilteredChartData}
                 clickFunctionAttributes={{
-                  aggregateFunction: studentChartAxiosCall,
+                  aggregateFunction: getConfig,
+                  payloadAttributes: {
+                    groupBy: state.barXAxis,
+                    path: state.dataPath,
+                    hasAdapt: state.hasAdapt,
+                    adaptAxisValue: state.adaptStudentChartVal,
+                    tagFilter: state.chosenTag
+                  },
+                  path: "/studentchart",
                   individualFunction: null,
                   key: "studentChart",
-                  isConfig: false,
+                  isConfig: true,
                   individual: null,
                 }}
                 type="barXAxisLabel"
@@ -271,13 +273,23 @@ export default function StudentView({ state, setState, queryVariables }) {
                   filterFunction={changeBinVal}
                   clickFunction={getFilteredChartData}
                   clickFunctionAttributes={{
-                    aggregateFunction: getPageViewConfig,
-                    individualFunction: getStudentTextbookEngagementData,
+                    payloadAttributes: {
+                      bin: state.individualStudentBin,
+                      unit: state.individualStudentUnit,
+                      path: state.dataPath,
+                      tagFilter: state.chosenTag,
+                    },
+                    path: "/pageviews",
+                    individualPayloadAttributes: {
+                      path: state.dataPath,
+                      individual: state.student,
+                      bin: state.individualStudentBin,
+                      unit: state.individualStudentUnit,
+                      tagFilter: state.chosenTag
+                    },
+                    individualPath: "/studenttextbookengagement",
                     key: "aggregateTextbookEngagement",
-                    isConfig: true,
                     individual: state.student,
-                    bin: state.individualStudentBin,
-                    unit: state.individualStudentUnit,
                   }}
                   type="textbookEngagement"
                   axisType="binLabel"
@@ -338,13 +350,20 @@ export default function StudentView({ state, setState, queryVariables }) {
                   filterFunction={changeBinVal}
                   clickFunction={getFilteredChartData}
                   clickFunctionAttributes={{
-                    aggregateFunction: getAssignmentSubmissionsConfig,
-                    individualFunction: getIndividualAssignmentSubmissions,
+                    payloadAttributes: {
+                      bin: state.individualAdaptEngagmentBin,
+                      unit: state.individualAdaptEngagementUnit
+                    },
+                    path: "/aggregateassignmentviews",
+                    individualPayloadAttributes: {
+                      individual: state.student,
+                      type: "assignments",
+                      unit: state.individualAdaptEngagementUnit,
+                      bin: state.individualAdaptEngagmentBin,
+                    },
+                    individualPath: "/individualpageviews",
                     key: "aggregateAdaptEngagement",
-                    isConfig: true,
                     individual: state.student,
-                    bin: state.individualAdaptEngagmentBin,
-                    unit: state.individualAdaptEngagementUnit,
                   }}
                   type="adaptEngagement"
                   axisType="individualAdaptEngagementBinLabel"

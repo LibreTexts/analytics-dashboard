@@ -17,8 +17,7 @@ import CheckBoxGroup from "./checkBoxGroup.js";
 import SelectWithApply from "./selectWithApply.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
 import {
-  getIndividualStudentData,
-  getIndividualAssignmentData,
+  getIndividualData,
 } from "../functions/dataFetchingFunctions.js";
 import infoText from "./allInfoText.js";
 import { changeColumns } from "../functions/filterFunctions.js";
@@ -158,10 +157,32 @@ export default function HeaderGrid({
                           label="Apply"
                           disabled={state.disableStudent}
                           onClick={() =>
-                            getIndividualStudentData(
+                            getIndividualData(
                               state,
                               setState,
-                              "studentAssignments"
+                              {
+                                "/studentassignments": {
+                                  individual: state.student,
+                                  startDate: state.start,
+                                  endDate: state.end,
+                                  type: "pages",
+                                },
+                                "/studenttextbookengagement": {
+                                  path: state.dataPath,
+                                  individual: state.student,
+                                  bin: state.individualStudentBin,
+                                  unit: state.individualStudentUnit,
+                                  tagFilter: state.chosenTag,
+                                },
+                                "/individualpageviews": {
+                                  individual: state.student,
+                                  type: "assignments",
+                                  unit: state.individualAdaptEngagementUnit,
+                                  bin: state.individualAdaptEngagmentBin,
+                                }
+                              },
+                              "disableStudent",
+                              state.student
                             )
                           }
                           margin={{
@@ -221,7 +242,7 @@ export default function HeaderGrid({
                       selectOptions={Object.keys(state.adaptLevels)}
                       value={state.levelGroup}
                       dropdownFunction={handleChange}
-                      clickFunction={getIndividualAssignmentData}
+                      clickFunction={getIndividualData}
                       queryVariables={queryVariables}
                       state={state}
                       setState={setState}
@@ -232,6 +253,30 @@ export default function HeaderGrid({
                       optionalSelectType="pageLevelName"
                       renderSelect={state.levelGroup}
                       selectLabel="Choose an ADAPT assignment:"
+                      pathsWithAttributes={{
+                        "/individualpageviews": {
+                          bin: state.individualAssignmentBin,
+                          unit: state.individualAssignmentUnit,
+                          path: state.dataPath,
+                          levelGroup: state.levelGroup,
+                          levelName: state.levelName,
+                          tagFilter: state.chosenTag,
+                          type: "pages",
+                        },
+                        "/gradepageviews": {
+                          bin: state.individualAssignmentBin,
+                          unit: state.individualAssignmentUnit,
+                          courseId: state.courseId,
+                          start: state.start,
+                          end: state.end,
+                          path: state.dataPath,
+                          levelGroup: state.levelGroup,
+                          levelName: state.levelName,
+                          tagFilter: state.chosenTag,
+                        }
+                      }}
+                      disableName="disableAssignment"
+                      individual={state.levelName}
                     />
                   </Box>
                 )}

@@ -22,6 +22,9 @@ export default function SelectWithApply({
   optionalSelectOptions = null,
   optionalSelectType,
   optionalSelectValue,
+  pathsWithAttributes,
+  individual,
+  disableName,
   initPage = false,
 }) {
   var dropHeight = "small";
@@ -39,11 +42,13 @@ export default function SelectWithApply({
   }
 
   const [options, setOptions] = useState(selectOptions);
-  const [secondSelectOptions, setSecondSelectOptions] = useState(optionalSelectOptions);
-  
+  const [secondSelectOptions, setSecondSelectOptions] = useState(
+    optionalSelectOptions
+  );
+
   useEffect(() => {
     setSecondSelectOptions(optionalSelectOptions);
-  }, [optionalSelectOptions])
+  }, [optionalSelectOptions]);
 
   return (
     <Box direction="row">
@@ -82,7 +87,7 @@ export default function SelectWithApply({
         }}
         style={{ width: width }}
       />
-      {renderSelect && secondSelectOptions &&
+      {renderSelect && secondSelectOptions && (
         <Select
           options={secondSelectOptions}
           margin={{
@@ -96,23 +101,27 @@ export default function SelectWithApply({
           onSearch={(text) => {
             const escapedText = text.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
             const exp = new RegExp(escapedText, "i");
-            setSecondSelectOptions(optionalSelectOptions.filter((o) => exp.test(o)));
+            setSecondSelectOptions(
+              optionalSelectOptions.filter((o) => exp.test(o))
+            );
           }}
           onChange={({ option }) => {
-            handleChange(
-              optionalSelectType,
-              option,
-              state,
-              setState
-            );
+            handleChange(optionalSelectType, option, state, setState);
             setSecondSelectOptions(optionalSelectOptions);
           }}
-        />}
+        />
+      )}
       <Button
         primary
         label="Apply"
         disabled={disable}
-        onClick={() => clickFunction(state, setState, type, queryVariables)}
+        onClick={() =>
+          type === "courseId"
+            ? clickFunction(state, setState, type, queryVariables)
+            : type === "studentForChapterChart"
+            ? clickFunction(state, setState, pathsWithAttributes, disableName, individual+"-chapterChart", type)
+            : clickFunction(state, setState, pathsWithAttributes, disableName, individual)
+        }
         margin={{
           vertical: initPage ? "small" : "medium",
           right: "medium",

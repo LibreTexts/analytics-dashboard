@@ -211,7 +211,6 @@ export function handleChange(
     setState({
       ...state,
       gradeLevelName: value,
-      disableGradesAssignment: false,
     });
   }
 

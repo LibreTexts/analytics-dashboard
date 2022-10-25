@@ -7,6 +7,7 @@ import ReactTable from "react-table-6";
 import "../css/index.css";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
+import moment from "moment";
 import { addStudentLibreTextColumns, addStudentAdaptColumns, addPageColumns } from "../functions/dataTableFunctions.js";
 
 export default function DataTable({
@@ -93,14 +94,14 @@ export default function DataTable({
 
   showData.forEach((val, index) => {
     if (Object.keys(val).includes("max")) {
-      showData[index]["max"] = formatDate(val["max"]);
+      showData[index]["max"] = moment(val["max"]).add(1, "days").format("MMM Do YYYY");
     } else if (!Object.keys(val).includes("max")) {
       showData[index]["max"] = "";
     }
     if (val["mostRecentAdaptLoad"]) {
-      showData[index]["mostRecentAdaptLoad"] = formatDate(
+      showData[index]["mostRecentAdaptLoad"] = moment(
         val["mostRecentAdaptLoad"]
-      );
+      ).add(1, "days").format("MMM Do YYYY");
     }
     showData[index]["enrolled"] = val["isEnrolled"] ? "Yes" : "No";
   });
@@ -164,16 +165,6 @@ export default function DataTable({
           <Text weight="bold">{pageInfo.original[idAccessor]}</Text>
         </a>
       );
-    }
-  }
-
-  function formatDate(val, type) {
-    if (val) {
-      var d = new Date(val);
-      var arr = d.toString().split(" ");
-      return arr[1] + " " + arr[2] + " " + arr[3];
-    } else {
-      return "";
     }
   }
 

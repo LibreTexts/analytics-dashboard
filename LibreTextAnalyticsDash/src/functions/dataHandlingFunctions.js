@@ -147,6 +147,12 @@ export function handleChapters(value, tempState, courseData, allData) {
   allData["allChapters"] = courseStructure;
 }
 
+export function handleGradebookData(value, tempState) {
+  tempState["allAssignmentGrades"] = value;
+  var fromGradebook = value.filter(v => v.fromGradebook === true);
+  tempState["gradesFromGradebook"] = fromGradebook.length > 0 ? true : false;
+}
+
 export function handleChapterChart(
   value,
   tempState,

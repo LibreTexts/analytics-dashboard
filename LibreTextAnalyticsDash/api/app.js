@@ -782,6 +782,8 @@ app.post("/gradepageviews", (req, res, next) => {
   axios(config)
     .then(function (response) {
       let newData = response.data;
+      newData["gradesPageView"] = newData["documents"];
+      delete newData["documents"];
       newData = JSON.stringify(newData);
       res.json(newData);
     })
@@ -1000,15 +1002,33 @@ app.post("/aggregateassignmentviews", (req, res, next) => {
 
 app.post("/allassignmentgrades", (req, res, next) => {
   let queryString = queries.allAssignmentGradesQuery(req.body, dbInfo, adaptCodes);
+  let secondQuery = queries.gradesFromAdaptQuery(req.body, dbInfo, adaptCodes);
   let config = helperFunctions.getRequest(queryString);
-  axios(config)
-    .then(function (response) {
-      let newData = response.data;
-      newData["allAssignmentGrades"] = newData["documents"];
-      delete newData["documents"];
-      newData = JSON.stringify(newData);
-      res.json(newData);
-    })
+  console.log(secondQuery)
+  let secondConfig = helperFunctions.getRequest(secondQuery);
+  var configs = [axios(config), axios(secondConfig)];
+  axios
+      .all(configs)
+      .then(
+        axios.spread((...responses) => {
+          var data = {};
+          var value = responses[0].data["documents"];
+          var count = value.length;
+          var zeroCount = value.filter(v => v.score === 0).length;
+          console.log(count, zeroCount)
+          if (count !== zeroCount) {
+            data["allAssignmentGrades"] = value;
+          } else {
+            console.log(responses[1].data["documents"])
+            data["allAssignmentGrades"] = responses[1].data["documents"];
+          }
+          res.json(JSON.stringify(data));
+      // let newData = response.data;
+      // newData["allAssignmentGrades"] = newData["documents"];
+      // delete newData["documents"];
+      // newData = JSON.stringify(newData);
+      // res.json(newData);
+    }))
     .catch(function (error) {
       console.log(error);
     });

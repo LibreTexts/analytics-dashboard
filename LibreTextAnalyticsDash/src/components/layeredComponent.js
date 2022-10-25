@@ -140,6 +140,10 @@ export default function LayeredComponent({
         clickFunctionAttributes.individualFunction,
         clickFunctionAttributes.isConfig,
         clickFunctionAttributes.individual,
+        clickFunctionAttributes.path,
+        clickFunctionAttributes.payloadAttributes,
+        clickFunctionAttributes.individualPath,
+        clickFunctionAttributes.individualPayloadAttributes,
         clickFunctionAttributes.bin,
         clickFunctionAttributes.unit
       );
@@ -257,7 +261,7 @@ export default function LayeredComponent({
                     ? state.student + " Scores"
                     : type === "studentAssignments" && !state.student
                     ? "Individual Scores"
-                    : state.student
+                    : state.student && state.tab === "student"
                     ? state.student + " Activity"
                     : "Individual Activity"}
                 </Text>

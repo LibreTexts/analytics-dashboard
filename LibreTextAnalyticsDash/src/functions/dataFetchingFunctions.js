@@ -1,10 +1,5 @@
 //functions called on click of a button to set state and call the function that will get the necessary data
 import {
-  getStudentAssignments,
-  getGradesPageViewData,
-  getIndividualAssignmentSubmissions,
-} from "./adaptDataQueries.js";
-import {
   getData,
   simpleConfigTemplate,
   getAllDataConfig,
@@ -13,15 +8,10 @@ import {
   getStudentChartConfig,
   getPageViewConfig,
   getAssignmentSubmissionsConfig,
-} from "./ltDataQueries.js";
-import {
-  getPageViewData,
-  getIndividualPageViewData,
+  getConfig,
   getMetaTags,
-  getStudentTextbookEngagementData,
-  getGradesByAssignment,
-  getSubmissionsByAssignment,
-} from "./ltDataQueries-individual.js";
+} from "./dataQueries.js";
+import { handleChapterChart } from "./dataHandlingFunctions.js";
 import { writeToLocalStorage } from "./helperFunctions.js";
 import axios from "axios";
 
@@ -73,7 +63,6 @@ export async function handleClick(
         gradesPageView: null,
         gradeLevelGroup: null,
         gradeLevelName: null,
-        disableGradesAssignment: true,
         disablePage: true,
         disableStudent: true,
         disableAssignment: true,
@@ -104,13 +93,16 @@ export async function handleClick(
         studentForTextbookEngagement: null,
         chosenTag: null,
         disableCourseStructureButton: false,
+        individualAssignmentSubmissions: null
       };
       if (type === "filterReset") {
-        tempState = {
-          ...tempState,
-          start: null,
-          end: null,
-        };
+        if (state.environment === "development") {
+          tempState = {
+            ...tempState,
+            start: null,
+            end: null,
+          };
+        }
       }
     } else {
       tempState = {
@@ -126,7 +118,6 @@ export async function handleClick(
         page: null,
         individualPageViews: null,
         disableCourseStructureButton: true,
-        disableGradesAssignment: true,
         disablePage: true,
         disableStudent: true,
         disableAssignment: true,
@@ -252,21 +243,6 @@ function getDataFromLocalStorage(course, tempState) {
   });
 }
 
-//get data for the page view charts
-export function pageViewCharts(state, setState, type) {
-  setState({
-    ...state,
-    gridHeight: "large",
-  });
-  console.log(type)
-  //get aggregate data unless type is individual
-  if (type === "aggregatePageViews" || type === "textbookEngagement") {
-    getPageViewData(state, setState);
-  } else if (type === "individualPageViews") {
-    getIndividualPageViewData(state, setState);
-  }
-}
-
 export function getFilteredChartData(
   state,
   setState,
@@ -275,18 +251,18 @@ export function getFilteredChartData(
   individualFunction,
   isConfig,
   individual,
+  path,
+  payloadAttributes,
+  individualPath,
+  individualPayloadAttributes,
   bin = null,
   unit = null
 ) {
   var tempState = JSON.parse(JSON.stringify(state));
-  if (isConfig) {
-    var request1 = axios(aggregateFunction(tempState, setState, bin, unit));
-  } else {
-    request1 = aggregateFunction(tempState, setState, bin, unit);
-  }
+  var request1 = axios(getConfig(tempState, path, payloadAttributes));
   var requests = [request1];
   if (individual) {
-    var request2 = individualFunction(tempState, setState);
+    var request2 = axios(getConfig(tempState, individualPath, individualPayloadAttributes));
     requests.push(request2);
   }
   axios
@@ -312,48 +288,44 @@ export function getFilteredChartData(
     });
 }
 
-//gets the data for all charts on the student tab for an individual student
-export function getIndividualStudentData(state, setState, type) {
+//gets the data for an individual student, page, or assignment
+export function getIndividualData(state, setState, pathsWithAttributes, disable, individual, type) {
+  var temp = JSON.parse(JSON.stringify(state));
+  temp[disable] = true;
   setState({
-    ...state,
-    disableStudent: true,
+    ...temp,
   });
   var courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
   var tempState = JSON.parse(JSON.stringify(state));
-  if (!Object.keys(courseData).includes(state.student)) {
-    var request1 = getStudentAssignments(tempState, setState);
-    var request2 = getStudentTextbookEngagementData(tempState, setState);
-    var request3 = getIndividualAssignmentSubmissions(
-      tempState,
-      setState,
-      false
-    );
+  if (!Object.keys(courseData).includes(individual)) {
+    var requests = [];
+    Object.keys(pathsWithAttributes).forEach(path => {
+      requests.push(axios(getConfig(state, path, pathsWithAttributes[path])))
+    })
     axios
-      .all([request1, request2, request3])
+      .all(requests)
       .then(
         axios.spread((...responses) => {
-          const responseOne = JSON.parse(responses[0].data);
-          const responseTwo = JSON.parse(responses[1].data);
-          const responseThree = JSON.parse(responses[2].data);
-          var key1 = Object.keys(responseOne)[0];
-          var val1 = Object.values(responseOne)[0];
-          var key2 = Object.keys(responseTwo)[0];
-          var val2 = Object.values(responseTwo)[0];
-          var key3 = Object.keys(responseThree)[0];
-          var val3 = Object.values(responseThree)[0];
-
-          tempState[key1] = val1;
-          tempState[key2] = val2;
-          tempState[key3] = val3;
           var d = {};
-          d[key1] = val1;
-          d[key2] = val2;
-          d[key3] = val3;
-          courseData[state.student] = d;
-          writeToLocalStorage(state.courseId + "-chart", courseData);
+          responses.forEach((response, index) => {
+            var data = JSON.parse(response.data);
+            var key = Object.keys(data)[0];
+            var value = Object.values(data)[0];
+            if (type === "studentForChapterChart") {
+              tempState[key] = value;
+              handleChapterChart(value, tempState, courseData, {}, "individualChapterData", true);
+            } else {
+              tempState[key] = value;
+              d[key] = value;
+            }
+          })
+          // temporarily stop writing individual chart data to localstorage
+          // - queries are fast and you have to store multiple to account for filtering
+          // courseData[individual] = d;
+          // writeToLocalStorage(state.courseId + "-chart", courseData);
+          tempState[disable] = true
           setState({
             ...tempState,
-            disableStudent: true,
           });
         })
       )
@@ -361,71 +333,13 @@ export function getIndividualStudentData(state, setState, type) {
         console.log(errors);
       });
   } else {
-    var data = courseData[state.student];
+    var data = courseData[individual];
     Object.keys(data).forEach((key) => {
       tempState[key] = data[key];
     });
+    tempState[disable] = true;
     setState({
       ...tempState,
-      disableStudent: true,
     });
   }
-}
-
-export function getIndividualAssignmentData(state, setState, type) {
-  setState({
-    ...state,
-    disableAssignment: true,
-  });
-  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
-  var tempState = JSON.parse(JSON.stringify(state));
-  if (!Object.keys(courseData).includes(state.levelGroup + state.levelName)) {
-    var request1 = getSubmissionsByAssignment(tempState, setState);
-    var request2 = getGradesByAssignment(tempState, setState);
-    axios
-      .all([request1, request2])
-      .then(
-        axios.spread((...responses) => {
-          const responseOne = JSON.parse(responses[0].data);
-          const responseTwo = JSON.parse(responses[1].data);
-          var key1 = Object.keys(responseOne)[0];
-          var val1 = Object.values(responseOne)[0];
-          var val2 = Object.values(responseTwo)[0];
-
-          tempState[key1] = val1;
-          tempState["gradesPageView"] = val2;
-          var d = {};
-          d[key1] = val1;
-          d["gradesPageView"] = val2;
-          courseData[state.levelGroup + state.levelName] = d;
-          writeToLocalStorage(state.courseId + "-chart", courseData);
-          setState({
-            ...tempState,
-            disableAssignment: true,
-          });
-        })
-      )
-      .catch((errors) => {
-        console.log(errors);
-      });
-  } else {
-    var data = courseData[state.levelGroup + state.levelName];
-    Object.keys(data).forEach((key) => {
-      tempState[key] = data[key];
-    });
-    setState({
-      ...tempState,
-      disableAssignment: true,
-    });
-  }
-}
-
-//gets the grades data for an individual assignment
-export function handleGrade(state, setState, type) {
-  let tempState = JSON.parse(JSON.stringify(state));
-  tempState["disableGradesAssignment"] = true;
-  setState({
-    ...tempState,
-  });
-  getGradesPageViewData(tempState, setState);
 }

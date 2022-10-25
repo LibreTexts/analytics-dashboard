@@ -24,7 +24,7 @@ var startEndDateQuery = {
       $group: {
         _id: "$course_id",
         startDate: {
-          $first: "$class_start_date",
+          $first: "$course_start_date",
         },
         endDate: {
           $max: "$due",

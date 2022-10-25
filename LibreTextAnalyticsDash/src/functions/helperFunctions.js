@@ -167,8 +167,8 @@ export function filterReset(state, setState) {
     reset: true,
     chosenPaths: null,
     dataPath: null,
-    start: null,
-    end: null,
+    // start: null,
+    // end: null,
     disableFilterReset: false,
     chosenTag: null,
   });
@@ -177,8 +177,8 @@ export function filterReset(state, setState) {
   );
   courseData["chosenPaths"] = null;
   courseData["dataPath"] = null;
-  courseData["start"] = null;
-  courseData["end"] = null;
+  // courseData["start"] = null;
+  // courseData["end"] = null;
   courseData["chosenTag"] = null;
   localStorage.setItem(state.courseId + "-filters", JSON.stringify(courseData));
 }
