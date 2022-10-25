@@ -226,12 +226,16 @@ function App() {
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
             var dataChanged = false;
+            console.log(courseInfo)
+            console.log(courseInfo.start, responseOne.start)
+            console.log(courseInfo.end, responseOne.end)
             if (courseInfo.start !== null && responseOne.start !== courseInfo.start) {
               dataChanged = true;
             }
             if (courseInfo.end !== null && responseOne.end !== courseInfo.end) {
               dataChanged = true;
             }
+            console.log(dataChanged)
             sessionStorage.setItem(
               course + "-info",
               JSON.stringify(responseOne.course)
@@ -260,8 +264,10 @@ function App() {
               tempState["conductorCourseInfo"] = responseOne.course;
               tempState["conductorEnrollmentData"] = responseTwo.students;
               if (dataChanged) {
+                console.log("refresh")
                 handleClick(tempState, setState, "refresh", queryRef.current);
               } else {
+                console.log("courseId")
                 handleClick(tempState, setState, "courseId", queryRef.current);
               }
             } else {
