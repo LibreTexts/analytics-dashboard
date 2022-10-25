@@ -225,6 +225,13 @@ function App() {
           axios.spread((...responses) => {
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
+            var dataChanged = false;
+            if (courseInfo.start !== null && responseOne.start !== courseInfo.start) {
+              dataChanged = true;
+            }
+            if (courseInfo.end !== null && responseOne.end !== courseInfo.end) {
+              dataChanged = true;
+            }
             sessionStorage.setItem(
               course + "-info",
               JSON.stringify(responseOne.course)
@@ -239,13 +246,6 @@ function App() {
                 cookies.get("analytics_conductor_course_id") + "-info"
               )
             ).textbookID;
-            var dataChanged = false;
-            if (courseInfo.start !== null && responseOne.start !== courseInfo.start) {
-              dataChanged = true;
-            }
-            if (courseInfo.end !== null && responseOne.end !== courseInfo.end) {
-              dataChanged = true;
-            }
             var hasData = Object.values(courses).find(
               (obj) => obj.courseId === textbookID
             );
