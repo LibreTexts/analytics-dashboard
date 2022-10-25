@@ -226,6 +226,7 @@ function App() {
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
             var dataChanged = false;
+            console.log(responseOne)
             console.log(courseInfo)
             console.log(courseInfo.start, responseOne.start)
             console.log(courseInfo.end, responseOne.end)
