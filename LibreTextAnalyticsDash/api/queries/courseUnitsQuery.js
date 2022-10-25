@@ -18,11 +18,16 @@ function courseUnitsQuery(params, dbInfo) {
           }
         }
       },
+      {
+        '$group': {
+          '_id': "$object.id"
+        }
+      },
       //page lookup to connect to find all page paths
       {
         "$lookup": {
           "from": dbInfo.pageColl,
-          "localField": "object.id",
+          "localField": "_id",
           "foreignField": "id",
           "as": "pageInfo"
         }
