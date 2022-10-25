@@ -228,12 +228,12 @@ function App() {
             var dataChanged = false;
             console.log(responseOne)
             console.log(courseInfo)
-            console.log(courseInfo.start, responseOne.start)
-            console.log(courseInfo.end, responseOne.end)
-            if (courseInfo.start !== null && responseOne.start !== courseInfo.start) {
+            console.log(courseInfo.start, responseOne.course.start)
+            console.log(courseInfo.end, responseOne.course.end)
+            if (courseInfo.start !== null && responseOne.course.start !== courseInfo.start) {
               dataChanged = true;
             }
-            if (courseInfo.end !== null && responseOne.end !== courseInfo.end) {
+            if (courseInfo.end !== null && responseOne.course.end !== courseInfo.end) {
               dataChanged = true;
             }
             console.log(dataChanged)
