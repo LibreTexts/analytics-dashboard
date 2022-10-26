@@ -26,7 +26,6 @@ export default function InfoBox({
 }) {
   let [open, setOpen] = useState(initShow);
   let [progressMessage, setProgressMessage] = useState(0);
-  let [hasChanged, setHasChanged] = useState(false);
   let message = [];
   let msgkey = 0;
   message.push(
@@ -37,7 +36,6 @@ export default function InfoBox({
 
   useEffect(() => {
     if (showProgress) {
-      var first = moment();
       var percent = 0;
       if (ltCourse && !adaptCourse) {
         percent = queryVariables.progress * 14;
@@ -47,11 +45,8 @@ export default function InfoBox({
         percent = queryVariables.progress * 9;
       }
       setProgressMessage(percent)
-      if (percent !== 0) {
-        setHasChanged(true);
-      }
     }
-  }, [queryVariables.progress])
+  }, [queryVariables.progress, adaptCourse, ltCourse, showProgress])
 
   if (showProgress && progressMessage === 0  && moment().diff(queryVariables.loadingStart, 'seconds') > 30) {
     console.log("here")
