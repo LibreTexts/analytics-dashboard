@@ -54,6 +54,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                   infoText={infoText.loadingMessage}
                   showIcon={true}
                   icon={<Spinner />}
+                  queryVariables={queryVariables}
                 />
               </Box>
             )}

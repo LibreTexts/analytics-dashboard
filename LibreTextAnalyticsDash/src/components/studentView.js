@@ -66,6 +66,7 @@ export default function StudentView({ state, setState, queryVariables }) {
               <Box gridArea="table" background="light-2">
                 <InfoBox
                   infoText={infoText.loadingMessage}
+                  queryVariables={queryVariables}
                   showIcon={true}
                   showProgress={true}
                   state={state}

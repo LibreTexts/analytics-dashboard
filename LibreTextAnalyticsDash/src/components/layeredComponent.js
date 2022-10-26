@@ -403,7 +403,8 @@ export default function LayeredComponent({
               </Layer>
             )}
             {optionalLoadingTest && disableButton && !data && (
-              <InfoBox infoText={loading} showIcon={true} icon={<Spinner />} />
+              <InfoBox infoText={loading} showIcon={true} icon={<Spinner />}
+              queryVariables={queryVariables}/>
             )}
             {data && data.length > 0
               ? component
@@ -413,6 +414,7 @@ export default function LayeredComponent({
                     infoText={infoText.noDataMessage}
                     count={queryVariables.count}
                     setCount={queryVariables.setCount}
+                    queryVariables={queryVariables}
                   />
                 )}
           </Box>

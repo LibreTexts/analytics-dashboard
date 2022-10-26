@@ -325,7 +325,7 @@ function App() {
         {state.noDataAvailable && (
           <Box align="center" width="100%">
             <Text size="large" margin={{ top: "large" }}>
-              There is no Libretext or ADAPT data available for this course.
+              There is no LibreTexts or ADAPT data available for this course.
             </Text>
           </Box>
         )}

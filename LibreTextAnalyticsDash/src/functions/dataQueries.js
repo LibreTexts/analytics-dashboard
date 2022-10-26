@@ -82,6 +82,10 @@ export async function getData(data, state, setState, path = false, tagData, hasR
           i = i + 1;
         })
         .catch(function (error) {
+          setState(s => ({
+            ...s,
+            noDataAvailable: true
+          }))
           console.log(error);
         })
     );

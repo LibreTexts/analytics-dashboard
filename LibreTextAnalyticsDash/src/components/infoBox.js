@@ -49,8 +49,8 @@ export default function InfoBox({
   }, [queryVariables.progress, adaptCourse, ltCourse, showProgress])
 
   if (showProgress && progressMessage === 0  && moment().diff(queryVariables.loadingStart, 'seconds') > 30) {
-    console.log("here")
     localStorage.clear()
+    sessionStorage.clear()
     setState({...state, reload: true})
     //handleClick(state, setState, "courseId", queryVariables)
   }
@@ -70,7 +70,7 @@ export default function InfoBox({
           alignContent="center"
           alignSelf="center"
           justify="center"
-          height={height}
+          height={!showProgress ? height : "300px"}
           width="75%"
           margin={!showProgress ? { vertical: "small" } : { top: "xlarge" }}
         >
@@ -87,9 +87,14 @@ export default function InfoBox({
             <Box direction="column" width="100%">
               {message}
               {showProgress &&
-                <Text alignSelf="center" margin={{ top: "small" }} key={2}>
-                  If the course has made no progress within 30 seconds, it will automatically reload.
-                </Text>
+                <>
+                  <Text alignSelf="center" margin={{ top: "small" }} key={2}>
+                    If the course has made no progress within 30 seconds, it will try to automatically reload.
+                  </Text>
+                  <Text alignSelf="center" margin={{ top: "small" }} key={2}>
+                    If that is not successful, please try clearing your browser cache and reloading the page manually.
+                  </Text>
+                </>
               }
               </Box>
             </Box>

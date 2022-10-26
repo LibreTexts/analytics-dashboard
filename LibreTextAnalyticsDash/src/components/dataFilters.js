@@ -25,7 +25,7 @@ export default function DataFilters({
   noEnrollmentData,
 }) {
   const [options, setOptions] = useState(state.tagData);
-  
+
   return (
     <Box gridArea="filters" direction="column">
       {!state.showTableFilters &&
@@ -35,6 +35,7 @@ export default function DataFilters({
           <InfoBox
             count={queryVariables.count}
             setCount={queryVariables.setCount}
+            queryVariables={queryVariables}
             infoText={infoText.dataFilter}
             color="#b0e0e6"
             height="150px"
@@ -193,7 +194,8 @@ export default function DataFilters({
                 </Box>
               </Box>
               <Box border={true}>
-                <InfoBox infoText={infoText.toggleText} color="#b0e0e6" />
+                <InfoBox infoText={infoText.toggleText} color="#b0e0e6"
+                queryVariables={queryVariables}/>
                 <CheckBox
                   label={
                     state.accessibilityMode
@@ -235,6 +237,7 @@ export default function DataFilters({
                   {state.disable && (!state.studentData || !state.display) && (
                     <InfoBox
                       infoText={infoText.loadingMessage}
+                      queryVariables={queryVariables}
                       showIcon={true}
                       icon={<Spinner />}
                     />
