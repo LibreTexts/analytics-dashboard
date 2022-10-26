@@ -72,7 +72,7 @@ export default function InfoBox({
           justify="center"
           height={height}
           width="75%"
-          margin={!showProgress ? { vertical: "small" } : { top: "large" }}
+          margin={!showProgress ? { vertical: "small" } : { top: "xlarge" }}
         >
           <Box height="xsmall" width="100%" direction="row">
             {showIcon && <Button alignSelf="start" icon={icon} />}
