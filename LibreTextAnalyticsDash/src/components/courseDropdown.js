@@ -21,6 +21,8 @@ export default function CourseDropdown({
         {state.showInfoBox && (
           <InfoBox
             show={state.showInfoBox}
+            state={state}
+            queryVariables={queryVariables}
             infoText={infoText.courseText}
             color="#b0e0e6"
             main={true}

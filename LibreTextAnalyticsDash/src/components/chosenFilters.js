@@ -180,6 +180,7 @@ export default function ChosenFilters({
       {state.disable && (!state.studentData || !state.display) && (
         <InfoBox
           infoText={infoText.loadingMessage}
+          queryVariables={queryVariables}
           showIcon={true}
           icon={<Spinner />}
         />

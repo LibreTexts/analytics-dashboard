@@ -14,6 +14,7 @@ import {
 import { handleChapterChart } from "./dataHandlingFunctions.js";
 import { writeToLocalStorage } from "./helperFunctions.js";
 import axios from "axios";
+import moment from "moment";
 
 //called when the user hits apply, reloads the course, or clears all of the filters
 //gets all of the data for the course from mongoDB or localStorage
@@ -27,6 +28,8 @@ export async function handleClick(
 ) {
   if (queryVariables) {
     queryVariables.setClick(true);
+    queryVariables.setProgress(0);
+    queryVariables.setLoadingStart(moment());
   }
   //sets state to what it needs to be depending on whether it's a first click or a refresh
   //generally sets the data to null so if the data is not pulled it won't use the data from the last course
@@ -154,7 +157,6 @@ export async function handleClick(
     // - user hit refresh in header or reset button in filters
     //
     // Otherwise pull course data from local storage
-    console.log(type, courseData)
     if (
       !courseData ||
       Object.keys(courseData).length < 1 ||
@@ -210,7 +212,8 @@ export async function handleClick(
         setState,
         path,
         tagData,
-        hasRoster
+        hasRoster,
+        queryVariables
       );
       if (
         (type === "filterReset" || type === "courseId") &&
@@ -229,7 +232,11 @@ export async function handleClick(
       tempState["rosterFilterApplied"] = tempState.rosterFile ? true : false;
       setState({
         ...tempState,
+        reload: false
       });
+    }
+    if (queryVariables) {
+      queryVariables.setLoadingStart(null);
     }
   } else {
     alert("Please choose a course.");

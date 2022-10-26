@@ -311,6 +311,12 @@ export default function HeaderGrid({
       {state.disableCourse && !data && (
         <InfoBox
           infoText={infoText.loadingMessage}
+          ltCourse={state.ltCourse}
+          adaptCourse={state.adaptCourse}
+          state={state}
+          setState={setState}
+          queryVariables={queryVariables}
+          showProgress={true}
           showIcon={true}
           icon={<Spinner />}
         />

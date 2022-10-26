@@ -67,6 +67,8 @@ export default function StudentView({ state, setState, queryVariables }) {
                 <InfoBox
                   infoText={infoText.loadingMessage}
                   showIcon={true}
+                  showProgress={true}
+                  state={state}
                   icon={<Spinner />}
                 />
               </Box>

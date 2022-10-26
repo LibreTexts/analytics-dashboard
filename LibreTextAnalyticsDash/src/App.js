@@ -141,7 +141,9 @@ function App() {
     conductorRoster: false,
     noDataAvailable: false,
     gradesFromGradebook: false,
-    environment: "production"
+    loadingProgress: 0,
+    environment: "production",
+    reload: false,
   });
   //making a useRef so state can be used in useEffect without passing it to the dependency array & re-rendering constantly
   const stateRef = useRef(state);
@@ -150,6 +152,8 @@ function App() {
   const [click, setClick] = useState(false);
   const [realCourses, setRealCourses] = useState(null);
   const [count, setCount] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [loadingStart, setLoadingStart] = useState(null);
 
   //put into a single object to easily pass it onto other components
   var queryVariables = {
@@ -159,6 +163,10 @@ function App() {
     setCount: setCount,
     realCourses: realCourses,
     setRealCourses: setRealCourses,
+    progress: progress,
+    setProgress: setProgress,
+    loadingStart: loadingStart,
+    setLoadingStart: setLoadingStart
   };
   const queryRef = useRef(queryVariables);
 
@@ -226,17 +234,12 @@ function App() {
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
             var dataChanged = false;
-            console.log(responseOne)
-            console.log(courseInfo)
-            console.log(courseInfo.start, responseOne.course.start)
-            console.log(courseInfo.end, responseOne.course.end)
             if (courseInfo.start !== null && responseOne.course.start !== courseInfo.start) {
               dataChanged = true;
             }
             if (courseInfo.end !== null && responseOne.course.end !== courseInfo.end) {
               dataChanged = true;
             }
-            console.log(dataChanged)
             sessionStorage.setItem(
               course + "-info",
               JSON.stringify(responseOne.course)
@@ -265,10 +268,8 @@ function App() {
               tempState["conductorCourseInfo"] = responseOne.course;
               tempState["conductorEnrollmentData"] = responseTwo.students;
               if (dataChanged) {
-                console.log("refresh")
                 handleClick(tempState, setState, "refresh", queryRef.current);
               } else {
-                console.log("courseId")
                 handleClick(tempState, setState, "courseId", queryRef.current);
               }
             } else {
@@ -284,7 +285,7 @@ function App() {
           console.log(errors);
         });
     }
-  }, [conductorCourseId, state.environment, state.homepage, courseInfo.start, courseInfo.end]);
+  }, [conductorCourseId, state.environment, state.homepage, courseInfo.start, courseInfo.end, state.reload]);
 
   return (
     <>
@@ -311,6 +312,12 @@ function App() {
           !state.noDataAvailable && (
             <InfoBox
               infoText={infoText.loadingMessage}
+              showProgress={true}
+              state={state}
+              setState={setState}
+              ltCourse={state.ltCourse}
+              adaptCourse={state.adaptCourse}
+              queryVariables={queryVariables}
               showIcon={true}
               icon={<Spinner />}
             />

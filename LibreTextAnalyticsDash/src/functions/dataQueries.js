@@ -1,5 +1,6 @@
 //has the function to get all data, using configs that are formed with the functions below
 import axios from "axios";
+import moment from "moment";
 import { writeToLocalStorage } from "./helperFunctions.js";
 import {
   handleStudentData,
@@ -16,7 +17,7 @@ import {
 } from "./dataHandlingFunctions.js";
 
 //gets all of the data from the backend and mongoDB
-export async function getData(data, state, setState, path = false, tagData, hasRoster) {
+export async function getData(data, state, setState, path = false, tagData, hasRoster, queryVariables) {
   var promises = [];
   var tempState = JSON.parse(JSON.stringify(state));
   var course = state.courseId;
@@ -33,6 +34,8 @@ export async function getData(data, state, setState, path = false, tagData, hasR
     dropdownData["allStudents"] = state.roster;
     courseData["allStudents"] = state.roster;
   }
+  var p = 0;
+  var i = 0;
   //iterates through the configs and stores the data, sometimes calling
   //other functions to do specific things with the data, in dataHandlingFunctions.js
   for (const config of data) {
@@ -75,6 +78,8 @@ export async function getData(data, state, setState, path = false, tagData, hasR
           } else {
             chartData[key] = value;
           }
+          queryVariables.setProgress(p+i)
+          i = i + 1;
         })
         .catch(function (error) {
           console.log(error);
@@ -89,7 +94,8 @@ export async function getData(data, state, setState, path = false, tagData, hasR
   writeToLocalStorage(course + "-chart", chartData);
   writeToLocalStorage(course + "-dropdown", dropdownData);
   tempState[course] = courseData;
-  Promise.all(promises).then(() => setState({ ...tempState }));
+  queryVariables.setLoadingStart(null);
+  Promise.all(promises).then(() => setState({ ...tempState, reload: false }));
   return tempState;
 }
 
