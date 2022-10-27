@@ -23,7 +23,7 @@ export default class PageViewsChart extends React.Component {
     //handling different labels for different chart, this chart is used multiple times
     var type = this.props.type;
     var label = "Total Views on All Pages";
-    var aspect = 3;
+    var aspect = window.innerWidth/500;
     if (type === "individual") {
       label = "Total Views";
     }

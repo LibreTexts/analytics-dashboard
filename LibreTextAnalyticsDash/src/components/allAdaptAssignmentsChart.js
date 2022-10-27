@@ -101,7 +101,7 @@ export default class AllAdaptAssignmentsChart extends React.Component {
       return (
         <>
           {!this.props.accessibilityMode && (
-            <ResponsiveContainer width="96%" aspect={3}>
+            <ResponsiveContainer width="96%" aspect={window.innerWidth/500}>
               <BarChart
                 width={550}
                 height={375}

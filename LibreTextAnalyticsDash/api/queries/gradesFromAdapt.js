@@ -10,7 +10,6 @@ function gradesFromAdaptQuery(params, dbInfo, adaptCodes) {
   } else {
     course = codeFound.code
   }
-  console.log(course)
 
   //grab data from the adapt collection
   var data = {

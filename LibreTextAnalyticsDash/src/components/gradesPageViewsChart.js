@@ -99,7 +99,7 @@ export default function GradesPageView({
   return (
     <>
     {!accessibilityMode &&
-    <ResponsiveContainer width="99%" aspect={3}>
+    <ResponsiveContainer width="99%" aspect={window.innerWidth/500}>
       <BarChart
         width={500}
         height={chartHeight}

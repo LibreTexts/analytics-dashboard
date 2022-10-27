@@ -144,10 +144,12 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
   }
 
   var index = 1;
-  index = addFilters.spliceDateFilter(index, params, data);
   if (params.individual) {
+    index = addFilters.spliceDateFilter(index, params, data);
     index = addFilters.splicePathFilter(index+1, params, data, true);
     addFilters.spliceTagFilter(index, params, data, index <= 4);
+  } else {
+    addFilters.spliceDateFilter(index, params, data, true);
   }
 
   return data;

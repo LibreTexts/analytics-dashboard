@@ -37,7 +37,7 @@ export default function StudentTextbookEngagementChart({
   const [newWidth, setNewWidth] = React.useState("97%");
   const [leftMargin, setLeftMargin] = React.useState(30);
   const [activeIndex, setActiveIndex] = React.useState(-1);
-  const [aspect, setAspect] = React.useState(3);
+  const [aspect, setAspect] = React.useState(window.innerWidth/500);
   const [height, setHeight] = React.useState(null);
 
   //connect aggregate data to individual
@@ -99,7 +99,7 @@ export default function StudentTextbookEngagementChart({
     setStudentData(null);
     setActiveIndex(-1);
     setNewWidth("97%");
-    setAspect(3);
+    setAspect(window.innerWidth/500);
     setHeight(null);
   }
 

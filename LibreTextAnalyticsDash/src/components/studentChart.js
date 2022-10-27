@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import { DefaultTooltipContent } from "recharts/lib/component/DefaultTooltipContent";
 import {
   BarChart,
@@ -34,7 +34,7 @@ export default function StudentChart({
   const [leftMargin, setLeftMargin] = React.useState(30);
   const [activeIndex, setActiveIndex] = React.useState(-1);
   const [height, setHeight] = React.useState(null);
-  const [aspect, setAspect] = React.useState(3);
+  const [aspect, setAspect] = React.useState(window.innerWidth/500);
 
   //reformat dates so they'll fit on the x axis
   if (
@@ -78,7 +78,7 @@ export default function StudentChart({
     setStudentData(null);
     setActiveIndex(-1);
     setNewWidth(width);
-    setAspect(3);
+    setAspect(window.innerWidth/500);
     setHeight(null);
   }
 
