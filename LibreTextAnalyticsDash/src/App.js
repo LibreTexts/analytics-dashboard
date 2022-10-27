@@ -144,6 +144,7 @@ function App() {
     loadingProgress: 0,
     environment: "production",
     reload: false,
+    notInCommons: false
   });
   //making a useRef so state can be used in useEffect without passing it to the dependency array & re-rendering constantly
   const stateRef = useRef(state);
@@ -267,6 +268,7 @@ function App() {
               );
               tempState["conductorCourseInfo"] = responseOne.course;
               tempState["conductorEnrollmentData"] = responseTwo.students;
+              tempState["notInCommons"] = false;
               if (dataChanged) {
                 handleClick(tempState, setState, "refresh", queryRef.current);
               } else {
@@ -277,11 +279,17 @@ function App() {
               setState(s => ({
                 ...s,
                 noDataAvailable: true,
+                notInCommons: false
               }));
             }
           })
         )
         .catch((errors) => {
+          setState(s => ({
+            ...s,
+            noDataAvailable: true,
+            notInCommons: true
+          }));
           console.log(errors);
         });
     }
@@ -322,10 +330,17 @@ function App() {
               icon={<Spinner />}
             />
           )}
-        {state.noDataAvailable && (
+        {state.noDataAvailable && !state.notInCommons && (
           <Box align="center" width="100%">
             <Text size="large" margin={{ top: "large" }}>
               There is no LibreTexts or ADAPT data available for this course.
+            </Text>
+          </Box>
+        )}
+        {state.noDataAvailable && state.notInCommons && (
+          <Box align="center" width="100%">
+            <Text size="large" margin={{ top: "large" }}>
+              Please use the dashboard inside of Commons.
             </Text>
           </Box>
         )}
