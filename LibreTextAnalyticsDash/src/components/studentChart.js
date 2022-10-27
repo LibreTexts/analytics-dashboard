@@ -69,7 +69,7 @@ export default function StudentChart({
     setNewWidth("45%");
     setLeftMargin(10);
     setStudentData(data);
-    setAspect(null);
+    setAspect(window.innerWidth/750);
     setHeight("95%");
   }
 
