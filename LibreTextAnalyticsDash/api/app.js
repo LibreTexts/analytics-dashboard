@@ -1004,6 +1004,7 @@ app.post("/allassignmentgrades", (req, res, next) => {
   let queryString = queries.allAssignmentGradesQuery(req.body, dbInfo, adaptCodes);
   let secondQuery = queries.gradesFromAdaptQuery(req.body, dbInfo, adaptCodes);
   let config = helperFunctions.getRequest(queryString);
+  console.log(secondQuery)
   let secondConfig = helperFunctions.getRequest(secondQuery);
   var configs = [axios(config), axios(secondConfig)];
   axios
@@ -1014,9 +1015,11 @@ app.post("/allassignmentgrades", (req, res, next) => {
           var value = responses[0].data["documents"];
           var count = value.length;
           var zeroCount = value.filter(v => v.score === 0).length;
+          console.log(count, zeroCount)
           if (count !== zeroCount) {
             data["allAssignmentGrades"] = value;
           } else {
+            console.log(responses[1].data["documents"])
             data["allAssignmentGrades"] = responses[1].data["documents"];
           }
           res.json(JSON.stringify(data));

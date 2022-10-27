@@ -82,6 +82,7 @@ function chapterChartQuery(params, dbInfo, encryptStudent, decryptStudent) {
 
     var index = 1;
     index = addFilters.spliceDateFilter(index, params, data);
+    console.log(index)
 
     if (params.individual) {
       data['pipeline'].splice(1, 0, {

@@ -76,6 +76,7 @@ function individualAssignmentSubmissionsQuery(params, adaptCodes, dbInfo) {
     index = addFilters.splicePathFilter(index+1, params, data, true);
     addFilters.spliceTagFilter(index, params, data, index <= 4);
   }
+  console.log(data['pipeline'])
   return data;
 }
 
