@@ -236,8 +236,6 @@ function App() {
         .all([request1, request2])
         .then(
           axios.spread((...responses) => {
-            console.log(responses[0])
-            console.log(responses[1])
             if (
               (Object.keys(responses[0]).includes("msg") ||
                 Object.keys(responses[1]).includes("msg")) &&
