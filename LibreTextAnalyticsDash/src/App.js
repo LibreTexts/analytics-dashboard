@@ -144,6 +144,7 @@ function App() {
     loadingProgress: 0,
     environment: "production",
     reload: false,
+    notInCommons: false,
   });
   //making a useRef so state can be used in useEffect without passing it to the dependency array & re-rendering constantly
   const stateRef = useRef(state);
@@ -166,18 +167,22 @@ function App() {
     progress: progress,
     setProgress: setProgress,
     loadingStart: loadingStart,
-    setLoadingStart: setLoadingStart
+    setLoadingStart: setLoadingStart,
   };
   const queryRef = useRef(queryVariables);
 
   useEffect(() => {
     stateRef.current = state;
     queryRef.current = queryVariables;
-  })
+  });
 
   var allCourses = sessionStorage.getItem("allCourses");
   var conductorCourseId = cookies.get("analytics_conductor_course_id");
-  var courseInfo = JSON.parse(sessionStorage.getItem(conductorCourseId+"-info")) ? JSON.parse(sessionStorage.getItem(conductorCourseId+"-info")) : {start: null, end: null};
+  var courseInfo = JSON.parse(
+    sessionStorage.getItem(conductorCourseId + "-info")
+  )
+    ? JSON.parse(sessionStorage.getItem(conductorCourseId + "-info"))
+    : { start: null, end: null };
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     //grab the courses from session storage
@@ -220,7 +225,7 @@ function App() {
     }
   }, [allCourses, state.homepage]);
 
-//need to add start and end dates to the dependency array
+  //need to add start and end dates to the dependency array
   useEffect(() => {
     if (state.environment === "production") {
       var course = cookies.get("analytics_conductor_course_id");
@@ -231,53 +236,77 @@ function App() {
         .all([request1, request2])
         .then(
           axios.spread((...responses) => {
-            const responseOne = responses[0].data;
-            const responseTwo = responses[1].data;
-            var dataChanged = false;
-            if (courseInfo.start !== null && responseOne.course.start !== courseInfo.start) {
-              dataChanged = true;
-            }
-            if (courseInfo.end !== null && responseOne.course.end !== courseInfo.end) {
-              dataChanged = true;
-            }
-            sessionStorage.setItem(
-              course + "-info",
-              JSON.stringify(responseOne.course)
-            );
-            sessionStorage.setItem(
-              course + "-enrollment",
-              JSON.stringify(responseTwo.students)
-            );
-            var courses = JSON.parse(sessionStorage.getItem("allCourses"));
-            var textbookID = JSON.parse(
-              sessionStorage.getItem(
-                cookies.get("analytics_conductor_course_id") + "-info"
-              )
-            ).textbookID;
-            var hasData = Object.values(courses).find(
-              (obj) => obj.courseId === textbookID
-            );
-            if (hasData !== undefined) {
-              var tempState = setCourseFromConductor(
-                stateRef.current,
-                setState,
-                textbookID,
-                courses,
-                queryRef.current
-              );
-              tempState["conductorCourseInfo"] = responseOne.course;
-              tempState["conductorEnrollmentData"] = responseTwo.students;
-              if (dataChanged) {
-                handleClick(tempState, setState, "refresh", queryRef.current);
-              } else {
-                handleClick(tempState, setState, "courseId", queryRef.current);
-              }
-            } else {
-              //functional update of state without needing state in the dependency array
-              setState(s => ({
+            if (
+              (Object.keys(responses[0]).includes("msg") ||
+                Object.keys(responses[1]).includes("msg")) &&
+              responses[0].msg === "unknown error!"
+            ) {
+              setState((s) => ({
                 ...s,
                 noDataAvailable: true,
+                notInCommons: true,
               }));
+            } else {
+              const responseOne = responses[0].data;
+              const responseTwo = responses[1].data;
+              var dataChanged = false;
+              if (
+                courseInfo.start !== null &&
+                responseOne.course.start !== courseInfo.start
+              ) {
+                dataChanged = true;
+              }
+              if (
+                courseInfo.end !== null &&
+                responseOne.course.end !== courseInfo.end
+              ) {
+                dataChanged = true;
+              }
+              sessionStorage.setItem(
+                course + "-info",
+                JSON.stringify(responseOne.course)
+              );
+              sessionStorage.setItem(
+                course + "-enrollment",
+                JSON.stringify(responseTwo.students)
+              );
+              var courses = JSON.parse(sessionStorage.getItem("allCourses"));
+              var textbookID = JSON.parse(
+                sessionStorage.getItem(
+                  cookies.get("analytics_conductor_course_id") + "-info"
+                )
+              ).textbookID;
+              var hasData = Object.values(courses).find(
+                (obj) => obj.courseId === textbookID
+              );
+              if (hasData !== undefined) {
+                var tempState = setCourseFromConductor(
+                  stateRef.current,
+                  setState,
+                  textbookID,
+                  courses,
+                  queryRef.current
+                );
+                tempState["conductorCourseInfo"] = responseOne.course;
+                tempState["conductorEnrollmentData"] = responseTwo.students;
+                tempState["notInCommons"] = false;
+                if (dataChanged) {
+                  handleClick(tempState, setState, "refresh", queryRef.current);
+                } else {
+                  handleClick(
+                    tempState,
+                    setState,
+                    "courseId",
+                    queryRef.current
+                  );
+                }
+              } else {
+                //functional update of state without needing state in the dependency array
+                setState((s) => ({
+                  ...s,
+                  noDataAvailable: true,
+                }));
+              }
             }
           })
         )
@@ -285,7 +314,14 @@ function App() {
           console.log(errors);
         });
     }
-  }, [conductorCourseId, state.environment, state.homepage, courseInfo.start, courseInfo.end, state.reload]);
+  }, [
+    conductorCourseId,
+    state.environment,
+    state.homepage,
+    courseInfo.start,
+    courseInfo.end,
+    state.reload,
+  ]);
 
   return (
     <>
@@ -322,10 +358,17 @@ function App() {
               icon={<Spinner />}
             />
           )}
-        {state.noDataAvailable && (
+        {state.noDataAvailable && !state.notInCommons && (
           <Box align="center" width="100%">
             <Text size="large" margin={{ top: "large" }}>
               There is no LibreTexts or ADAPT data available for this course.
+            </Text>
+          </Box>
+        )}
+        {state.noDataAvailable && state.notInCommons && (
+          <Box align="center" width="100%">
+            <Text size="large" margin={{ top: "large" }}>
+              Please use this dashboard inside of Commons.
             </Text>
           </Box>
         )}

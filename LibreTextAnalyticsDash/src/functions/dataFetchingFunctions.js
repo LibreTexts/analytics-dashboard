@@ -41,6 +41,7 @@ export async function handleClick(
         setState({
           ...tempState,
           disableFilterReset: true,
+          notInCommons: false,
         });
       }
       tempState = {
@@ -96,7 +97,8 @@ export async function handleClick(
         studentForTextbookEngagement: null,
         chosenTag: null,
         disableCourseStructureButton: false,
-        individualAssignmentSubmissions: null
+        individualAssignmentSubmissions: null,
+        notInCommons: false,
       };
       if (type === "filterReset") {
         if (state.environment === "development") {
@@ -130,6 +132,7 @@ export async function handleClick(
         textbookEngagementData: null,
         studentAssignments: null,
         rosterFilterApplied: state.rosterFile ? true : false,
+        notInCommons: false,
       };
       if (path) {
         tempState["chosenPath"] = JSON.stringify(path);
