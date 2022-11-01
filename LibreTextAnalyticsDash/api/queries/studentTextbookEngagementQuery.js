@@ -5,7 +5,6 @@ function studentTextbookEngagementQuery(params, dbInfo, encryptStudent) {
   if (params.individual.includes('@')) {
     student = encryptStudent(params.individual)
   }
-
   var data = {
     "collection": dbInfo.coll,
     "database": dbInfo.db,
@@ -71,6 +70,7 @@ function studentTextbookEngagementQuery(params, dbInfo, encryptStudent) {
   index = addFilters.spliceDateFilter(index, params, data);
   index = addFilters.splicePathFilter(index+2, params, data);
   addFilters.spliceTagFilter(index, params, data);
+  
   return data;
 }
 

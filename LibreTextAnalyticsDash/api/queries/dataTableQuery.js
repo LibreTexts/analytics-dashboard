@@ -64,6 +64,7 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
             "timeStudied": {'$trunc': [{'$divide': ['$timeStudied', 3600]}, 1]},
             "adaptUniqueInteractionDays": '$adapt.adaptUniqueInteractionDays',
             "adaptUniqueAssignments": '$adapt.adaptUniqueAssignments',
+            "adaptUniqueProblems": '$adapt.adaptUniqueProblems',
             "mostRecentAdaptLoad": '$adapt.mostRecentAdaptLoad',
             "adaptPercent": '$adapt.adaptPercent',
             "adaptAttempts": '$adapt.adaptAttempts',

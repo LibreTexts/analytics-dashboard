@@ -74,7 +74,7 @@ export async function getData(data, state, setState, path = false, tagData, hasR
           } else if (key === "allAssignmentGrades") {
             //look in here, use a datahandling function to check for 0s
             //if it's all 0s, splice in a query to grab scores from the adapt endpoint instead
-            handleGradebookData(value, tempState);
+            handleGradebookData(value, tempState, chartData, courseData);
           } else {
             chartData[key] = value;
           }

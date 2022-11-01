@@ -60,7 +60,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
             )}
             {state.pageData && queryVariables.click && state.display && (
               <Box gridArea="table" border={true}>
-                <DataTable tab={state.tab} data={state.pageData} />
+                <DataTable tab={state.tab} data={state.pageData} accessibilityMode={state.accessibilityMode}/>
               </Box>
             )}
             {state.pageData && queryVariables.click && state.display && (
@@ -152,6 +152,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                         ? state.individualPageViews
                         : state.pageViews
                     }
+                    accessibilityMode={state.accessibilityMode}
                     filename={
                       state.individualPageViews
                         ? state.page + "-individual-page-views.csv"
@@ -233,6 +234,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                           ? state.individualChapterData
                           : state.aggregateChapterData
                       }
+                      accessibilityMode={state.accessibilityMode}
                       filename={
                         state.individualChapterData
                           ? state.studentForChapterChart +

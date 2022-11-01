@@ -146,18 +146,16 @@ export default function MultiSelect({
 
   return (
     <Box width="100%">
-      {!resetPath && (
         <>
           <div ref={categoriesTreeRef}>{getCategoriesTree()}</div>
           <Button
             secondary
             label="Clear Current Path"
             color="#0047BA"
-            onClick={() => clearPath(state, setState)}
+            onClick={function() {clearPath(state, setState)}}
             margin={{ bottom: "small", horizontal: "large" }}
           />
         </>
-      )}
       <Button
         primary
         label="Apply"

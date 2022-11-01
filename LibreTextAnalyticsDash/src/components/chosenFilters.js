@@ -84,12 +84,12 @@ export default function ChosenFilters({
     let title = item["title"];
     let children = item["children"];
     return (
-      <li>
+      <li role='alert'>
         {title}
         {children &&
           children.map((childObj) => {
             return (
-              <ul style={{ marginTop: 5, marginBottom: 5 }}>
+              <ul style={{ marginTop: 5, marginBottom: 5 }} role='alert'>
                 <ListItem item={childObj} />
               </ul>
             );
@@ -109,7 +109,7 @@ export default function ChosenFilters({
     >
       {state.studentData && (
         <>
-          <Text margin={{ top: "small" }} textAlign="center" weight="bold">
+          <Text margin={{ top: "small" }} textAlign="center" weight="bold" role='alert'>
             {enrollmentMessage}
           </Text>
           {state.chosenPaths && state.chosenPaths.length > 0 && (
@@ -121,24 +121,24 @@ export default function ChosenFilters({
           {state.environment === "development" && (
             <>
               {state.start && (
-                <Text margin="small">
+                <Text margin="small" role='alert'>
                   Start Date: {moment(state.start).format("MMM Do YYYY")}
                 </Text>
               )}
               {state.end && (
-                <Text margin={{ horizontal: "small", bottom: "small" }}>
+                <Text margin={{ horizontal: "small", bottom: "small" }} role='alert'>
                   End Date: {moment(state.end).format("MMM Do YYYY")}
                 </Text>
               )}
             </>
           )}
           {state.chosenTag && (
-            <Text margin={{ horizontal: "small", bottom: "small" }}>
+            <Text margin={{ horizontal: "small", bottom: "small" }} role='alert'>
               Metatag: {state.chosenTag}
             </Text>
           )}
           {!hasFilter && (
-            <Text alignSelf="center" margin={{ top: "large" }} size="medium">
+            <Text alignSelf="center" margin={{ top: "large" }} size="medium" role='alert'>
               No filters have been chosen.
             </Text>
           )}
@@ -156,7 +156,7 @@ export default function ChosenFilters({
           )}
           {state.reset && (
             <Box direction="column">
-              <Text margin="medium">
+              <Text margin="medium" role='alert'>
                 Please hit apply for the changes to take effect.
               </Text>
               <Button

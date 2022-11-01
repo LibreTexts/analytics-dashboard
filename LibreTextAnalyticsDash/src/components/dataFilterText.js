@@ -17,13 +17,13 @@ export default function DataFilterText({ data, noEnrollmentData }) {
 
   return (
     <Box border={true} pad={"small"} alignSelf={"center"}>
-      <Text>
+      <Text role='alert'>
         If the table appears empty, try sorting by Most Recent Page Load
       </Text>
-      <Text>Number of Students with Data: {s_with_data}</Text>
-      <Text>Number of Students without Data: {s_without_data}</Text>
+      <Text role='alert'>Number of Students with Data: {s_with_data}</Text>
+      <Text role='alert'>Number of Students without Data: {s_without_data}</Text>
       {false && noEnrollmentData && (
-        <Text weight="bold">This course has no enrollment data available.</Text>
+        <Text weight="bold" role='alert'>This course has no enrollment data available.</Text>
       )}
     </Box>
   );

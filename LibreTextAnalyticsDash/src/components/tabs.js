@@ -1,9 +1,11 @@
 import "../css/index.css";
+import { useState } from "react";
 
 //creates the tabs at the top of the page; handles tab switching
 export default function Tabs({ state, setState }) {
   function activeTab(event, tab, state, setState) {
-    event.preventDefault();
+    //can't prevent default when using href
+    //event.preventDefault();
     if (tab === "student") {
       setState({
         ...state,
@@ -46,10 +48,36 @@ export default function Tabs({ state, setState }) {
       });
     }
   }
+  var id = "student-dropdown";
+  if (state.tab === "filters") {
+    id = "data-filters";
+  } else if (state.tab === "page") {
+    id = "table";
+  } else if (state.tab === "assignment") {
+    id = "adapt-dropdown";
+  }
+
+  const [linkId, setLinkId] = useState("0");
+  function onEnter(event, tab) {
+    if (event.key === "Enter") {
+      //need a variable because ternary operators won't work otherwise
+      var temp =
+        tab === "student"
+          ? setLinkId("student-dropdown")
+          : tab === "page"
+          ? setLinkId("table")
+          : tab === "assignment"
+          ? setLinkId("adapt-dropdown")
+          : setLinkId("data-filters");
+    } else {
+      setLinkId("0");
+    }
+  }
 
   return (
     <div className="bar blue">
-      <button
+      <a
+        href={`#${linkId}`}
         className={
           state.index === 3
             ? "bar-item button white"
@@ -57,39 +85,49 @@ export default function Tabs({ state, setState }) {
         }
         onClick={(event) => activeTab(event, "filters", state, setState)}
         tabIndex="0"
+        onKeyDown={(event) => onEnter(event, "filters")}
       >
         Filters
-      </button>
-      <button
+      </a>
+      <a href={`#${id}`} className="skip-nav-link">
+        Skip to Content
+      </a>
+      <a
+        href={`#${linkId}`}
         className={
           state.index === 0 ? "bar-item button white" : "bar-item button"
         }
         onClick={(event) => activeTab(event, "student", state, setState)}
         tabIndex="0"
+        onKeyDown={(event) => onEnter(event, "student")}
       >
         By Student
-      </button>
+      </a>
       {state.ltCourse && (
-        <button
+        <a
+          href={`#${linkId}`}
           className={
             state.index === 1 ? "bar-item button white" : "bar-item button"
           }
           onClick={(event) => activeTab(event, "page", state, setState)}
           tabIndex="0"
+          onKeyDown={(event) => onEnter(event, "page")}
         >
           Textbook Engagement
-        </button>
+        </a>
       )}
       {state.hasAdapt && (
-        <button
+        <a
+          href={`#${linkId}`}
           className={
             state.index === 2 ? "bar-item button white" : "bar-item button"
           }
           onClick={(event) => activeTab(event, "assignment", state, setState)}
           tabIndex="0"
+          onKeyDown={(event) => onEnter(event, "assignment")}
         >
           Homework Engagement
-        </button>
+        </a>
       )}
     </div>
   );

@@ -29,7 +29,7 @@ export default function InfoBox({
   let message = [];
   let msgkey = 0;
   message.push(
-    <Text alignSelf="center" margin={{ top: "small" }} key={msgkey++}>
+    <Text alignSelf="center" margin={{ top: "small" }} key={msgkey++} role='alert'>
       {infoText}
     </Text>
   );
@@ -88,10 +88,10 @@ export default function InfoBox({
               {message}
               {showProgress &&
                 <>
-                  <Text alignSelf="center" margin={{ top: "small" }} key={2}>
+                  <Text alignSelf="center" margin={{ top: "small" }} key={2} role='alert'>
                     If the course has made no progress within 30 seconds, it will try to automatically reload.
                   </Text>
-                  <Text alignSelf="center" margin={{ top: "small" }} key={2}>
+                  <Text alignSelf="center" margin={{ top: "small" }} key={3} role='alert'>
                     If that is not successful, please try clearing your browser cache and reloading the page manually.
                   </Text>
                 </>
@@ -103,7 +103,7 @@ export default function InfoBox({
                 margin={{ bottom: "medium" }}
                 alignSelf="end"
                 onClick={handleClick}
-                icon={<FormClose />}
+                icon={<FormClose aria-label="Close message"/>}
               />
             </Box>
           </Box>

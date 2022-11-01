@@ -110,6 +110,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               downloadComponent={
                 <DataToCSV
                   data={state.aggregateAssignmentViews}
+                  accessibilityMode={state.accessibilityMode}
                   filename={
                     state.levelGroup + "-" + state.levelName + "-views.csv"
                   }
@@ -163,6 +164,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               downloadComponent={
                 <DataToCSV
                   data={state.allAssignmentGrades}
+                  accessibilityMode={state.accessibilityMode}
                   filename={
                     state.gradeLevelGroup +
                     "-" +

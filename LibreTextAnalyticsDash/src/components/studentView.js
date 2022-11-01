@@ -94,6 +94,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                   displayMode={state.displayMode}
                   student={state.student}
                   disableStudent={state.disableStudent}
+                  accessibilityMode={state.accessibilityMode}
                 />
               </Box>
             )}
@@ -149,6 +150,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                 downloadComponent={
                   <DataToCSV
                     data={state.studentChart}
+                    accessibilityMode={state.accessibilityMode}
                     filename={state.barXAxisLabel + "-studentChart.csv"}
                     headers={[
                       { label: state.barXAxisLabel, key: "_id" },
@@ -209,6 +211,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                               (o) => o.due !== "Not Found"
                             )
                       }
+                      accessibilityMode={state.accessibilityMode}
                       filename={
                         state.student
                           ? state.student + "-assignment-views.csv"
@@ -303,6 +306,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                           ? state.textbookEngagementData
                           : state.pageViews
                       }
+                      accessibilityMode={state.accessibilityMode}
                       filename={
                         state.textbookEngagementData
                           ? state.student + "-individual-page-views.csv"
@@ -378,6 +382,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                           ? state.individualAssignmentSubmissions
                           : state.aggregateAdaptEngagement
                       }
+                      accessibilityMode={state.accessibilityMode}
                       filename={
                         state.individualAssignmentSubmissions
                           ? state.student + "-submissions.csv"

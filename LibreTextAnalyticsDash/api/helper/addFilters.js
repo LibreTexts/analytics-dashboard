@@ -6,16 +6,16 @@ function splicePathFilter(index, params, data, addPageLookup=false) {
       }
     }
   }
-  if (params.path) {
+  if (params.path && params.path.length > 0) {
     params.path.forEach(e => {
       pathMatch["$match"]['$expr']['$or'].push({'$gt': [{ '$indexOfCP': [ "$pageInfo.text", e ] }, -1]})
     });
   }
 
-  if (params.path && !addPageLookup) {
+  if (params.path && params.path.length > 0 && !addPageLookup) {
     data['pipeline'].splice(index, 0, pathMatch)
     index = index + 1;
-  } else if (params.path && addPageLookup) {
+  } else if (params.path && params.path.length > 0 && addPageLookup) {
     var lookup = {
       '$lookup': {
         "from": "pageinfo",

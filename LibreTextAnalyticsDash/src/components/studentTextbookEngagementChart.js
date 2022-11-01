@@ -203,7 +203,7 @@ export default function StudentTextbookEngagementChart({
       </ResponsiveContainer>
       {studentData && (
         <Box fill={true} flex={true} responsive={true}>
-          <Button alignSelf="end" onClick={clearChart} icon={<FormClose />} />
+          <Button alignSelf="end" onClick={clearChart} icon={<FormClose  aria-label="Close chart"/>} />
           <StudentTextbookEngagementTable
             data={studentData}
             displayMode={displayMode}

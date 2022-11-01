@@ -148,7 +148,7 @@ export default function StudentChart({
               <Button
                 alignSelf="end"
                 onClick={clearChart}
-                icon={<FormClose />}
+                icon={<FormClose aria-label="Close table"/>}
               />
               <StudentTable
                 data={studentData}

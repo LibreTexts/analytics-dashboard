@@ -285,6 +285,7 @@ export default function LayeredComponent({
                 secondary
                 onClick={() => setShowFilter(true)}
                 icon={<Filter />}
+                label={state.accessibilityMode ? "Filters" : ""}
                 margin={{ top: "small", left: "small" }}
               />
             )}

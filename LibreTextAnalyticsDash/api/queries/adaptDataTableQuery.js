@@ -12,7 +12,7 @@ function adaptDataTableQuery(params, dbInfo) {
           '$match': {
             '$expr': {
               '$and': [
-                {'$eq': ["$course_id", params.courseId]}
+                { '$eq': ["$course_id", params.courseId] }
               ]
             }
           }
@@ -20,9 +20,11 @@ function adaptDataTableQuery(params, dbInfo) {
         //reformatting the date to be able to use it in a table
         {
           '$addFields': {
-            'day': {'$replaceAll': {
-              'input': '$submission_time', 'find': '"', 'replacement': ''
-            }}
+            'day': {
+              '$replaceAll': {
+                'input': '$submission_time', 'find': '"', 'replacement': ''
+              }
+            }
           }
         },
         {
@@ -35,145 +37,98 @@ function adaptDataTableQuery(params, dbInfo) {
             }
           }
         },
-        //group by student, find the most recent assignment load for adapt, dates, and assignments
-        {
-          '$project': {
-            'date': '$date',
-            'levelname': '$assignment_name',
-            'student': '$anon_student_id',
-            'levelpoints': '$assignment_points',
-            'problemname': '$question_id',
-            'page_id': '$page_id',
-            'points': {
-              '$cond':
-              {
-                'if': { '$eq': ['$outcome', "CORRECT"] },
-                'then': {
-                  '$convert': {
-                    'input': '$question_points',
-                    'to': 'double',
-                    'onError': 0,
-                    'onNull': 0
-                  }
-                },
-                'else': 0
-              }
-            }
-          }
-        },
         {
           '$group': {
             '_id': {
-              'student': '$student',
-              'level': '$levelname',
-              'problemname': '$problemname',
+              'anon_student_id': '$anon_student_id',
+              'level_name': '$assignment_name',
+              'problem_name': '$question_id'
             },
-            'dates': {
-              '$addToSet': '$date'
-            },
+            'dates': {'$addToSet': '$date'},
+            'attempts': {'$sum': 1},
             'page_ids': {
               '$addToSet': '$page_id'
-            },
-            'levelpoints': {
-              '$first': '$levelpoints'
-            },
-            'bestScore': {
-              '$max': '$points'
-            },
-            'attempts': {
-              '$sum': 1
-            },
+            }
           }
         },
         {
           '$group': {
             '_id': {
-              'level': '$_id.level',
-              'student': '$_id.student',
+              'anon_student_id': '$_id.anon_student_id',
+              'level_name': '$_id.level_name'
             },
             'dateArrays': {
               '$addToSet': '$dates'
             },
-            'page_idArrays': {
+            'pageArrays': {
               '$addToSet': '$page_ids'
             },
-            'Sum': {
-              '$sum': '$bestScore'
+            'attempts': {'$avg': '$attempts'}
+          }
+        },
+        {
+          '$addFields': {
+            'dates': {
+              '$reduce': {
+                'input': '$dateArrays',
+                'initialValue': [],
+                'in': { '$setUnion': ["$$value", "$$this"] }
+              }
             },
-            'attemptsPerLevel': {
-              '$sum': '$attempts'
+            'pageIds': {
+              '$reduce': {
+                'input': '$pageArrays',
+                'initialValue': [],
+                'in': { '$setUnion': ["$$value", "$$this"] }
+              }
+            }
+          }
+        },
+        {
+          '$lookup': {
+            "from": dbInfo.gradesColl,
+            "localField": "_id.anon_student_id",
+            "foreignField": "email",
+            "let": {
+              'level': '$_id.level_name'
             },
-            'levelpoints': {
-              '$first': {
-                '$convert': {
-                  'input': '$levelpoints',
-                  'to': 'double',
-                  'onError': 1,
-                  'onNull': 1
+            "pipeline": [
+              {
+                '$match': {
+                  '$expr': {
+                    '$and': [
+                      {'$eq': ['$$level', '$level_name']}
+                    ]
+                  }
                 }
               }
-            }
+            ],
+            "as": "scores"
           }
         },
         {
-          '$addFields': {
-            'score': {
-              '$divide': [
-                '$Sum',
-                '$levelpoints'
-              ]
-            },
-            'dates': {
-              '$reduce': {
-                'input': '$dateArrays',
-                'initialValue': [],
-                'in': { '$setUnion': ["$$value", "$$this"] }
-              }
-            },
-            'page_ids': {
-              '$reduce': {
-                'input': '$page_idArrays',
-                'initialValue': [],
-                'in': { '$setUnion': ["$$value", "$$this"] }
-              }
-            }
+          "$unwind": {
+            "path": "$scores",
+            "preserveNullAndEmptyArrays": true
           }
         },
         {
-          '$group': {
-            '_id': {
-              'student': '$_id.student',
-            },
+          "$group": {
+            '_id': '$_id.anon_student_id',
             'dateArrays': {
-              '$addToSet': '$dates'
+              '$push': '$dates'
             },
-            'page_idArrays': {
-              '$addToSet': '$page_ids'
+            'pageArrays': {
+              '$push': '$pageIds'
             },
-            'Sums': {
-              '$push': '$Sum'
-            },
-            'scoresArray': {
-              '$push': '$score'
-            },
-            'attemptsOverall': {
-              '$push': '$attemptsPerLevel'
-            },
-            'assignments': {
-              '$addToSet': '$_id.level'
-            }
+            'adaptAvgAttempts': {'$avg': '$attempts'},
+            'adaptAvgPercentScore': {'$avg': '$scores.assignment_percent'},
+            'adaptCourseGrade': {'$max': '$scores.overall_course_percent'},
+            'uniqueAssignments': {'$addToSet': '$_id.level_name'}
           }
         },
         {
           '$addFields': {
-            'adaptAvgPercentScore': {
-              '$round': [{'$multiply': [{'$avg': '$scoresArray'}, 100]}, 1]
-            },
-
-            'adaptAvgAttempts': {
-              '$round': [{'$avg': '$attemptsOverall'}, 1]
-            },
-
             'dates': {
               '$reduce': {
                 'input': '$dateArrays',
@@ -181,10 +136,9 @@ function adaptDataTableQuery(params, dbInfo) {
                 'in': { '$setUnion': ["$$value", "$$this"] }
               }
             },
-
-            'page_ids': {
+            'pageIds': {
               '$reduce': {
-                'input': '$page_idArrays',
+                'input': '$pageArrays',
                 'initialValue': [],
                 'in': { '$setUnion': ["$$value", "$$this"] }
               }
@@ -193,35 +147,15 @@ function adaptDataTableQuery(params, dbInfo) {
         },
         {
           '$addFields': {
-            'mostRecentAdaptLoad': {
-              '$max': '$dates'
-            },
-            'adaptUniqueInteractionDays': {
-              '$size': '$dates'
-            },
-            'adaptUniqueAssignments': {
-              '$size': '$assignments'
-            },
-            'student': '$_id.student'
+            'adaptAvgPercentScore': {'$round': ['$adaptAvgPercentScore', 1]},
+            'adaptUniqueInteractionDays': {'$size': '$dates'},
+            'adaptUniqueAssignments': {'$size': '$uniqueAssignments'},
+            'adaptUniqueProblems': {'$size': '$pageIds'},
+            'mostRecentAdaptLoad': {'$max': '$dates'}
           }
         },
         {
-          '$unset': '_id'
-        },
-        {
-          '$addFields': {
-            '_id': '$student'
-          }
-        },
-        {
-          '$project': {
-            'page_idArrays': 0,
-            'dateArrays': 0,
-            'scoresArray': 0,
-            'attemptsOverall': 0,
-            'page_ids': 0,
-            'dates': 0,
-          }
+          '$unset': ['dates', 'pageIds', 'uniqueAssignments', 'dateArrays', 'pageArrays']
         }
       ]
     }

@@ -26,6 +26,7 @@ export default function SelectWithApply({
   individual,
   disableName,
   initPage = false,
+  id=null,
 }) {
   var dropHeight = "small";
   if (dropSize) {
@@ -52,7 +53,7 @@ export default function SelectWithApply({
 
   return (
     <Box direction="row">
-      <Text alignSelf="center" margin={{ right: "small" }}>
+      <Text alignSelf="center" margin={{ right: "small" }} tabIndex="0" id={id}>
         {selectLabel}
       </Text>
       <Select
@@ -115,6 +116,7 @@ export default function SelectWithApply({
         primary
         label="Apply"
         disabled={disable}
+        disabledColor="purple"
         onClick={() =>
           type === "courseId"
             ? clickFunction(state, setState, type, queryVariables)

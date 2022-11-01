@@ -61,6 +61,8 @@ export default function DataFilters({
                     weight="bold"
                     textAlign="center"
                     margin={{ left: "small", top: "small" }}
+                    id="data-filters"
+                    tabIndex="0"
                   >
                     {" "}
                     Data Filters{" "}
@@ -113,16 +115,6 @@ export default function DataFilters({
                 )}
                 {state.tagData && (
                   <>
-                    <Box>
-                      <Text
-                        size="medium"
-                        weight="bold"
-                        textAlign="center"
-                        margin={{ top: "small" }}
-                      >
-                        Metatag Filters
-                      </Text>
-                    </Box>
                     <Box
                       pad="small"
                       direction="row"
@@ -130,6 +122,13 @@ export default function DataFilters({
                       justify="center"
                     >
                       <Box direction="row">
+                      <Text
+                        size="medium"
+                        textAlign="center"
+                        margin={{ vertical: "medium", right: "small" }}
+                      >
+                        Metatags:
+                      </Text>
                         <Select
                           style={{ height: 50 }}
                           margin={{ vertical: "small" }}

@@ -39,7 +39,7 @@ export function addStudentLibreTextColumns(
     {
       Header: (
         <Tippy content={column2Label}>
-          <a href="/#" tabIndex={0}>
+          <a href="/#" tabIndex={0} aria-label={column2Label}>
             {<Text>{column2Label}</Text>}
           </a>
         </Tippy>

@@ -3,7 +3,7 @@
 
 //creates the data table column values to show or hide
 export function handleStudentData(key, value, tempState, courseData, allData) {
-  percentile(value.filter(student => student.isEnrolled === true));
+  percentile(value.filter(student => student.isEnrolled === true || student.isEnrolled === "N/A"));
   if (tempState.adaptCourse && tempState.ltCourse) {
     tempState["hasAdapt"] = true;
     courseData["hasAdapt"] = true;
@@ -147,10 +147,21 @@ export function handleChapters(value, tempState, courseData, allData) {
   allData["allChapters"] = courseStructure;
 }
 
-export function handleGradebookData(value, tempState) {
+export function handleGradebookData(value, tempState, courseData, allData) {
   tempState["allAssignmentGrades"] = value;
   var fromGradebook = value.filter(v => v.fromGradebook === true);
   tempState["gradesFromGradebook"] = fromGradebook.length > 0 ? true : false;
+  courseData["allAssignmentGrades"] = value;
+  allData["allAssignmentGrades"] = value;
+  if (!tempState["gradesFromGradebook"]) {
+    tempState["studentData"].forEach((student, index) => {
+      tempState["studentData"][index]["adaptCourseGrade"] = value.find(v => v._id === student.displayModeStudent) ? value.find(v => v._id === student.displayModeStudent).score : 0;
+      //console.log(tempState["studentData"][index]["adaptCourseGrade"])
+    })
+    percentile(tempState["studentData"].filter(s => s.isEnrolled === true || s.isEnrolled === "N/A"));
+    courseData["studentData"] = tempState["studentData"];
+    allData["studentData"] = tempState["studentData"];
+  }
 }
 
 export function handleChapterChart(
@@ -260,6 +271,6 @@ function percentile(studentData) {
       }
     }
     percent = (count * 100) / (n - 1);
-    studentData[i]['percentile'] = Math.round(percent);
+    studentData[i]['percentile'] = Math.floor(percent);
   }
 }

@@ -3,12 +3,17 @@ import { Text } from "grommet";
 import { Download } from "grommet-icons";
 import { matchSorter } from "match-sorter";
 import { CSVLink } from "react-csv";
+import DataToCSV from "./dataToCSV.js";
 import ReactTable from "react-table-6";
 import "../css/index.css";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 import moment from "moment";
-import { addStudentLibreTextColumns, addStudentAdaptColumns, addPageColumns } from "../functions/dataTableFunctions.js";
+import {
+  addStudentLibreTextColumns,
+  addStudentAdaptColumns,
+  addPageColumns,
+} from "../functions/dataTableFunctions.js";
 
 export default function DataTable({
   tab,
@@ -20,6 +25,7 @@ export default function DataTable({
   ltCourse,
   adaptCourse,
   displayMode,
+  accessibilityMode,
   student = false,
   disableStudent = false,
 }) {
@@ -91,17 +97,50 @@ export default function DataTable({
   if (showNonStudents === false) {
     showData = showData.filter((o) => o.isEnrolled);
   }
-
+  var elements = [];
+  if (ltCourse && !adaptCourse) {
+    elements = ["objectCount", "viewCount", "max", "dateCount", "timeStudied"];
+  } else if (ltCourse && adaptCourse) {
+    elements = [
+      "objectCount",
+      "viewCount",
+      "max",
+      "dateCount",
+      "timeStudied",
+      "adaptUniqueInteractionDays",
+      "adaptUniqueAssignments",
+      "mostRecentAdaptLoad",
+      "adaptAvgPercentScore",
+      "adaptAvgAttempts",
+      "percentile",
+    ];
+  } else {
+    elements = [
+      "adaptUniqueInteractionDays",
+      "adaptUniqueAssignments",
+      "mostRecentAdaptLoad",
+      "adaptAvgPercentScore",
+      "adaptAvgAttempts",
+      "percentile",
+    ];
+  }
   showData.forEach((val, index) => {
     if (Object.keys(val).includes("max")) {
-      showData[index]["max"] = moment(val["max"]).add(1, "days").format("MMM Do YYYY");
+      showData[index]["max"] = moment(val["max"])
+        .add(1, "days")
+        .format("MMM Do YYYY");
     } else if (!Object.keys(val).includes("max")) {
-      showData[index]["max"] = "";
+      showData[index]["max"] = "N/A";
     }
     if (val["mostRecentAdaptLoad"]) {
       showData[index]["mostRecentAdaptLoad"] = moment(
         val["mostRecentAdaptLoad"]
-      ).add(1, "days").format("MMM Do YYYY");
+      )
+        .add(1, "days")
+        .format("MMM Do YYYY");
+    }
+    if (val.isEnrolled && !val.hasData) {
+      elements.map(e => showData[index][e] = '-')
     }
     showData[index]["enrolled"] = val["isEnrolled"] ? "Yes" : "No";
   });
@@ -158,7 +197,11 @@ export default function DataTable({
         </a>
       );
     } else if (tab === "student" && hasData) {
-      return <a tabIndex={0} href="/#">{pageInfo.original[idAccessor]}</a>;
+      return (
+        <a tabIndex={0} href="/#">
+          {pageInfo.original[idAccessor]}
+        </a>
+      );
     } else if (tab === "student" && !hasData) {
       return (
         <a tabIndex={0} href="/#">
@@ -178,7 +221,9 @@ export default function DataTable({
     {
       Header: (
         <Tippy content="Name" arrow={true}>
-          <a tabIndex={0} href="/#">{<Text>Name</Text>}</a>
+          <a tabIndex={0} href="#name-table" id="table">
+            {<Text>Name</Text>}
+          </a>
         </Tippy>
       ),
       width: 250,
@@ -193,7 +238,14 @@ export default function DataTable({
   //use different headers and accessors for the student table and page table
   //only need the adapt data for the student table; no page tab for adapt-only courses
   if (tab === "student" && ltCourse) {
-    addStudentLibreTextColumns(columns, headers, column2Label, column3Label, showColumns, numMatch);
+    addStudentLibreTextColumns(
+      columns,
+      headers,
+      column2Label,
+      column3Label,
+      showColumns,
+      numMatch
+    );
   } else if (tab === "page") {
     addPageColumns(columns, headers, column2Label, numMatch);
   }
@@ -222,14 +274,12 @@ export default function DataTable({
         pageSizeOptions={[10, 25, 50]}
       ></ReactTable>
       <div>
-        <CSVLink
+        <DataToCSV
           data={exportData}
           headers={headers}
           filename={filename}
-          style={{ marginLeft: "small" }}
-        >
-          <Download />
-        </CSVLink>
+          accessibilityMode={accessibilityMode}
+        />
       </div>
     </>
   );

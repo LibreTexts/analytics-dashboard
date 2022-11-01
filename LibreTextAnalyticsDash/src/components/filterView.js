@@ -61,16 +61,11 @@ export default function FilterView({ state, setState, queryVariables }) {
                 margin={{ left: "xlarge" }}
                 gridArea="dropdown"
               >
-                {!state.resetPath && (
+                { (
                   <TitleText
                     title="Course Structure Dropdown"
                     text={infoText.courseStructureDropdown}
                   />
-                )}
-                {state.resetPath && (
-                  <Text margin="medium">
-                    Please hit apply for the changes to take effect.
-                  </Text>
                 )}
                 <MultiSelect
                   resetPath={state.resetPath}

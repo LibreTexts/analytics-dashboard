@@ -17,6 +17,8 @@ export default function CheckBoxGroup({
           a11yTitle={c}
           pad="small"
           checked={data[c]}
+          id={c}
+          className="checks"
           onChange={(event) => changeColumns(event, c, state, setState)}
         />
       );

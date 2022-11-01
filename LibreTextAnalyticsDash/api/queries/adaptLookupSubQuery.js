@@ -124,7 +124,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
             },
             'adaptAvgAttempts': {'$avg': '$attempts'},
             'adaptAvgPercentScore': {'$avg': '$scores.assignment_percent'},
-            'courseGrade': {'$max': '$scores.overall_course_percent'}
+            'courseGrade': {'$max': '$scores.overall_course_percent'},
+            'uniqueAssignments': {'$addToSet': '$_id.level_name'}
           }
         },
         {
@@ -148,7 +149,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
         {
           '$addFields': {
             'adaptUniqueInteractionDays': {'$size': '$dates'},
-            'adaptUniqueAssignments': {'$size': '$pageIds'},
+            'adaptUniqueAssignments': {'$size': '$uniqueAssignments'},
+            'adaptUniqueProblems': {'$size': '$pageIds'},
             'mostRecentAdaptLoad': {'$max': '$dates'}
           }
         }

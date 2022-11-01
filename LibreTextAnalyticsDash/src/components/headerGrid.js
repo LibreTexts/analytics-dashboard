@@ -63,6 +63,15 @@ export default function HeaderGrid({
     columns = ["65%", "35%"];
   }
 
+  const [linkId, setLinkId] = useState("#0");
+  function onEnter(event, tab) {
+    if (event.key === "Enter") {
+      setLinkId("#All")
+    } else {
+      setLinkId("#0");
+    }
+  }
+
   return (
     <>
       {!initPage && <Tabs state={state} setState={setState} />}
@@ -120,7 +129,7 @@ export default function HeaderGrid({
                   <>
                     <Box align="center" gridArea="filters">
                       <Box direction="row" align="center">
-                        <Text weight="bold">Choose a student: </Text>
+                        <Text weight="bold" tabIndex="0" id="student-dropdown">Choose a student: </Text>
                         <Select
                           options={options}
                           margin={{ vertical: "small", horizontal: "small" }}
@@ -217,12 +226,14 @@ export default function HeaderGrid({
                           secondary
                           color="#0047BA"
                           size="small"
+                          href={linkId}
                           onClick={() =>
                             setState({
                               ...state,
                               showCheckboxes: !state.showCheckboxes,
                             })
                           }
+                          onKeyDown={(event) => onEnter(event)}
                         />
                       </Box>
                       {state.showCheckboxes && (
@@ -253,6 +264,7 @@ export default function HeaderGrid({
                       optionalSelectType="pageLevelName"
                       renderSelect={state.levelGroup}
                       selectLabel="Choose an ADAPT assignment:"
+                      id="adapt-dropdown"
                       pathsWithAttributes={{
                         "/individualpageviews": {
                           bin: state.individualAssignmentBin,
