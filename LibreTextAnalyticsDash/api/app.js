@@ -19,8 +19,8 @@ const randomString = require('randomstring');
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
-const HOMEPAGE = "https://test.libretexts.org/analytics/api/";
-const REDIRECT_URL = "/analytics/api/init";
+const HOMEPAGE = "https://analytics.libretexts.org/api/";
+const REDIRECT_URL = "/api/init";
 
 const app = express();
 app.use(cors());
