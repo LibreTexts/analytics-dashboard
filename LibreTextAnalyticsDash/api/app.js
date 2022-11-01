@@ -19,6 +19,8 @@ const randomString = require('randomstring');
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
+const HOMEPAGE = "https://test.libretexts.org/analytics/api/";
+const REDIRECT_URL = "/analytics/api/init";
 
 const app = express();
 app.use(cors());
@@ -94,7 +96,7 @@ app.get('/oauth2.0/callback', (req, res) => {
   const params = new url.URLSearchParams({
     grant_type: 'authorization_code',
     code: req.query.code,
-    redirect_uri: 'https://test.libretexts.org/analytics/api/oauth2.0/callback',
+    redirect_uri: HOMEPAGE + 'oauth2.0/callback',
     client_id: process.env.CONDUCTOR_API_CLIENT_ID,
     client_secret: process.env.CONDUCTOR_API_CLIENT_SECRET,
   });
@@ -140,7 +142,7 @@ app.get('/oauth2.0/callback', (req, res) => {
  */
 app.get('/userinfo', (req, res) => {
   if (!req.cookies.analytics_conductor_access || !req.cookies.analytics_conductor_refresh) {
-    return res.redirect('/analytics/api/init'); // need to sign in
+    return res.redirect(REDIRECT_URL); // need to sign in
   }
 
   return axios.get(`${CONDUCTOR_API_URL}/user/basicinfo`, {
@@ -171,7 +173,7 @@ app.get('/userinfo', (req, res) => {
 
 app.get('/courseinfo', (req, res) => {
   if (!req.cookies.analytics_conductor_access || !req.cookies.analytics_conductor_refresh) {
-    return res.redirect('/analytics/api/init'); // need to sign in
+    return res.redirect(REDIRECT_URL); // need to sign in
   }
   var courseID = req.cookies.analytics_conductor_course_id;
   return axios.get(`${CONDUCTOR_API_URL}/analytics/courses/`+courseID, {
@@ -199,7 +201,7 @@ app.get('/courseinfo', (req, res) => {
 
 app.get('/conductorenrollment', (req, res) => {
   if (!req.cookies.analytics_conductor_access || !req.cookies.analytics_conductor_refresh) {
-    return res.redirect('/analytics/api/init'); // need to sign in
+    return res.redirect(REDIRECT_URL); // need to sign in
   }
   var courseID = req.cookies.analytics_conductor_course_id;
   return axios.get(`${CONDUCTOR_API_URL}/analytics/courses/`+courseID+`/roster`, {
