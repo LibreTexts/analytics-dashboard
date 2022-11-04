@@ -155,7 +155,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                     accessibilityMode={state.accessibilityMode}
                     filename={
                       state.individualPageViews
-                        ? state.page + "-individual-page-views.csv"
+                        ? state.page + "-page-views.csv"
                         : "aggregate-page-views.csv"
                     }
                     headers={[
@@ -238,7 +238,7 @@ export default function TextbookView({ state, setState, queryVariables }) {
                       filename={
                         state.individualChapterData
                           ? state.studentForChapterChart +
-                            "-individual-chapter-views.csv"
+                            "-chapter-views.csv"
                           : "aggregate-chapter-views.csv"
                       }
                       headers={[

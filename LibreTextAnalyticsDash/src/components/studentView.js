@@ -157,7 +157,6 @@ export default function StudentView({ state, setState, queryVariables }) {
                       { label: "Students", key: "students" },
                       { label: "Count", key: "count" },
                     ]}
-                    separator="; "
                   />
                 }
               />
@@ -309,7 +308,7 @@ export default function StudentView({ state, setState, queryVariables }) {
                       accessibilityMode={state.accessibilityMode}
                       filename={
                         state.textbookEngagementData
-                          ? state.student + "-individual-page-views.csv"
+                          ? state.student + "-page-views.csv"
                           : "aggregate-page-views.csv"
                       }
                       headers={[

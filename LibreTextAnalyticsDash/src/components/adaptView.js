@@ -87,7 +87,7 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               clickFunctionAttributes={{
                 payloadAttributes: {
                   bin: state.individualAssignmentBin,
-                  unit: state.individualAssignmentUnit
+                  unit: state.individualAssignmentUnit,
                 },
                 path: "/aggregateassignmentviews",
                 individualPayloadAttributes: {
@@ -109,19 +109,39 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               topMargin="large"
               downloadComponent={
                 <DataToCSV
-                  data={state.aggregateAssignmentViews}
+                  data={
+                    state.individualAssignmentViews
+                      ? state.individualAssignmentViews
+                      : state.aggregateAssignmentViews
+                  }
                   accessibilityMode={state.accessibilityMode}
                   filename={
-                    state.levelGroup + "-" + state.levelName + "-views.csv"
+                    state.individualAssignmentViews
+                      ? state.levelGroup + "-" + state.levelName + "-submissions.csv"
+                      : "aggregate-assignment-submissions.csv"
                   }
-                  headers={[
-                    { label: "Date", key: "dateString" },
-                    { label: "Number of Views", key: "count" },
-                    {
-                      label: "Number of Unique Students",
-                      key: "uniqueStudents.length",
-                    },
-                  ]}
+                  headers={state.individualAssignmentViews ?
+                    [
+                      { label: "Date", key: "dateString" },
+                      { label: "Number of Submissions", key: "count" },
+                      { label: "Number of Unique Students", key: "uniqueStudents.length" }
+                    ]
+                    : [
+                      { label: "Date", key: "dateString" },
+                      { label: "Number of Submissions", key: "count" },
+                      {
+                        label: "Number of Unique Assignments",
+                        key: "assignmentCount",
+                      },
+                      {
+                        label: "Number of Unique Questions",
+                        key: "uniqueQuestions.length",
+                      },
+                      {
+                        label: "Number of Students",
+                        key: "studentCount",
+                      },
+                    ]}
                 />
               }
             />
@@ -134,9 +154,12 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               title="Assignment Performance"
               selectedInfoText={
                 state.gradesFromGradebook
-                ? infoText.assignmentGradesChart
-                : infoText.assignmentGradesChart
-                +" "+ state.course +" has no gradebook data available. Data is being pulled from ADAPT. The grades are unweighted and may be inaccurate."}
+                  ? infoText.assignmentGradesChart
+                  : infoText.assignmentGradesChart +
+                    " " +
+                    state.course +
+                    " has no gradebook data available. Data is being pulled from ADAPT. The grades are unweighted and may be inaccurate."
+              }
               filterLabel="Grades Histogram Filters"
               filterType="slider"
               state={state}
@@ -149,6 +172,8 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
                   height={500}
                   individualData={state.gradesPageView}
                   accessibilityMode={state.accessibilityMode}
+                  assignmentGroup={state.levelGroup}
+                  assignmentName={state.levelName}
                 />
               }
               data={state.allAssignmentGrades}
@@ -161,24 +186,6 @@ export default function AdaptView({ state, setState, queryVariables, theme }) {
               axisType="sliderValue"
               optionalLoadingTest={state.gradeLevelName}
               topMargin="large"
-              downloadComponent={
-                <DataToCSV
-                  data={state.allAssignmentGrades}
-                  accessibilityMode={state.accessibilityMode}
-                  filename={
-                    state.gradeLevelGroup +
-                    "-" +
-                    state.gradeLevelName +
-                    "-views.csv"
-                  }
-                  headers={[
-                    { label: "Student", key: "_id.student" },
-                    { label: "Points Possible", key: "levelpoints" },
-                    { label: "Points Earned", key: "Sum" },
-                    { label: "Percent Score", key: "score" },
-                  ]}
-                />
-              }
             />
           )}
         </Grid>

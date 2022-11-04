@@ -12,7 +12,7 @@ export default function DataToCSV({ data, filename, headers, separator, type, ac
   return (
     <Box margin={margin} width={!accessibilityMode ? "4%" : "6%"} border={accessibilityMode}>
       {data && (
-        <CSVLink data={data} headers={headers} filename={filename} separator={separator}>
+        <CSVLink data={data} headers={headers} filename={filename}>
           {!accessibilityMode ? <Download /> : "Download"}
         </CSVLink>
       )}

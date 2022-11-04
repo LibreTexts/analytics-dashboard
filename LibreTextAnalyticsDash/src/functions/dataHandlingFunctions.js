@@ -151,6 +151,8 @@ export function handleGradebookData(value, tempState, courseData, allData) {
   tempState["allAssignmentGrades"] = value;
   var fromGradebook = value.filter(v => v.fromGradebook === true);
   tempState["gradesFromGradebook"] = fromGradebook.length > 0 ? true : false;
+  courseData["gradesFromGradebook"] = fromGradebook.length > 0 ? true : false;
+  allData["gradesFromGradebook"] = fromGradebook.length > 0 ? true : false;
   courseData["allAssignmentGrades"] = value;
   allData["allAssignmentGrades"] = value;
   if (!tempState["gradesFromGradebook"]) {
