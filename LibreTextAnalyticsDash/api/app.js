@@ -19,8 +19,9 @@ const randomString = require('randomstring');
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
-const HOMEPAGE = "https://test.libretexts.org/analytics/api/";
-const REDIRECT_URL = "/analytics/api/init";
+const HOMEPAGE = "https://analytics.libretexts.org/";
+const REDIRECT_URL = "/api/init";
+const DASHBOARD_URL = "/";
 
 const app = express();
 app.use(cors());
@@ -120,7 +121,7 @@ app.get('/oauth2.0/callback', (req, res) => {
       ]);
       res.cookie(`analytics_conductor_access`, conductorRes.data.access_token)
       res.cookie(`analytics_conductor_refresh`, conductorRes.data.refresh_token)
-      return res.redirect('/analytics');
+      return res.redirect(DASHBOARD_URL);
     }
 
     /* Something went wrong ... show user an error */
