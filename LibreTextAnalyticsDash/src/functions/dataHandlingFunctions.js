@@ -48,6 +48,7 @@ export function handleStudentData(key, value, tempState, courseData, allData) {
   var checks = Object.keys(columns);
   tempState["tableColumns"] = columns;
   tempState["checkedValues"] = checks;
+  tempState["noDataAvailable"] = false;
   courseData["tableColumns"] = columns;
   courseData["checkedValues"] = checks;
   allData["tableColumns"] = columns;
