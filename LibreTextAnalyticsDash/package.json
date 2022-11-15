@@ -57,7 +57,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "homepage": "https://test.libretexts.org/analytics/",
+  "homepage": "https://analytics.libretexts.org/",
   "eslintConfig": {
     "extends": [
       "react-app",
