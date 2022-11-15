@@ -152,7 +152,8 @@ export function getConfig(state, path, payloadAttributes) {
     courseId: state.courseId,
     startDate: state.start,
     endDate: state.end,
-    roster: state.roster
+    roster: state.roster,
+    adaptCourseID: state.adaptCourseID
   }
   Object.keys(payloadAttributes).forEach(key => {
     data[key] = payloadAttributes[key]
@@ -171,6 +172,7 @@ export function simpleConfigTemplate(state, setState, route) {
     endDate: state.end,
     path: state.dataPath,
     tagFilter: state.chosenTag,
+    adaptCourseID: state.adaptCourseID
   };
 
   var config = getAxiosCall(route, data, state);
@@ -199,6 +201,7 @@ export function getAllDataConfig(state, setState, type) {
     adaptCourse: state.adaptCourse,
     tagFilter: state.chosenTag,
     roster: state.roster,
+    adaptCourseID: state.adaptCourseID
   };
   var config = getAxiosCall("/data", data, state);
   return config;
@@ -208,6 +211,7 @@ export function getAllStudentsConfig(state, setState) {
   var data = {
     courseId: state.courseId,
     ltCourse: state.ltCourse,
+    adaptCourseID: state.adaptCourseID
   };
   var config = getAxiosCall("/allstudents", data, state);
   return config;
@@ -226,6 +230,7 @@ export function getAllPagesConfig(state, setState, type) {
     groupBy: group,
     path: state.dataPath,
     tagFilter: state.chosenTag,
+    adaptCourseID: state.adaptCourseID
   };
   var config = getAxiosCall("/timelineData", data, state);
   return config;
@@ -242,7 +247,8 @@ export function getStudentChartConfig(state, setState) {
     hasAdapt: state.hasAdapt,
     adaptAxisValue: state.adaptStudentChartVal,
     tagFilter: state.chosenTag,
-    roster: state.roster
+    roster: state.roster,
+    adaptCourseID: state.adaptCourseID
   };
 
   var config = getAxiosCall("/studentchart", data, state);
@@ -257,6 +263,7 @@ export function getAssignmentSubmissionsConfig(state, setState, bin, unit) {
     courseId: state.courseId,
     startDate: state.start,
     endDate: state.end,
+    adaptCourseID: state.adaptCourseID
   };
 
   var config = getAxiosCall("/aggregateassignmentviews", data, state);
@@ -273,6 +280,7 @@ export function getPageViewConfig(state, setState, bin, unit) {
     endDate: state.end,
     path: state.dataPath,
     tagFilter: state.chosenTag,
+    adaptCourseID: state.adaptCourseID
   };
 
   var config = getAxiosCall("/pageviews", data, state);
@@ -289,6 +297,7 @@ export function getAveragePageViewsConfig(state, setState) {
     end: state.end,
     path: state.dataPath,
     tagFilter: state.chosenTag,
+    adaptCourseID: state.adaptCourseID
   };
 
   var config = getAxiosCall("/averagepageviews", data, state);
@@ -318,6 +327,7 @@ export function getIndividualPageViewsConfig(state, setState) {
     levelGroup: lgroup,
     levelName: lname,
     tagFilter: state.chosenTag,
+    adaptCourseID: state.adaptCourseID
   };
   var config = getAxiosCall("/individualpageviews", data, state);
   return config;

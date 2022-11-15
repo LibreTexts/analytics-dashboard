@@ -11,6 +11,9 @@ function adaptStudentChartQuery(params, dbInfo, adaptCodes) {
   } else {
     course = codeFound.code
   }
+  if (environment === "production") {
+    course = params.adaptCourseID
+  }
 
   var group = '$'+params.groupBy
   //look at the adapt collection

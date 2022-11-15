@@ -183,8 +183,13 @@ export function filterReset(state, setState) {
   localStorage.setItem(state.courseId + "-filters", JSON.stringify(courseData));
 }
 
-export function setCourseFromConductor(state, setState, courseId, realCourses, queryVariables) {
-  var value = Object.keys(realCourses).find(courseName => realCourses[courseName].courseId === courseId);
+export function setCourseFromConductor(state, setState, courseId, adaptCourseID, realCourses, queryVariables) {
+  var value = null;
+  if ((courseId && adaptCourseID) || courseId) {
+    value = Object.keys(realCourses).find(courseName => realCourses[courseName].courseId === courseId);
+  } else if (adaptCourseID) {
+    value = Object.keys(realCourses).find(courseName => realCourses[courseName].courseId === adaptCourseID);
+  }
   var courseData = {};
   if (Object.keys(localStorage).includes(courseId + "-filters")) {
     courseData = JSON.parse(localStorage.getItem(courseId + "-filters"));
@@ -227,6 +232,7 @@ export function setCourseFromConductor(state, setState, courseId, realCourses, q
     disablePage: false,
     courseName: value,
     courseId: courseId,
+    adaptCourseID: adaptCourseID,
     course: value,
     disableCourse: false,
     chosenPaths: null,
@@ -257,8 +263,8 @@ export function setCourseFromConductor(state, setState, courseId, realCourses, q
         : null,
     roster: enrolledStudents,
     conductorRoster: enrollmentData && enrollmentData.length > 0 ? true : false,
-    ltCourse: realCourses[value].ltCourse,
-    adaptCourse: realCourses[value].adaptCourse,
+    ltCourse: courseInfo && courseInfo.textbookID ? true : false,
+    adaptCourse: courseInfo && courseInfo.adaptCourseID ? true : false,
     hasAdapt: realCourses[value].adaptCourse,
     index: 0,
     tab: "student",

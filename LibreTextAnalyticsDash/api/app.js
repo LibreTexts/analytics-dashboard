@@ -18,10 +18,12 @@ const randomString = require('randomstring');
 
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
+
+const ENVIRONMENT = "development";
 const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
-const HOMEPAGE = "https://analytics.libretexts.org/api/";
-const REDIRECT_URL = "/api/init";
-const DASHBOARD_URL = "/";
+const HOMEPAGE = "https://test.libretexts.org/analytics/api/";
+const REDIRECT_URL = "/analytics/api/init";
+const DASHBOARD_URL = "/analytics";
 
 const app = express();
 app.use(cors());
@@ -380,7 +382,7 @@ app.post("/allstudents", (req, res, next) => {
   let config = helperFunctions.getRequest(queryString);
   var studentEnrollment = JSON.parse(
     JSON.stringify(
-      helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
+      helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId, req.body.adaptCourseID, null, null, ENVIRONMENT)
     )
   );
   axios(config)
@@ -447,12 +449,14 @@ app.post("/data", async (req, res, next) => {
   let queryString = queries.dataTableQuery(
     validateInput.validateInput("data", req.body),
     await adaptCodes,
-    dbInfo
+    dbInfo,
+    ENVIRONMENT
   );
   if (req.body.adaptCourse && !req.body.ltCourse) {
     queryString = queries.adaptDataTableQuery(
       validateInput.validateInput("data", req.body),
-      dbInfo
+      dbInfo,
+      ENVIRONMENT
     );
   }
   let config = helperFunctions.getRequest(queryString);
@@ -471,8 +475,10 @@ app.post("/data", async (req, res, next) => {
         adaptCodes,
         enrollmentData,
         req.body.courseId,
+        req.body.adaptCourseID,
         realCourseNames,
-        courseDates
+        courseDates,
+        ENVIRONMENT
       );
   var studentEnrollment = JSON.parse(JSON.stringify(enrollment))
   var rosterData = req.body.roster
@@ -652,7 +658,7 @@ app.post("/studentchart", (req, res, next) => {
   let config = helperFunctions.getRequest(queryString);
   var studentEnrollment = JSON.parse(
     JSON.stringify(
-      helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId)
+      helperFunctions.findEnrollmentData(adaptCodes, enrollmentData, req.body.courseId, req.body.adaptCourseID, null, null, ENVIRONMENT)
     )
   );
   var rosterEnrollment = null;
@@ -746,7 +752,8 @@ app.post("/individualpageviews", (req, res, next) => {
   ) : queries.individualAssignmentSubmissionsQuery(
     validateInput.validateInput("individualassignmentsubmissions", req.body),
     adaptCodes,
-    dbInfo
+    dbInfo,
+    ENVIRONMENT
   )
   // console.log("QUERY STRING")
   // console.log(queryString)
@@ -776,7 +783,8 @@ app.post("/gradepageviews", (req, res, next) => {
   let queryString = queries.individualGradePageViewsQuery(
     validateInput.validateInput("gradepageviews", req.body),
     adaptCodes,
-    dbInfo
+    dbInfo,
+    ENVIRONMENT
   );
   // console.log("QUERY STRING")
   // console.log(queryString)
@@ -800,7 +808,8 @@ app.post("/studentassignments", (req, res, next) => {
     validateInput.validateInput("studentassignments", req.body),
     adaptCodes,
     dbInfo,
-    helperFunctions.encryptStudent
+    helperFunctions.encryptStudent,
+    ENVIRONMENT
   );
   let config = helperFunctions.getRequest(queryString);
   axios(config)
@@ -827,7 +836,8 @@ app.post("/alladaptassignments", (req, res, next) => {
     req.body,
     adaptCodes,
     dbInfo,
-    helperFunctions.encryptStudent
+    helperFunctions.encryptStudent,
+    ENVIRONMENT
   );
   let config = helperFunctions.getRequest(queryString);
   axios(config)
@@ -847,7 +857,8 @@ app.post("/adaptlevels", (req, res, next) => {
   let queryString = queries.adaptLevelQuery(
     validateInput.validateInput("adaptlevels", req.body),
     adaptCodes,
-    dbInfo
+    dbInfo,
+    ENVIRONMENT
   );
   let config = helperFunctions.getRequest(queryString);
   axios(config)
@@ -988,7 +999,7 @@ app.post("/averagepageviews", (req, res, next) => {
 });
 
 app.post("/aggregateassignmentviews", (req, res, next) => {
-  let queryString = queries.aggregateAssignmentViewsQuery(req.body, dbInfo, adaptCodes);
+  let queryString = queries.aggregateAssignmentViewsQuery(req.body, dbInfo, adaptCodes, ENVIRONMENT);
   let config = helperFunctions.getRequest(queryString);
   axios(config)
     .then(function (response) {
@@ -1004,8 +1015,8 @@ app.post("/aggregateassignmentviews", (req, res, next) => {
 });
 
 app.post("/allassignmentgrades", (req, res, next) => {
-  let queryString = queries.allAssignmentGradesQuery(req.body, dbInfo, adaptCodes);
-  let secondQuery = queries.gradesFromAdaptQuery(req.body, dbInfo, adaptCodes);
+  let queryString = queries.allAssignmentGradesQuery(req.body, dbInfo, adaptCodes, ENVIRONMENT);
+  let secondQuery = queries.gradesFromAdaptQuery(req.body, dbInfo, adaptCodes, ENVIRONMENT);
   let config = helperFunctions.getRequest(queryString);
   let secondConfig = helperFunctions.getRequest(secondQuery);
   var configs = [axios(config), axios(secondConfig)];

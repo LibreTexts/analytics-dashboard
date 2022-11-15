@@ -3,7 +3,7 @@ const addFilters = require("../helper/addFilters.js");
 
 //query to get the data for the main tables, connects the lt data to adapt
 
-function dataTableQuery(params, adaptCodes, dbInfo) {
+function dataTableQuery(params, adaptCodes, dbInfo, environment) {
   //gets the adapt course code based on the libretext course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   //todo: make a dropdown on the frontend to choose specific level groups and names to look at
@@ -70,7 +70,7 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
             "adaptAttempts": '$adapt.adaptAttempts',
             "adaptAvgAttempts": {'$round': ['$adapt.adaptAvgAttempts', 1]},
             "adaptAvgPercentScore": {'$round': ['$adapt.adaptAvgPercentScore', 1]},
-            "adaptCourseGrade": '$adapt.courseGrade'
+            "adaptCourseGrade": '$adapt.courseGrade' //need this for percentile, unlink on frontend
           }
         },
         {
@@ -97,7 +97,7 @@ function dataTableQuery(params, adaptCodes, dbInfo) {
     index = addFilters.spliceTagFilter(index, params, data, true && index <= 4)
 
     if (!isPage) {
-      setDataPipeline(index+2, params, data, codeFound, dbInfo)
+      setDataPipeline(index+2, params, data, codeFound, dbInfo, environment)
     }
     return data;
 }
@@ -121,9 +121,9 @@ function addPageLookup(index, data, dbInfo) {
   return index+2;
 }
 
-function setDataPipeline(index, params, data, codeFound, dbInfo) {
-  if (codeFound) {
-    var adaptLookup = adaptLookupSubQuery.adaptLookupSubQuery(codeFound, params, dbInfo)
+function setDataPipeline(index, params, data, codeFound, dbInfo, environment) {
+  if ((environment === "development" && codeFound) || (environment === "production" && params.adaptCourseID)) {
+    var adaptLookup = adaptLookupSubQuery.adaptLookupSubQuery(codeFound, params, dbInfo, environment)
     //preserves students who have libretext data but no adapt data
     var adaptUnwind = {
       "$unwind": {
@@ -139,7 +139,7 @@ function setDataPipeline(index, params, data, codeFound, dbInfo) {
 
   //insert the adapt aggregation if the course has adapt data
   //need to check .isInAdapt because some courses have an adapt code but no data
-  if (codeFound && codeFound.isInAdapt) {
+  if ((environment === "development" && codeFound && codeFound.isInAdapt) || (environment === "production" && params.adaptCourseID)) {
     data['pipeline'].splice(index, 0, adaptLookup)
     data['pipeline'].splice(index+1, 0, adaptUnwind)
     index = index + 2

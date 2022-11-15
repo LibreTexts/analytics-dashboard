@@ -53,6 +53,7 @@ function App() {
     disableChapterChart: true,
     course: null,
     courseId: null,
+    adaptCourseID: null,
     allPages: null,
     totalPageViews: null,
     individualPageViews: null,
@@ -126,7 +127,7 @@ function App() {
       "LT Hours on Site": true,
     },
     gridHeight: "small",
-    homepage: "/api",
+    homepage: "/analytics/api",
     showNonEnrolledStudents: false,
     ltCourse: false,
     adaptCourse: false,
@@ -147,7 +148,7 @@ function App() {
     noDataAvailable: false,
     gradesFromGradebook: false,
     loadingProgress: 0,
-    environment: "production",
+    environment: "development",
     reload: false,
     notInCommons: false,
   });
@@ -265,31 +266,32 @@ function App() {
               JSON.stringify(responseTwo.students)
             );
             var courses = JSON.parse(sessionStorage.getItem("allCourses"));
-            var id = Object.keys(
-              JSON.parse(
-                sessionStorage.getItem(
-                  cookies.get("analytics_conductor_course_id") + "-info"
-                )
-              )
-            ).includes("textbookID")
-              ? JSON.parse(
-                  sessionStorage.getItem(
-                    cookies.get("analytics_conductor_course_id") + "-info"
-                  )
-                ).textbookID
-              : JSON.parse(
-                  sessionStorage.getItem(
-                    cookies.get("analytics_conductor_course_id") + "-info"
-                  )
-                ).adaptCourseID;
-            var hasData = Object.values(courses).find(
-              (obj) => obj.courseId === id
-            );
+            var id = null;
+            var adaptId = null;
+            var hasData = false;
+            if (Object.keys(courseInfo).includes("textbookID") && Object.keys(courseInfo).includes("adaptCourseID")) {
+              id = courseInfo.textbookID;
+              adaptId = courseInfo.adaptCourseID;
+              hasData = Object.values(courses).find(
+                (obj) => obj.courseId === id
+              );
+            } else if (Object.keys(courseInfo).includes("textbookID") && !Object.keys(courseInfo).includes("adaptCourseID")) {
+              id = courseInfo.textbookID;
+              hasData = Object.values(courses).find(
+                (obj) => obj.courseId === id
+              );
+            } else if (!Object.keys(courseInfo).includes("textbookID") && Object.keys(courseInfo).includes("adaptCourseID")) {
+              adaptId = courseInfo.adaptCourseID;
+              hasData = Object.values(courses).find(
+                (obj) => obj.courseId === adaptId
+              );
+            }
             if (hasData !== undefined) {
               var tempState = setCourseFromConductor(
                 stateRef.current,
                 setState,
                 id,
+                adaptId,
                 courses,
                 queryRef.current
               );

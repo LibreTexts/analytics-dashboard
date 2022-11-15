@@ -1,6 +1,6 @@
 //query to find the level groups and assignments of an adapt course
 
-function adaptLevelQuery(params, adaptCodes, dbInfo) {
+function adaptLevelQuery(params, adaptCodes, dbInfo, environment) {
     //look up the adapt code based on the lt course id
     var codeFound = adaptCodes.find(o => o.course === params.courseId)
     var course = codeFound;
@@ -9,7 +9,9 @@ function adaptLevelQuery(params, adaptCodes, dbInfo) {
     } else {
       course = codeFound.code
     }
-
+    if (environment === "production") {
+      course = params.adaptCourseID ? params.adaptCourseID : null;
+    }
     //look in the adapt data
     var data = {
       "collection": dbInfo.adaptColl,

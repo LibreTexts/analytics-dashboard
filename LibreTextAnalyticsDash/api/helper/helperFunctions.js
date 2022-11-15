@@ -53,32 +53,38 @@ function findEnrollmentData(
   adaptCodes,
   enrollmentData,
   course,
+  adaptCourse,
   allCourses,
-  dates
+  dates,
+  environment
 ) {
   var codeFound = adaptCodes.find((o) => o.course === course);
   var courseCode = codeFound ? parseInt(codeFound.code) : null;
 
   var studentEnrollment = [];
-  if (codeFound) {
-    var studentEnrollment = enrollmentData.find((o) => o._id === courseCode);
-    studentEnrollment.dates = studentEnrollment.dates
-      .map((d) => new Date(d))
-      .sort((a, b) => {
-        return a < b;
-      });
-    var start = new Date(studentEnrollment.dates[0]);
-    var end = studentEnrollment.dates.pop();
+  if ((environment === "development" && codeFound) || (environment === "production" && adaptCourse)) {
+    if (environment === "development" && codeFound) {
+      var studentEnrollment = enrollmentData.find((o) => o._id === courseCode);
+      studentEnrollment.dates = studentEnrollment.dates
+        .map((d) => new Date(d))
+        .sort((a, b) => {
+          return a < b;
+        });
+      var start = new Date(studentEnrollment.dates[0]);
+      var end = studentEnrollment.dates.pop();
 
-    //checking the adapt dates against the dates on the lt data to see if it's the right term
-    if (allCourses && allCourses.length > 0) {
-      var index = Object.keys(allCourses).find(c => allCourses[c]._id === course)
-      var date = new Date(JSON.parse(JSON.stringify(allCourses[index])).date)
-      const diffTime = Math.abs(date - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 14) {
-        return [];
+      //checking the adapt dates against the dates on the lt data to see if it's the right term
+      if (allCourses && allCourses.length > 0) {
+        var index = Object.keys(allCourses).find(c => allCourses[c]._id === course)
+        var date = new Date(JSON.parse(JSON.stringify(allCourses[index])).date)
+        const diffTime = Math.abs(date - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays > 14) {
+          return [];
+        }
       }
+    } else if (environment === "production" && adaptCourse) {
+      var studentEnrollment = enrollmentData.find((o) => o._id === parseInt(adaptCourse));
     }
     //work here to find dates and check them against actual lt dates
     //change the enrollment dates to Date objects and compare

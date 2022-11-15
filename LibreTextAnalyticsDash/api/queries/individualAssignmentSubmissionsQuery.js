@@ -2,13 +2,16 @@ const addFilters =  require("../helper/addFilters.js");
 const helperFunctions = require("../helper/helperFunctions.js");
 //query to find views per date for an individual page
 
-function individualAssignmentSubmissionsQuery(params, adaptCodes, dbInfo) {
+function individualAssignmentSubmissionsQuery(params, adaptCodes, dbInfo, environment) {
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   var course = codeFound;
   if (!codeFound) {
     course = params.courseId
   } else {
     course = codeFound.code
+  }
+  if (environment === "production") {
+    course = params.adaptCourseID
   }
   var student = params.individual;
   if (student.includes("@")) {

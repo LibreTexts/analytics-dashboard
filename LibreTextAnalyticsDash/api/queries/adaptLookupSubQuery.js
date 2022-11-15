@@ -1,6 +1,6 @@
 const addFilters = require("../helper/addFilters.js");
 
-function adaptLookupSubQuery(codeFound, params, dbInfo) {
+function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
   var adaptLookup = {
     //getting adapt variables
     "$lookup": {
@@ -13,7 +13,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo) {
           '$match': {
             '$expr': {
               '$and': [
-                { '$eq': ["$course_id", codeFound.code] }
+                { '$eq': ["$course_id", environment === "production" ? params.adaptCourseID : codeFound.code] }
               ]
             }
           }
