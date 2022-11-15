@@ -269,6 +269,7 @@ function App() {
             var id = null;
             var adaptId = null;
             var hasData = false;
+            console.log(Object.keys(courseInfo).includes("textbookID"), Object.keys(courseInfo).includes("adaptCourseID"))
             if (Object.keys(courseInfo).includes("textbookID") && Object.keys(courseInfo).includes("adaptCourseID")) {
               id = courseInfo.textbookID;
               adaptId = courseInfo.adaptCourseID;
@@ -286,6 +287,8 @@ function App() {
                 (obj) => obj.courseId === adaptId
               );
             }
+            console.log(id, adaptId)
+            console.log(hasData)
             if (hasData !== undefined) {
               var tempState = setCourseFromConductor(
                 stateRef.current,
