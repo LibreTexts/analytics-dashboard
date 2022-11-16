@@ -27,12 +27,14 @@ const DASHBOARD_URL = "/";
 
 const app = express();
 app.use(cors());
-app.use(
-  basicAuth({
-    users: { admin: userPassword },
-    challenge: true,
-  })
-);
+if (ENVIRONMENT === "development") {
+  app.use(
+    basicAuth({
+      users: { admin: userPassword },
+      challenge: true,
+    })
+  );
+}
 app.use(cookieParser());
 
 const PORT = process.env.PORT || 8080;
