@@ -20,7 +20,7 @@ const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
 const ENVIRONMENT = "production";
-const CONDUCTOR_API_URL = 'https://commons-staging.libretexts.org/api/v1';
+const CONDUCTOR_API_URL = 'https://commons.libretexts.org/api/v1';
 const HOMEPAGE = "https://analytics.libretexts.org/api/";
 const REDIRECT_URL = "/api/init";
 const DASHBOARD_URL = "/";
@@ -106,7 +106,7 @@ app.get('/oauth2.0/callback', (req, res) => {
     client_secret: process.env.CONDUCTOR_API_CLIENT_SECRET,
   });
   axios.post(
-    'https://commons-staging.libretexts.org/api/v1/oauth2.0/accessToken',
+    'https://commons.libretexts.org/api/v1/oauth2.0/accessToken',
     params.toString()
   ).then((conductorRes) => {
     // console.log(conductorRes.data);
