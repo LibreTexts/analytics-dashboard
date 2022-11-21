@@ -48,7 +48,6 @@ export function handleStudentData(key, value, tempState, courseData, allData) {
   var checks = Object.keys(columns);
   tempState["tableColumns"] = columns;
   tempState["checkedValues"] = checks;
-  tempState["noDataAvailable"] = false;
   courseData["tableColumns"] = columns;
   courseData["checkedValues"] = checks;
   allData["tableColumns"] = columns;
@@ -275,5 +274,7 @@ function percentile(studentData) {
     }
     percent = (count * 100) / (n - 1);
     studentData[i]['percentile'] = Math.floor(percent);
+    //doesn't score the overall grade linked to the student's email
+    delete studentData[i].adaptCourseGrade
   }
 }

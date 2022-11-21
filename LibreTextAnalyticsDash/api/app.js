@@ -651,7 +651,8 @@ app.post("/studentchart", (req, res, next) => {
     queryString = queries.adaptStudentChartQuery(
       req.body,
       dbInfo,
-      adaptCodes
+      adaptCodes,
+      ENVIRONMENT
     );
     var assignments = assignmentCountData.find((o) => o._id === course);
     maxPageCount = assignments.assignmentCount;

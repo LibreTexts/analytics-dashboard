@@ -2,7 +2,7 @@ const addFilters =  require("../helper/addFilters.js");
 //find the data for the bar chart on the student tab
 //look at an attribute and find the number of students per x axis element
 
-function adaptStudentChartQuery(params, dbInfo, adaptCodes) {
+function adaptStudentChartQuery(params, dbInfo, adaptCodes, environment) {
   //find the adapt code for the lt course id
   var codeFound = adaptCodes.find(o => o.course === params.courseId)
   var course = codeFound;
