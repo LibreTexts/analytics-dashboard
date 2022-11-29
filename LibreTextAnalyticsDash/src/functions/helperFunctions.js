@@ -272,6 +272,7 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
     pageTab: false,
     assignmentTab: false,
     filterTab: false,
+    noDataAvailable: false,
   }
   queryVariables.setClick(false);
   return tempState;

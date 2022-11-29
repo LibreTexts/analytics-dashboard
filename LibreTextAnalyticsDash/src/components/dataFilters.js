@@ -10,12 +10,29 @@ import {
 import { useState } from "react";
 import { handleClick } from "../functions/dataFetchingFunctions.js";
 import { handleChange } from "../functions/handleChangeFunction.js";
-import { clearDates, clearTags } from "../functions/helperFunctions.js";
+import { clearDates, clearTags, writeToLocalStorage } from "../functions/helperFunctions.js";
 import ParseRoster from "./parseRoster.js";
 import DataFilterText from "./dataFilterText.js";
 import InfoBox from "./infoBox.js";
 import infoText from "./allInfoText.js";
 import "../css/index.css";
+
+function updateDisplayMode(state, setState) {
+  var display = state.displayMode;
+  setState({
+    ...state,
+    displayMode: !display,
+    student: null,
+    studentAssignments: null,
+    textbookEngagementData: null,
+    individualAssignmentSubmissions: null,
+    studentForChapterChart: null,
+    individualChapterData: null
+  });
+  var courseData = JSON.parse(localStorage.getItem(state.courseId+"-filters"));
+  courseData["displayMode"] = !display;
+  writeToLocalStorage(state.courseId+"-filters", courseData);
+}
 
 //shows all of the possible filters that can be applied to the data
 export default function DataFilters({
@@ -122,13 +139,13 @@ export default function DataFilters({
                       justify="center"
                     >
                       <Box direction="row">
-                      <Text
-                        size="medium"
-                        textAlign="center"
-                        margin={{ vertical: "medium", right: "small" }}
-                      >
-                        Metatags:
-                      </Text>
+                        <Text
+                          size="medium"
+                          textAlign="center"
+                          margin={{ vertical: "medium", right: "small" }}
+                        >
+                          Metatags:
+                        </Text>
                         <Select
                           style={{ height: 50 }}
                           margin={{ vertical: "small" }}
@@ -193,8 +210,11 @@ export default function DataFilters({
                 </Box>
               </Box>
               <Box border={true}>
-                <InfoBox infoText={infoText.toggleText} color="#b0e0e6"
-                queryVariables={queryVariables}/>
+                <InfoBox
+                  infoText={infoText.toggleText}
+                  color="#b0e0e6"
+                  queryVariables={queryVariables}
+                />
                 <CheckBox
                   label={
                     state.accessibilityMode
@@ -228,9 +248,7 @@ export default function DataFilters({
                   checked={state.displayMode}
                   pad={{ left: "large", top: "small" }}
                   toggle={true}
-                  onClick={() =>
-                    setState({ ...state, displayMode: !state.displayMode })
-                  }
+                  onClick={() => updateDisplayMode(state, setState) }
                 />
                 <Box margin={{ top: "medium" }}>
                   {state.disable && (!state.studentData || !state.display) && (

@@ -15,6 +15,7 @@ import cookies from "js-cookie";
 import { handleClick } from "./functions/dataFetchingFunctions.js";
 import { setCourseFromConductor } from "./functions/helperFunctions.js";
 import infoText from "./components/allInfoText.js";
+import BasicCSSButton from "./components/basicCSSButton.js";
 
 const theme = {
   global: {
@@ -188,7 +189,8 @@ function App() {
     sessionStorage.getItem(conductorCourseId + "-info")
   )
     ? JSON.parse(sessionStorage.getItem(conductorCourseId + "-info"))
-    : { start: null, end: null };
+    : { start: null, end: null, textbookID: null, adaptCourseID: null };
+  var courseInfoAttributes = Object.keys(courseInfo);
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     //grab the courses from session storage
@@ -269,18 +271,27 @@ function App() {
             var id = null;
             var adaptId = null;
             var hasData = false;
-            if (Object.keys(courseInfo).includes("textbookID") && Object.keys(courseInfo).includes("adaptCourseID")) {
+            if (
+              courseInfoAttributes.includes("textbookID") &&
+              courseInfoAttributes.includes("adaptCourseID")
+            ) {
               id = courseInfo.textbookID;
               adaptId = courseInfo.adaptCourseID;
               hasData = Object.values(courses).find(
                 (obj) => obj.courseId === id
               );
-            } else if (Object.keys(courseInfo).includes("textbookID") && !Object.keys(courseInfo).includes("adaptCourseID")) {
+            } else if (
+              courseInfoAttributes.includes("textbookID") &&
+              !courseInfoAttributes.includes("adaptCourseID")
+            ) {
               id = courseInfo.textbookID;
               hasData = Object.values(courses).find(
                 (obj) => obj.courseId === id
               );
-            } else if (!Object.keys(courseInfo).includes("textbookID") && Object.keys(courseInfo).includes("adaptCourseID")) {
+            } else if (
+              !courseInfoAttributes.includes("textbookID") &&
+              courseInfoAttributes.includes("adaptCourseID")
+            ) {
               adaptId = courseInfo.adaptCourseID;
               hasData = Object.values(courses).find(
                 (obj) => obj.courseId === adaptId
@@ -295,6 +306,7 @@ function App() {
                 courses,
                 queryRef.current
               );
+              //noDataAvailable now being set to false in the above function
               tempState["conductorCourseInfo"] = responseOne.course;
               tempState["conductorEnrollmentData"] = responseTwo.students;
               tempState["notInCommons"] = false;
@@ -329,6 +341,10 @@ function App() {
     courseInfo.start,
     courseInfo.end,
     state.reload,
+    courseInfo.textbookID,
+    courseInfo.adaptCourseID,
+    courseInfoAttributes,
+    allCourses,
   ]);
 
   return (
@@ -367,16 +383,30 @@ function App() {
             />
           )}
         {state.noDataAvailable && !state.notInCommons && (
-          <Box align="center" width="100%">
-            <Text size="large" margin={{ top: "large" }} role="alert">
-              There is no LibreTexts or ADAPT data available for this course.
-            </Text>
+          <Box align="center" width="100%" direction="row" justify="center">
+            <Box direction="column" margin={{ right: "medium" }}>
+              <Text size="large" margin={{ top: "large" }} role="alert">
+                There is no LibreTexts or ADAPT data available for this course.
+              </Text>
+              <Text size="large" margin={{ top: "medium" }} role="alert">
+                If you think there should be data, please use the button to
+                refresh the page.
+              </Text>
+            </Box>
+            <BasicCSSButton
+              label="Refresh"
+              onClickFunction={() => {
+                sessionStorage.clear();
+                window.location.reload();
+              }}
+            />
           </Box>
         )}
         {state.noDataAvailable && state.notInCommons && (
           <Box align="center" width="100%">
             <Text size="large" margin={{ top: "large" }} role="alert">
-              Please use the dashboard inside of Commons.
+              An error has occurred. Please use the dashboard inside of Commons
+              or refresh the page.
             </Text>
           </Box>
         )}

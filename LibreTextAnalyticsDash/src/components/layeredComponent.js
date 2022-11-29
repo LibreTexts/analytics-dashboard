@@ -230,7 +230,7 @@ export default function LayeredComponent({
             <Box
               border={true}
               height="100px"
-              width="225px"
+              width="300px"
               margin={{ left: "xlarge" }}
               direction="column"
             >
@@ -257,11 +257,11 @@ export default function LayeredComponent({
                   background="#F93549"
                 />
                 <Text margin={{ left: "small", bottom: "small", top: "small" }}>
-                  {type === "studentAssignments" && state.student
+                  {type === "studentAssignments" && state.student && !state.displayMode && (state.studentData.find(s => s._id.includes("@")) ? true : false)
                     ? state.student + " Scores"
                     : type === "studentAssignments" && !state.student
                     ? "Individual Scores"
-                    : state.student && state.tab === "student"
+                    : state.student && state.tab === "student" && !state.displayMode && (state.studentData.find(s => s._id.includes("@")) ? true : false)
                     ? state.student + " Activity"
                     : "Individual Activity"}
                 </Text>
