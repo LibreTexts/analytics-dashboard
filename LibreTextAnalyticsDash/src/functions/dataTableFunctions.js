@@ -21,7 +21,7 @@ export function addStudentLibreTextColumns(
   //inserting into the columns attribute to make "LibreText" and "ADAPT" headers above the other attributes
   columns.push({
     Header: (props) => (
-      <a href="/#" tabIndex={0}>
+      <a href="#" onClick={preventRedirect} tabIndex={0}>
         {"LibreText"}
       </a>
     ),
@@ -39,7 +39,7 @@ export function addStudentLibreTextColumns(
     {
       Header: (
         <Tippy content={column2Label}>
-          <a href="/#" tabIndex={0} aria-label={column2Label}>
+          <a href="#" onClick={preventRedirect} tabIndex={0} aria-label={column2Label}>
             {<Text>{column2Label}</Text>}
           </a>
         </Tippy>
@@ -56,7 +56,7 @@ export function addStudentLibreTextColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle={"LT " + column2Label}>
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle={"LT " + column2Label}>
           {val.original["objectCount"]}
         </a>
       ),
@@ -67,7 +67,7 @@ export function addStudentLibreTextColumns(
     {
       Header: (
         <Tippy content={column3Label}>
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>{column3Label}</Text>}
           </a>
         </Tippy>
@@ -84,7 +84,7 @@ export function addStudentLibreTextColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle={"LT " + column3Label}>
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle={"LT " + column3Label}>
           {val.original["viewCount"]}
         </a>
       ),
@@ -95,7 +95,7 @@ export function addStudentLibreTextColumns(
     {
       Header: (
         <Tippy content="Most Recent Page Load">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Most Recent Page Load</Text>}
           </a>
         </Tippy>
@@ -112,7 +112,7 @@ export function addStudentLibreTextColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="LT Most Recent Page Load">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="LT Most Recent Page Load">
           {val.original.max}
         </a>
       ),
@@ -123,7 +123,7 @@ export function addStudentLibreTextColumns(
     {
       Header: (
         <Tippy content="Unique Interaction Days">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Unique Interaction Days</Text>}
           </a>
         </Tippy>
@@ -140,7 +140,7 @@ export function addStudentLibreTextColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="LT Unique Interaction Days">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="LT Unique Interaction Days">
           {val.original["dateCount"]}
         </a>
       ),
@@ -151,7 +151,7 @@ export function addStudentLibreTextColumns(
     {
       Header: (
         <Tippy content="Hours on Site">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Hours on Site</Text>}
           </a>
         </Tippy>
@@ -168,7 +168,7 @@ export function addStudentLibreTextColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="LT Hours on Site">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="LT Hours on Site">
           {val.original["timeStudied"]}
         </a>
       ),
@@ -205,7 +205,7 @@ export function addStudentAdaptColumns(
   );
   columns.push({
     Header: (props) => (
-      <a href="/#" tabIndex={0}>
+      <a href="#" onClick={preventRedirect} tabIndex={0}>
         {"ADAPT"}
       </a>
     ),
@@ -223,7 +223,7 @@ export function addStudentAdaptColumns(
     {
       Header: (
         <Tippy content="Unique Interaction Days">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Unique Interaction Days</Text>}
           </a>
         </Tippy>
@@ -240,7 +240,7 @@ export function addStudentAdaptColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Adapt Unique Interation Days">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="Adapt Unique Interation Days">
           {val.original["adaptUniqueInteractionDays"]}
         </a>
       ),
@@ -253,7 +253,7 @@ export function addStudentAdaptColumns(
     {
       Header: (
         <Tippy content="Unique Assignments">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Unique Assignments</Text>}
           </a>
         </Tippy>
@@ -270,7 +270,7 @@ export function addStudentAdaptColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Adapt Unique Assignments">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="Adapt Unique Assignments">
           {val.original["adaptUniqueAssignments"]}
         </a>
       ),
@@ -281,7 +281,7 @@ export function addStudentAdaptColumns(
     {
       Header: (
         <Tippy content="Most Recent Page Load">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Most Recent Page Load</Text>}
           </a>
         </Tippy>
@@ -298,7 +298,7 @@ export function addStudentAdaptColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Adapt Most Recent Page Load">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="Adapt Most Recent Page Load">
           {val.original.mostRecentAdaptLoad}
         </a>
       ),
@@ -309,7 +309,7 @@ export function addStudentAdaptColumns(
     {
       Header: (
         <Tippy content="Average Percent Per Assignment">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Average Percent Per Assignment</Text>}
           </a>
         </Tippy>
@@ -327,7 +327,7 @@ export function addStudentAdaptColumns(
       },
       Cell: (val) => (
         <a
-          href="/#"
+          href="#" onClick={preventRedirect}
           tabIndex={0}
           a11ytitle="Adapt Average Percent Per Assignment"
         >
@@ -341,7 +341,7 @@ export function addStudentAdaptColumns(
     {
       Header: (
         <Tippy content="Average Attempts Per Assignment">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Average Attempts Per Assignment</Text>}
           </a>
         </Tippy>
@@ -359,7 +359,7 @@ export function addStudentAdaptColumns(
       },
       Cell: (val) => (
         <a
-          href="/#"
+          href="#" onClick={preventRedirect}
           tabIndex={0}
           a11ytitle="Adapt Average Attempts Per Assignment"
         >
@@ -373,7 +373,7 @@ export function addStudentAdaptColumns(
     {
       Header: (
         <Tippy content="Class Percentile">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>Class Percentile</Text>}
           </a>
         </Tippy>
@@ -390,7 +390,7 @@ export function addStudentAdaptColumns(
         };
       },
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="ADAPT Class Percentile">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="ADAPT Class Percentile">
           {val.original["percentile"]}
         </a>
       ),
@@ -410,14 +410,14 @@ export function addPageColumns(columns, headers, column2Label, numMatch) {
     {
       Header: (
         <Tippy content={column2Label}>
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             {<Text>{column2Label}</Text>}
           </a>
         </Tippy>
       ),
       accessor: "objectCount",
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle={column2Label}>
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle={column2Label}>
           {val.original["objectCount"]}
         </a>
       ),
@@ -428,14 +428,14 @@ export function addPageColumns(columns, headers, column2Label, numMatch) {
     {
       Header: (
         <Tippy content="Average Page Duration (minutes)">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             <Text>Average Page Duration (minutes)</Text>
           </a>
         </Tippy>
       ),
       accessor: "durationInMinutes",
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Average Page Duration in Minutes">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="Average Page Duration in Minutes">
           {val.original["durationInMinutes"]}
         </a>
       ),
@@ -446,14 +446,14 @@ export function addPageColumns(columns, headers, column2Label, numMatch) {
     {
       Header: (
         <Tippy content="Average Percent Scrolled">
-          <a href="/#" tabIndex={0}>
+          <a href="#" onClick={preventRedirect} tabIndex={0}>
             <Text>Average Percent Scrolled</Text>
           </a>
         </Tippy>
       ),
       accessor: "percentAvg",
       Cell: (val) => (
-        <a href="/#" tabIndex={0} a11ytitle="Average Percent Scrolled">
+        <a href="#" onClick={preventRedirect} tabIndex={0} a11ytitle="Average Percent Scrolled">
           {val.original["percentAvg"]}
         </a>
       ),
@@ -462,4 +462,8 @@ export function addPageColumns(columns, headers, column2Label, numMatch) {
       filterAll: true,
     }
   );
+}
+
+function preventRedirect(e) {
+  e.preventDefault();
 }

@@ -198,13 +198,13 @@ export default function DataTable({
       );
     } else if (tab === "student" && hasData) {
       return (
-        <a tabIndex={0} href="/#">
+        <a tabIndex={0} href="#" onClick={preventRedirect}>
           {pageInfo.original[idAccessor]}
         </a>
       );
     } else if (tab === "student" && !hasData) {
       return (
-        <a tabIndex={0} href="/#">
+        <a tabIndex={0} href="#" onClick={preventRedirect}>
           <Text weight="bold">{pageInfo.original[idAccessor]}</Text>
         </a>
       );
@@ -283,4 +283,8 @@ export default function DataTable({
       </div>
     </>
   );
+}
+
+function preventRedirect(e) {
+  e.preventDefault();
 }

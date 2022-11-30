@@ -11,9 +11,9 @@ export default function DataTable({
   var columns = []
   Object.keys(columnVals).forEach((key) => {
     columns.push({
-      Header: <a tabIndex={0} href="/#">{key}</a>,
+      Header: <a tabIndex={0} href="#" onClick={preventRedirect}>{key}</a>,
       accessor: columnVals[key],
-      Cell: (val) => <a tabIndex={0} href="/#" a11ytitle={key}>{val.original[columnVals[key]]}</a>
+      Cell: (val) => <a tabIndex={0} href="#" onClick={preventRedirect} a11ytitle={key}>{val.original[columnVals[key]]}</a>
     })
   })
 
@@ -30,4 +30,8 @@ export default function DataTable({
       ></ReactTable>
     </Box>
   );
+}
+
+function preventRedirect(e) {
+  e.preventDefault();
 }
