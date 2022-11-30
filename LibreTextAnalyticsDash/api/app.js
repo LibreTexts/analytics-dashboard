@@ -19,11 +19,11 @@ const randomString = require('randomstring');
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
-const ENVIRONMENT = "development";
+const ENVIRONMENT = "production";
 const CONDUCTOR_API_URL = 'https://commons.libretexts.org/api/v1';
-const HOMEPAGE = "https://test.libretexts.org/analytics/api/";
-const REDIRECT_URL = "/analytics/api/init";
-const DASHBOARD_URL = "/analytics";
+const HOMEPAGE = "https://analytics.libretexts.org/api/";
+const REDIRECT_URL = "/api/init";
+const DASHBOARD_URL = "/";
 
 const app = express();
 app.use(cors());
