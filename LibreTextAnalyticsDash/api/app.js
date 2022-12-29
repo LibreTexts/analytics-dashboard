@@ -20,10 +20,10 @@ const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
 const ENVIRONMENT = "production";
-const CONDUCTOR_API_URL = 'https://commons.libretexts.org/api/v1';
-const HOMEPAGE = "https://analytics.libretexts.org/api/";
-const REDIRECT_URL = "/api/init";
-const DASHBOARD_URL = "/";
+const CONDUCTOR_API_URL = ENVIRONMENT === "development" ? 'https://commons-staging.libretexts.org/api/v1' : 'https://commons.libretexts.org/api/v1';
+const HOMEPAGE = ENVIRONMENT === "development" ? "https://test.libretexts.org/analytics/api/" : "https://analytics.libretexts.org/api/";
+const REDIRECT_URL = ENVIRONMENT === "development" ? "/analytics/api/init" : "/api/init";
+const DASHBOARD_URL = ENVIRONMENT === "development" ? "/analytics" : "/";
 
 const app = express();
 app.use(cors());

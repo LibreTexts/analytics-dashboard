@@ -235,6 +235,17 @@ function App() {
 
   //need to add start and end dates to the dependency array
   useEffect(() => {
+    console.log(conductorCourseId,
+    state.environment,
+    state.homepage,
+    courseInfo.start,
+    courseInfo.end,
+    state.reload,
+    courseInfo.textbookID,
+    courseInfo.adaptCourseID,
+    courseInfoAttributes,
+    allCourses,
+    courseInfo)
     if (state.environment === "production") {
       var course = cookies.get("analytics_conductor_course_id");
       var request1 = axios(state.homepage + "/courseinfo");
