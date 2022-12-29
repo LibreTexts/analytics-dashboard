@@ -355,7 +355,6 @@ function App() {
     courseInfo.textbookID,
     courseInfo.adaptCourseID,
     courseInfoAttributes,
-    allCourses,
   ]);
 
   return (
