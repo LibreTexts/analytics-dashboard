@@ -190,7 +190,7 @@ function App() {
   )
     ? JSON.parse(sessionStorage.getItem(conductorCourseId + "-info"))
     : { start: null, end: null, textbookID: null, adaptCourseID: null };
-  var courseInfoAttributes = Object.keys(courseInfo);
+  // var courseInfoAttributes = Object.keys(courseInfo);
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(() => {
     //grab the courses from session storage
@@ -233,23 +233,13 @@ function App() {
     }
   }, [allCourses, state.homepage]);
 
-  console.log(courseInfo, courseInfoAttributes)
   //need to add start and end dates to the dependency array
   useEffect(() => {
-    console.log(conductorCourseId,
-    state.environment,
-    state.homepage,
-    courseInfo.start,
-    courseInfo.end,
-    state.reload,
-    "NEW",
-    courseInfo.textbookID,
-    courseInfo.adaptCourseID,
-    courseInfoAttributes)
     if (state.environment === "production") {
       var course = cookies.get("analytics_conductor_course_id");
       var request1 = axios(state.homepage + "/courseinfo");
       var request2 = axios(state.homepage + "/conductorenrollment");
+      var courseInfoAttributes = Object.keys(courseInfo);
 
       axios
         .all([request1, request2])
@@ -354,7 +344,7 @@ function App() {
     state.reload,
     courseInfo.textbookID,
     courseInfo.adaptCourseID,
-    courseInfoAttributes,
+    courseInfo
   ]);
 
   return (
