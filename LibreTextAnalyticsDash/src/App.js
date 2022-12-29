@@ -241,11 +241,10 @@ function App() {
     courseInfo.start,
     courseInfo.end,
     state.reload,
+    "NEW",
     courseInfo.textbookID,
     courseInfo.adaptCourseID,
-    courseInfoAttributes,
-    allCourses,
-    courseInfo)
+    courseInfoAttributes)
     if (state.environment === "production") {
       var course = cookies.get("analytics_conductor_course_id");
       var request1 = axios(state.homepage + "/courseinfo");
