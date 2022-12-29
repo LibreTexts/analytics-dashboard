@@ -233,6 +233,7 @@ function App() {
     }
   }, [allCourses, state.homepage]);
 
+  console.log(courseInfo, courseInfoAttributes)
   //need to add start and end dates to the dependency array
   useEffect(() => {
     console.log(conductorCourseId,
