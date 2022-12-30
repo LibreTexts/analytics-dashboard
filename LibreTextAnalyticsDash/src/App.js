@@ -344,7 +344,6 @@ function App() {
     state.reload,
     courseInfo.textbookID,
     courseInfo.adaptCourseID,
-    courseInfo
   ]);
 
   return (
