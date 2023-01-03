@@ -19,8 +19,11 @@ const randomString = require('randomstring');
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
-const ENVIRONMENT = "production";
-const CONDUCTOR_API_URL = 'https://staging.commons.libretexts.org/api/v1';
+const ENVIRONMENT = "production"; //development or production -- test server vs production server, test server temporarily out of use
+const COMMONS = "testing"; //testing or production -- staging.commons (test site) or real commons site
+//currently configured for staging.commons to be used with the production server
+const CONDUCTOR_API_URL = COMMONS === "testing" ? 'https://staging.commons.libretexts.org/api/v1' : 'https://commons.libretexts.org/api/v1';
+const OAUTH_ACCESS_TOKEN_URL = COMMONS === "testing" ? 'https://staging.commons.libretexts.org/api/v1/oauth2.0/accessToken' : 'https://commons.libretexts.org/api/v1/oauth2.0/accessToken';
 const HOMEPAGE = ENVIRONMENT === "development" ? "https://test.libretexts.org/analytics/api/" : "https://analytics.libretexts.org/api/";
 const REDIRECT_URL = ENVIRONMENT === "development" ? "/analytics/api/init" : "/api/init";
 const DASHBOARD_URL = ENVIRONMENT === "development" ? "/analytics" : "/";
@@ -106,7 +109,7 @@ app.get('/oauth2.0/callback', (req, res) => {
     client_secret: process.env.CONDUCTOR_API_CLIENT_SECRET,
   });
   axios.post(
-    'https://staging.commons.libretexts.org/api/v1/oauth2.0/accessToken',
+    OAUTH_ACCESS_TOKEN_URL,
     params.toString()
   ).then((conductorRes) => {
     // console.log(conductorRes.data);
