@@ -106,7 +106,7 @@ app.get('/oauth2.0/callback', (req, res) => {
     client_secret: process.env.CONDUCTOR_API_CLIENT_SECRET,
   });
   axios.post(
-    'https://commons.libretexts.org/api/v1/oauth2.0/accessToken',
+    'https://staging.commons.libretexts.org/api/v1/oauth2.0/accessToken',
     params.toString()
   ).then((conductorRes) => {
     // console.log(conductorRes.data);
