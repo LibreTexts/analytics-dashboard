@@ -299,22 +299,29 @@ let realCourseNames = [];
 axios(realCourseConfig)
   .then(function (response) {
     realCourseNames = response.data["documents"];
-    realCourseNames.forEach((c, index) => {
-      //console.log(c)
-      var codeFound = adaptCodes.find((o) => o.course === c._id);
+    if (ENVIRONMENT === "development") {
+      realCourseNames.forEach((c, index) => {
+        //console.log(c)
+        var codeFound = adaptCodes.find((o) => o.course === c._id);
 
-      if (codeFound && codeFound.isInAdapt) {
-        c["adaptCourse"] = true;
-        var dates = courseDates.find((o) => o._id === codeFound.code);
-        //check to see if the adapt dates are the correct term for the lt data
-        if (new Date(dates.startDate) < new Date(c.date) && new Date(c.date) < new Date(dates.endDate)) {
-          c["startDate"] = dates.startDate;
-          c["endDate"] = dates.endDate;
+        if (codeFound && codeFound.isInAdapt) {
+          c["adaptCourse"] = true;
+          var dates = courseDates.find((o) => o._id === codeFound.code);
+          //check to see if the adapt dates are the correct term for the lt data
+          if (new Date(dates.startDate) < new Date(c.date) && new Date(c.date) < new Date(dates.endDate)) {
+            c["startDate"] = dates.startDate;
+            c["endDate"] = dates.endDate;
+          }
+        } else {
+          c["adaptCourse"] = false;
         }
-      } else {
+      });
+    } else {
+      realCourseNames.forEach((c, index) => {
+        c["ltCourse"] = true;
         c["adaptCourse"] = false;
-      }
-    });
+      })
+    }
   })
   .catch(function (error) {
     console.log(error);
@@ -352,13 +359,13 @@ axios(adaptCourseConfig)
     var allCourses = [];
     Object.keys(courses).forEach((course) => {
       var codeFound = adaptCodes.find((o) => o.code === courses[course]);
-      if (codeFound) {
+      if (codeFound && ENVIRONMENT === "development") {
         delete courses[course];
       } else {
         //courses[course]["ltCourse"] = false
         var c = {};
         if (courseDates.length > 0) {
-          var dates = courseDates.find((o) => o._id === courses[course]);
+          var dates = courseDates.find((o) => o._id === String(courses[course]));
         }
         c["_id"] = courses[course];
         c["startDate"] = dates ? dates.startDate : null;
