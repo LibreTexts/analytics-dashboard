@@ -21,9 +21,15 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
         //reformatting the date to be able to use it in a table
         {
           '$addFields': {
-            'day': {
-              '$replaceAll': {
-                'input': '$submission_time', 'find': '"', 'replacement': ''
+              'day': {
+                $cond: {
+                  if: {"$ne": ["$submission_time", ""]},
+                  then: {
+                    '$replaceAll': {
+                      'input': '$submission_time', 'find': '"', 'replacement': ''
+                    }
+                  },
+                  else: "1900-01-01"
               }
             }
           }
