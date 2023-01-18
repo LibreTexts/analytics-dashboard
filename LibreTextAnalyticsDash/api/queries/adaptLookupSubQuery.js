@@ -29,7 +29,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
                       'input': '$submission_time', 'find': '"', 'replacement': ''
                     }
                   },
-                  else: "1900-01-01"
+                  else: "$review_time_end"
               }
             }
           }

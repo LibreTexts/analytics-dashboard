@@ -28,7 +28,7 @@ function adaptDataTableQuery(params, dbInfo) {
                       'input': '$submission_time', 'find': '"', 'replacement': ''
                     }
                   },
-                  else: "1900-01-01"
+                  else: "$review_time_end"
               }
             }
           }
