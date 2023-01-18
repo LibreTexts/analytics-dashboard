@@ -298,7 +298,7 @@ function App() {
                 (obj) => obj.courseId === adaptId
               );
             }
-            if (hasData !== undefined) {
+            if (hasData !== undefined) { //change to checking if it's true instead
               var tempState = setCourseFromConductor(
                 stateRef.current,
                 setState,

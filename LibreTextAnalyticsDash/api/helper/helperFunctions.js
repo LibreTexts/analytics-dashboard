@@ -85,6 +85,9 @@ function findEnrollmentData(
       }
     } else if (environment === "production" && adaptCourse) {
       var studentEnrollment = enrollmentData.find((o) => o._id === parseInt(adaptCourse));
+      if (!Object.keys(studentEnrollment).includes("students")) {
+        studentEnrollment = {students: []}
+      }
     }
     //work here to find dates and check them against actual lt dates
     //change the enrollment dates to Date objects and compare
