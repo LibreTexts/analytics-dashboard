@@ -1,5 +1,6 @@
 const adaptLookupSubQuery = require("./adaptLookupSubQuery.js");
 const addFilters = require("../helper/addFilters.js");
+const moment = require("moment");
 
 //query to get the data for the main tables, connects the lt data to adapt
 
@@ -26,7 +27,7 @@ function dataTableQuery(params, adaptCodes, dbInfo, environment) {
       //if this is the student tab the page attributes will be null
       {
         "$addFields": {
-            "newDate": {'$dateFromString': {'dateString': '$object.timestamp'}},
+            "newDate": {'$dateFromString': {'dateString': '$object.timestamp', 'onError': moment()}},
             'pageTitle': '$pageInfo.title',
             'pageURL': '$pageInfo.url',
             'date': {'$dateTrunc': {
