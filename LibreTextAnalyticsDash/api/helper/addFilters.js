@@ -48,6 +48,21 @@ function spliceDateFilter(index, params, data, isAdapt=false) {
         "newDate": {'$dateFromString': {'dateString': timestamp}}
       }
     }
+    if (isAdapt) {
+      addFields = {
+        '$addFields': {
+            'newDate': {
+              $cond: {
+                if: {"$ne": ["$submission_time", ""]},
+                then: {
+                  '$dateFromString': {'dateString': timestamp}
+                },
+                else: {'$dateFromString': {'dateString': "$review_time_end"}}
+            }
+          }
+        }
+      }
+    }
     var match = {
       '$match': {
         '$expr': {
