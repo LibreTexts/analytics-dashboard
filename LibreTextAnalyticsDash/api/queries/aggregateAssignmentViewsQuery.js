@@ -26,7 +26,7 @@ function aggregateAssignmentViewsQuery(params, dbInfo, adaptCodes, environment) 
         {
           '$addFields': {
               'date': {'$dateTrunc': {
-                  'date': { '$toDate': '$submission_time'},
+                  'date': { '$toDate': {'$cond': {if: {'$ne': ['$submission_time', ""]}, then: '$submission_time', else: '$review_time_end'}}},
                   'unit': params.unit,
                   'binSize': params.bin
               }
