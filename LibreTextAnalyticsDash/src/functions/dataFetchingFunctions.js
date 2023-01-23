@@ -138,13 +138,13 @@ export async function handleClick(
 
     setState(tempState);
     var courseData = {};
-    if (Object.keys(localStorage).includes(state.courseId + "-table")) {
-      courseData = JSON.parse(localStorage.getItem(state.courseId + "-table"));
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-table")) {
+      courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-table"));
     }
     var dropdownData = {};
-    if (Object.keys(localStorage).includes(state.courseId + "-dropdown")) {
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-dropdown")) {
       dropdownData = JSON.parse(
-        localStorage.getItem(state.courseId + "-dropdown")
+        localStorage.getItem(state.courseId + "-"+state.start+"-dropdown")
       );
     }
     var tagData = Object.keys(dropdownData).includes("tagData")
@@ -222,13 +222,13 @@ export async function handleClick(
         getMetaTags(tempState, setState);
       }
       if (type === "filterReset") {
-        localStorage.setItem(state.courseId + "-filters", JSON.stringify({}));
+        localStorage.setItem(state.courseId + "-"+state.start+"-filters", JSON.stringify({}));
       }
     } else {
-      getDataFromLocalStorage(state.courseId + "-table", tempState);
-      getDataFromLocalStorage(state.courseId + "-chart", tempState);
-      getDataFromLocalStorage(state.courseId + "-dropdown", tempState);
-      getDataFromLocalStorage(state.courseId + "-filters", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-table", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-chart", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-dropdown", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-filters", tempState);
       tempState["rosterFilterApplied"] = tempState.rosterFile ? true : false;
       setState({
         ...tempState,
@@ -303,7 +303,7 @@ export function getIndividualData(state, setState, pathsWithAttributes, disable,
   setState({
     ...temp,
   });
-  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-chart"));
+  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-chart"));
   var tempState = JSON.parse(JSON.stringify(state));
   if (!Object.keys(courseData).includes(individual)) {
     var requests = [];

@@ -121,11 +121,11 @@ export function clearDates(state, setState) {
     disable: false,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-filters")
+    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
   );
   courseData["start"] = state.startDate;
   courseData["end"] = state.endDate;
-  writeToLocalStorage(state.courseId + "-filters", courseData);
+  writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
 }
 
 //clears the chosen metatag
@@ -136,10 +136,10 @@ export function clearTags(state, setState) {
     disable: false,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-filters")
+    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
   );
   courseData["chosenTag"] = null;
-  writeToLocalStorage(state.courseId + "-filters", courseData);
+  writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
 }
 
 //closes and opens the course structure dropdown
@@ -173,14 +173,14 @@ export function filterReset(state, setState) {
     chosenTag: null,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-filters")
+    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
   );
   courseData["chosenPaths"] = null;
   courseData["dataPath"] = null;
   // courseData["start"] = null;
   // courseData["end"] = null;
   courseData["chosenTag"] = null;
-  localStorage.setItem(state.courseId + "-filters", JSON.stringify(courseData));
+  localStorage.setItem(state.courseId + "-"+state.start+"-filters", JSON.stringify(courseData));
 }
 
 export function setCourseFromConductor(state, setState, courseId, adaptCourseID, realCourses, queryVariables) {
@@ -191,8 +191,8 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
     value = Object.keys(realCourses).find(courseName => realCourses[courseName].courseId === adaptCourseID);
   }
   var courseData = {};
-  if (Object.keys(localStorage).includes(courseId + "-filters")) {
-    courseData = JSON.parse(localStorage.getItem(courseId + "-filters"));
+  if (Object.keys(localStorage).includes(courseId + "-"+state.start+"-filters")) {
+    courseData = JSON.parse(localStorage.getItem(courseId + "-"+state.start+"-filters"));
   }
   var courseInfo = JSON.parse(
     sessionStorage.getItem(
@@ -222,7 +222,7 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
       ? new Date(realCourses[value].endDate)
       : null;
   localStorage.setItem(
-    realCourses[value].courseId + "-filters",
+    realCourses[value].courseId + "-"+state.start+"-filters",
     JSON.stringify(courseData)
   );
   var tempState = {
@@ -230,10 +230,10 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
     page: null,
     student: null,
     disablePage: false,
-    courseName: value,
-    courseId: courseId,
+    courseName: courseInfo && courseInfo.title ? courseInfo.title : value,
+    courseId: courseId ? courseId : adaptCourseID,
     adaptCourseID: adaptCourseID,
-    course: value,
+    course: courseInfo && courseInfo.title ? courseInfo.title : value,
     disableCourse: false,
     chosenPaths: null,
     dataPath: null,

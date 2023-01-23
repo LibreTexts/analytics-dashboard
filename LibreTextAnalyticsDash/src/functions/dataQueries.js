@@ -94,9 +94,9 @@ export async function getData(data, state, setState, path = false, tagData, hasR
     courseData["dataPath"] = JSON.stringify(path);
     courseData["chosenPaths"] = JSON.stringify(path);
   }
-  writeToLocalStorage(course + "-table", tableData);
-  writeToLocalStorage(course + "-chart", chartData);
-  writeToLocalStorage(course + "-dropdown", dropdownData);
+  writeToLocalStorage(course + "-"+state.start+"-table", tableData);
+  writeToLocalStorage(course + "-"+state.start+"-chart", chartData);
+  writeToLocalStorage(course + "-"+state.start+"-dropdown", dropdownData);
   tempState[course] = courseData;
   queryVariables.setLoadingStart(null);
   Promise.all(promises).then(() => setState({ ...tempState, reload: false }));
@@ -107,8 +107,8 @@ export async function getMetaTags(state, setState) {
   var tempState = JSON.parse(JSON.stringify(state));
 
   var courseData = {};
-  if (Object.keys(localStorage).includes(state.courseId + "-dropdown")) {
-    courseData = JSON.parse(localStorage.getItem(state.courseId + "-dropdown"));
+  if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-dropdown")) {
+    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-dropdown"));
   }
   await axios({
     method: "post",
@@ -130,7 +130,7 @@ export async function getMetaTags(state, setState) {
       ...tempState,
     });
     courseData["tagData"] = metaTags;
-    writeToLocalStorage(state.courseId + "-dropdown", courseData);
+    writeToLocalStorage(state.courseId + "-"+state.start+"-dropdown", courseData);
   });
   return tempState;
 }

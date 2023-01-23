@@ -27,7 +27,7 @@ function dataTableQuery(params, adaptCodes, dbInfo, environment) {
       //if this is the student tab the page attributes will be null
       {
         "$addFields": {
-            "newDate": {'$dateFromString': {'dateString': '$object.timestamp', 'onError': moment()}},
+            "newDate": {'$dateFromString': {'dateString': '$object.timestamp'}},
             'pageTitle': '$pageInfo.title',
             'pageURL': '$pageInfo.url',
             'date': {'$dateTrunc': {
