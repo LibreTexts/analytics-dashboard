@@ -190,15 +190,15 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
   } else if (adaptCourseID) {
     value = Object.keys(realCourses).find(courseName => realCourses[courseName].courseId === adaptCourseID);
   }
-  var courseData = {};
-  if (Object.keys(localStorage).includes(courseId + "-"+state.start+"-filters")) {
-    courseData = JSON.parse(localStorage.getItem(courseId + "-"+state.start+"-filters"));
-  }
   var courseInfo = JSON.parse(
     sessionStorage.getItem(
       cookies.get("analytics_conductor_course_id") + "-info"
     )
   );
+  var courseData = {};
+  if (Object.keys(localStorage).includes(courseId + "-"+courseInfo.start+"-filters")) {
+    courseData = JSON.parse(localStorage.getItem(courseId + "-"+courseInfo.start+"-filters"));
+  }
   //for now, send the students in the conductor roster as an array, eventually just use the array of objects given
   var enrollmentData = JSON.parse(
     sessionStorage.getItem(
