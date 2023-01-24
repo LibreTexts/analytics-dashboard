@@ -31,7 +31,7 @@ function updateDisplayMode(state, setState) {
   });
   var courseData = JSON.parse(localStorage.getItem(state.courseId+"-"+state.start+"-filters"));
   courseData["displayMode"] = !display;
-  writeToLocalStorage(state.courseId+"-"+state.start+"-filters", courseData);
+  writeToLocalStorage(state.courseId+"-"+state.start.toString()+"-filters", courseData);
 }
 
 //shows all of the possible filters that can be applied to the data
