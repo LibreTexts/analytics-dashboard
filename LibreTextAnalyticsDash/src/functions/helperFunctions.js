@@ -222,7 +222,7 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
       ? new Date(realCourses[value].endDate)
       : null;
   localStorage.setItem(
-    realCourses[value].courseId + "-"+state.start+"-filters",
+    realCourses[value].courseId + "-"+courseInfo.start+"-filters",
     JSON.stringify(courseData)
   );
   var tempState = {
