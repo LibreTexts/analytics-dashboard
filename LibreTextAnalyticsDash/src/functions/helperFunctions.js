@@ -208,8 +208,8 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
     cookies.get("analytics_conductor_course_id") + "-info"
   ))
   console.log(courseInfo)
-  if (Object.keys(localStorage).includes(courseId + "-"+courseInfo.start+"-filters")) {
-    courseData = JSON.parse(localStorage.getItem(courseId + "-"+courseInfo.start+"-filters"));
+  if (Object.keys(localStorage).includes(courseId + "-"+courseInfo.startDateString+"-filters")) {
+    courseData = JSON.parse(localStorage.getItem(courseId + "-"+courseInfo.startDateString+"-filters"));
   }
   //for now, send the students in the conductor roster as an array, eventually just use the array of objects given
   var enrollmentData = JSON.parse(
@@ -233,8 +233,14 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
       : realCourses[value].endDate
       ? new Date(realCourses[value].endDate)
       : null;
+  courseData["startDateString"] =
+    courseInfo && courseInfo.start
+      ? dateToString(new Date(courseInfo.start))
+      : dateToString(realCourses[value].startDate)
+      ? dateToString(new Date(realCourses[value].startDate))
+      : null;
   localStorage.setItem(
-    realCourses[value].courseId + "-"+courseInfo.start+"-filters",
+    realCourses[value].courseId + "-"+courseInfo.startDateString+"-filters",
     JSON.stringify(courseData)
   );
   var tempState = {
