@@ -138,14 +138,14 @@ export async function handleClick(
 
     setState(tempState);
     var courseData = {};
-    console.log(state.courseId, state.start.toString())
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start.toString()+"-table")) {
-      courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.toString()+"-table"));
+    console.log(state.courseId, state.start.getTime())
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start.getTime()+"-table")) {
+      courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-table"));
     }
     var dropdownData = {};
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start.toString()+"-dropdown")) {
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start.getTime()+"-dropdown")) {
       dropdownData = JSON.parse(
-        localStorage.getItem(state.courseId + "-"+state.start.toString()+"-dropdown")
+        localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-dropdown")
       );
     }
     var tagData = Object.keys(dropdownData).includes("tagData")
@@ -223,13 +223,13 @@ export async function handleClick(
         getMetaTags(tempState, setState);
       }
       if (type === "filterReset") {
-        localStorage.setItem(state.courseId + "-"+state.start.toString()+"-filters", JSON.stringify({}));
+        localStorage.setItem(state.courseId + "-"+state.start.getTime()+"-filters", JSON.stringify({}));
       }
     } else {
-      getDataFromLocalStorage(state.courseId + "-"+state.start.toString()+"-table", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start.toString()+"-chart", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start.toString()+"-dropdown", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start.toString()+"-filters", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-table", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-chart", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-dropdown", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", tempState);
       tempState["rosterFilterApplied"] = tempState.rosterFile ? true : false;
       setState({
         ...tempState,
@@ -304,7 +304,7 @@ export function getIndividualData(state, setState, pathsWithAttributes, disable,
   setState({
     ...temp,
   });
-  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.toString()+"-chart"));
+  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-chart"));
   var tempState = JSON.parse(JSON.stringify(state));
   if (!Object.keys(courseData).includes(individual)) {
     var requests = [];

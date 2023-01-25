@@ -80,7 +80,7 @@ export function changeBarXAxis(option, state, setState) {
 export function changeBinVal(option, state, setState, type) {
   var tempState = JSON.parse(JSON.stringify(state));
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-"+state.start.toString()+"-filters")
+    localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters")
   );
   var bin = "bin";
   var binLabel = "binLabel";
@@ -135,7 +135,7 @@ export function changeBinVal(option, state, setState, type) {
   courseData[bin] = tempState[bin];
   courseData[binLabel] = tempState[binLabel];
   courseData[unit] = tempState[unit];
-  localStorage.setItem(state.courseId + "-"+state.start.toString()+"-filters", JSON.stringify(courseData));
+  localStorage.setItem(state.courseId + "-"+state.start.getTime()+"-filters", JSON.stringify(courseData));
 }
 
 // Used to toggle display of columns in a datatable

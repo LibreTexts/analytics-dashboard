@@ -137,11 +137,11 @@ export default function MultiSelect({
     setState({ ...state, chosenPaths: null, dataPath: null, resetPath: true });
     setChosenPaths([]);
     var courseData = JSON.parse(
-      localStorage.getItem(state.courseId + "-"+state.start.toString()+"-filters")
+      localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters")
     );
     courseData["dataPath"] = [];
     courseData["chosenPaths"] = [];
-    writeToLocalStorage(state.courseId + "-"+state.start.toString()+"-filters", courseData);
+    writeToLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", courseData);
   }
 
   return (
