@@ -29,9 +29,9 @@ function updateDisplayMode(state, setState) {
     studentForChapterChart: null,
     individualChapterData: null
   });
-  var courseData = JSON.parse(localStorage.getItem(state.courseId+"-"+state.start+"-filters"));
+  var courseData = JSON.parse(localStorage.getItem(state.courseId+"-"+state.startDateString+"-filters"));
   courseData["displayMode"] = !display;
-  writeToLocalStorage(state.courseId+"-"+state.start+"-filters", courseData);
+  writeToLocalStorage(state.courseId+"-"+state.startDateString+"-filters", courseData);
 }
 
 //shows all of the possible filters that can be applied to the data

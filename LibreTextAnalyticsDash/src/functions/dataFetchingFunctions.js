@@ -104,6 +104,7 @@ export async function handleClick(
             ...tempState,
             start: null,
             end: null,
+            startDateString: null,
           };
         }
       }
@@ -139,18 +140,18 @@ export async function handleClick(
     setState(tempState);
     var courseData = {};
     console.log(state.courseId, state.start, typeof(state.start))
-    console.log("CURRENT: ", state.courseId + "-"+state.start+"-table")
-    console.log(Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-table"))
+    console.log("CURRENT: ", state.courseId + "-"+state.startDateString+"-table")
+    console.log(Object.keys(localStorage).includes(state.courseId + "-"+state.startDateString+"-table"))
     if (Object.keys(localStorage).length > 0) {
-      console.log("OLD: ", Object.keys(localStorage)[0], Object.keys(localStorage)[0] === state.courseId + "-"+state.start+"-table")
+      console.log("OLD: ", Object.keys(localStorage)[0], Object.keys(localStorage)[0] === state.courseId + "-"+state.startDateString+"-table")
     }
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-table")) {
-      courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-table"));
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.startDateString+"-table")) {
+      courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.startDateString+"-table"));
     }
     var dropdownData = {};
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-dropdown")) {
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.startDateString+"-dropdown")) {
       dropdownData = JSON.parse(
-        localStorage.getItem(state.courseId + "-"+state.start+"-dropdown")
+        localStorage.getItem(state.courseId + "-"+state.startDateString+"-dropdown")
       );
     }
     var tagData = Object.keys(dropdownData).includes("tagData")
@@ -228,13 +229,13 @@ export async function handleClick(
         getMetaTags(tempState, setState);
       }
       if (type === "filterReset") {
-        localStorage.setItem(state.courseId + "-"+state.start+"-filters", JSON.stringify({}));
+        localStorage.setItem(state.courseId + "-"+state.startDateString+"-filters", JSON.stringify({}));
       }
     } else {
-      getDataFromLocalStorage(state.courseId + "-"+state.start+"-table", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start+"-chart", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start+"-dropdown", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start+"-filters", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.startDateString+"-table", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.startDateString+"-chart", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.startDateString+"-dropdown", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.startDateString+"-filters", tempState);
       tempState["rosterFilterApplied"] = tempState.rosterFile ? true : false;
       setState({
         ...tempState,
@@ -309,7 +310,7 @@ export function getIndividualData(state, setState, pathsWithAttributes, disable,
   setState({
     ...temp,
   });
-  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-chart"));
+  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.startDateString+"-chart"));
   var tempState = JSON.parse(JSON.stringify(state));
   if (!Object.keys(courseData).includes(individual)) {
     var requests = [];

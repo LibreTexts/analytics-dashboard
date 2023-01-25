@@ -26,7 +26,7 @@ export default function ParseRoster({ state, setState }) {
   const handleFileChange = (e) => {
     setError("");
     var courseData = JSON.parse(
-      localStorage.getItem(state.courseId + "-"+state.start+"-filters")
+      localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters")
     );
 
     // Check if user has entered the file
@@ -67,7 +67,7 @@ export default function ParseRoster({ state, setState }) {
       courseData["roster"] = null;
       courseData["rosterFile"] = null;
       localStorage.setItem(
-        state.courseId + "-"+state.start+"-filters",
+        state.courseId + "-"+state.startDateString+"-filters",
         JSON.stringify(courseData)
       );
     }
@@ -83,7 +83,7 @@ export default function ParseRoster({ state, setState }) {
     // to read any file or blob.
     const reader = new FileReader();
     var courseData = JSON.parse(
-      localStorage.getItem(state.courseId + "-"+state.start+"-filters")
+      localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters")
     );
 
     // Event listener on reader when the file
@@ -110,7 +110,7 @@ export default function ParseRoster({ state, setState }) {
       courseData["roster"] = emails;
       courseData["rosterFile"] = file.name;
       localStorage.setItem(
-        state.courseId + "-"+state.start+"-filters",
+        state.courseId + "-"+state.startDateString+"-filters",
         JSON.stringify(courseData)
       );
       const columns = Object.keys(parsedData[0]);

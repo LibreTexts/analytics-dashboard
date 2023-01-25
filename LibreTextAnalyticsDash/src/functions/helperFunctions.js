@@ -117,15 +117,16 @@ export function clearDates(state, setState) {
   setState({
     ...state,
     start: state.startDate,
+    startDateString: dateToString(state.startDate),
     end: state.endDate,
     disable: false,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
+    localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters")
   );
   courseData["start"] = state.startDate;
   courseData["end"] = state.endDate;
-  writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
+  writeToLocalStorage(state.courseId + "-"+state.startDateString+"-filters", courseData);
 }
 
 //clears the chosen metatag
@@ -136,10 +137,10 @@ export function clearTags(state, setState) {
     disable: false,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
+    localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters")
   );
   courseData["chosenTag"] = null;
-  writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
+  writeToLocalStorage(state.courseId + "-"+state.startDateString+"-filters", courseData);
 }
 
 //closes and opens the course structure dropdown
@@ -160,6 +161,13 @@ export function clearPath(event, state, setState) {
   });
 }
 
+export function dateToString(date) {
+  var month = date.getMonth()+1;
+  var day = date.getDate();
+  var year = date.getFullYear();
+  return month.toString()+"-"+day.toString()+"-"+year.toString();
+}
+
 //called on click of the "Clear All Filters" button, resets the chosen filters
 export function filterReset(state, setState) {
   setState({
@@ -173,14 +181,14 @@ export function filterReset(state, setState) {
     chosenTag: null,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
+    localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters")
   );
   courseData["chosenPaths"] = null;
   courseData["dataPath"] = null;
   // courseData["start"] = null;
   // courseData["end"] = null;
   courseData["chosenTag"] = null;
-  localStorage.setItem(state.courseId + "-"+state.start+"-filters", JSON.stringify(courseData));
+  localStorage.setItem(state.courseId + "-"+state.startDateString+"-filters", JSON.stringify(courseData));
 }
 
 export function setCourseFromConductor(state, setState, courseId, adaptCourseID, realCourses, queryVariables) {
@@ -264,6 +272,12 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
         ? new Date(courseInfo.end)
         : realCourses[value].endDate
         ? new Date(realCourses[value].endDate)
+        : null,
+    startDateString:
+      courseInfo && courseInfo.start
+        ? dateToString(new Date(courseInfo.start))
+        : dateToString(realCourses[value].startDate)
+        ? dateToString(new Date(realCourses[value].startDate))
         : null,
     roster: enrolledStudents,
     conductorRoster: enrollmentData && enrollmentData.length > 0 ? true : false,

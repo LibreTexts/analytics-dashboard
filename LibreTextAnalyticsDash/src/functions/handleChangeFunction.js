@@ -1,6 +1,6 @@
 import React from "react";
 import cookies from "js-cookie";
-import { writeToLocalStorage } from "./helperFunctions.js";
+import { writeToLocalStorage, dateToString } from "./helperFunctions.js";
 const FunctionContext = React.createContext();
 
 //handles dropdown values being chosen
@@ -15,7 +15,7 @@ export function handleChange(
   //sets state for the value from a specific dropdown or other input; stores in localStorage
   var courseData = {};
   if (type === "start") {
-    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-filters"));
+    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters"));
     if (state.startDate && (value < state.startDate || value > state.endDate)) {
       alert(
         "Please choose a date inside the duration of the course: " +
@@ -27,10 +27,11 @@ export function handleChange(
       setState({
         ...state,
         start: value,
+        startDateString: dateToString(value),
         disable: false,
       });
       courseData["start"] = value;
-      writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
+      writeToLocalStorage(state.courseId + "-"+state.startDateString+"-filters", courseData);
     }
   }
   if (type === "end") {
@@ -43,7 +44,7 @@ export function handleChange(
       );
     } else {
       courseData = JSON.parse(
-        localStorage.getItem(state.courseId + "-"+state.start+"-filters")
+        localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters")
       );
       courseData["end"] = value;
       setState({
@@ -51,13 +52,13 @@ export function handleChange(
         end: value,
         disable: false,
       });
-      writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
+      writeToLocalStorage(state.courseId + "-"+state.startDateString+"-filters", courseData);
     }
   }
   if (type === "chosenTag") {
-    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-filters"));
+    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters"));
     courseData["chosenTag"] = value;
-    writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
+    writeToLocalStorage(state.courseId + "-"+state.startDateString+"-filters", courseData);
     setState({
       ...state,
       chosenTag: value,
@@ -67,11 +68,11 @@ export function handleChange(
   if (type === "courseId") {
     if (
       Object.keys(localStorage).includes(
-        realCourses[value].courseId + "-"+state.start+"-filters"
+        realCourses[value].courseId + "-"+state.startDateString+"-filters"
       )
     ) {
       courseData = JSON.parse(
-        localStorage.getItem(realCourses[value].courseId + "-"+state.start+"-filters")
+        localStorage.getItem(realCourses[value].courseId + "-"+state.startDateString+"-filters")
       );
     }
     var courseInfo = JSON.parse(sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-info'));
@@ -89,7 +90,7 @@ export function handleChange(
       ? new Date(realCourses[value].endDate)
       : null;
     localStorage.setItem(
-      realCourses[value].courseId + "-"+state.start+"-filters",
+      realCourses[value].courseId + "-"+state.startDateString+"-filters",
       JSON.stringify(courseData)
     );
     setState({
@@ -122,6 +123,11 @@ export function handleChange(
         ? new Date(courseInfo.end)
         : realCourses[value].endDate
         ? new Date(realCourses[value].endDate)
+        : null,
+      startDateString: courseInfo && courseInfo.start
+        ? dateToString(new Date(courseInfo.start))
+        : dateToString(realCourses[value].startDate)
+        ? dateToString(new Date(realCourses[value].startDate))
         : null,
       roster: enrolledStudents,
       conductorRoster: enrollmentData && enrollmentData.length > 0
@@ -221,15 +227,15 @@ export function handleChange(
     });
   }
   if (type === "path") {
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-filters")) {
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.startDateString+"-filters")) {
       courseData = JSON.parse(
-        localStorage.getItem(state.courseId + "-"+state.start+"-filters")
+        localStorage.getItem(state.courseId + "-"+state.startDateString+"-filters")
       );
     }
     courseData["dataPath"] = value;
     courseData["chosenPaths"] = value;
     localStorage.setItem(
-      state.courseId + "-"+state.start+"-filters",
+      state.courseId + "-"+state.startDateString+"-filters",
       JSON.stringify(courseData)
     );
     setState({

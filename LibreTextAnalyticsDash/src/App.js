@@ -44,6 +44,7 @@ function App() {
     filterTab: false,
     start: null,
     end: null,
+    startDateString: null,
     tab: "initial",
     disable: true,
     disableCourse: false,
