@@ -204,10 +204,6 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
     )
   );
   var courseData = {};
-  console.log(sessionStorage.getItem(
-    cookies.get("analytics_conductor_course_id") + "-info"
-  ))
-  console.log(courseInfo)
   if (Object.keys(localStorage).includes(courseId + "-"+courseInfo.startDateString+"-filters")) {
     courseData = JSON.parse(localStorage.getItem(courseId + "-"+courseInfo.startDateString+"-filters"));
   }
@@ -240,7 +236,7 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
       ? dateToString(new Date(realCourses[value].startDate))
       : null;
   localStorage.setItem(
-    realCourses[value].courseId + "-"+courseInfo.startDateString+"-filters",
+    realCourses[value].courseId + "-"+courseData.startDateString+"-filters",
     JSON.stringify(courseData)
   );
   var tempState = {

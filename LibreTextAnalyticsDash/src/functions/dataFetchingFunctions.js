@@ -139,12 +139,6 @@ export async function handleClick(
 
     setState(tempState);
     var courseData = {};
-    console.log(state.courseId, state.start, typeof(state.start))
-    console.log("CURRENT: ", state.courseId + "-"+state.startDateString+"-table")
-    console.log(Object.keys(localStorage).includes(state.courseId + "-"+state.startDateString+"-table"))
-    if (Object.keys(localStorage).length > 0) {
-      console.log("OLD: ", Object.keys(localStorage)[0], Object.keys(localStorage)[0] === state.courseId + "-"+state.startDateString+"-table")
-    }
     if (Object.keys(localStorage).includes(state.courseId + "-"+state.startDateString+"-table")) {
       courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.startDateString+"-table"));
     }
@@ -157,7 +151,6 @@ export async function handleClick(
     var tagData = Object.keys(dropdownData).includes("tagData")
       ? dropdownData["tagData"]
       : null;
-      console.log(courseData, type, isFilter)
     // Either get the data from local storage, or new request to server
     // A new request if:
     // - no stored data on selected course
