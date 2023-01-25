@@ -138,10 +138,11 @@ export async function handleClick(
 
     setState(tempState);
     var courseData = {};
-    console.log(state.courseId, state.start)
+    console.log(state.courseId, state.start, typeof(state.start))
+    console.log("CURRENT: ", state.courseId + "-"+state.start+"-table")
     console.log(Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-table"))
     if (Object.keys(localStorage).length > 0) {
-      console.log(Object.keys(localStorage)[0], Object.keys(localStorage)[0] === state.courseId + "-"+state.start+"-table")
+      console.log("OLD: ", Object.keys(localStorage)[0], Object.keys(localStorage)[0] === state.courseId + "-"+state.start+"-table")
     }
     if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-table")) {
       courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-table"));
