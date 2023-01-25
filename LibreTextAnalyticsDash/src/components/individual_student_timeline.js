@@ -33,7 +33,7 @@ export default class IndividualTimeline extends React.Component {
     }
     let i = 1;
     function getDate(date) {
-      return new Date(date).getTime();
+      return new Date(date);
     }
     function getInit(dates) {
       dates.sort((a, b) => new Date(a) - new Date(b));

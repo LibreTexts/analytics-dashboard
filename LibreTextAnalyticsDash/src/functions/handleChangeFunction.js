@@ -15,7 +15,7 @@ export function handleChange(
   //sets state for the value from a specific dropdown or other input; stores in localStorage
   var courseData = {};
   if (type === "start") {
-    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters"));
+    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-filters"));
     if (state.startDate && (value < state.startDate || value > state.endDate)) {
       alert(
         "Please choose a date inside the duration of the course: " +
@@ -30,7 +30,7 @@ export function handleChange(
         disable: false,
       });
       courseData["start"] = value;
-      writeToLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", courseData);
+      writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
     }
   }
   if (type === "end") {
@@ -43,7 +43,7 @@ export function handleChange(
       );
     } else {
       courseData = JSON.parse(
-        localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters")
+        localStorage.getItem(state.courseId + "-"+state.start+"-filters")
       );
       courseData["end"] = value;
       setState({
@@ -51,13 +51,13 @@ export function handleChange(
         end: value,
         disable: false,
       });
-      writeToLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", courseData);
+      writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
     }
   }
   if (type === "chosenTag") {
-    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters"));
+    courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-filters"));
     courseData["chosenTag"] = value;
-    writeToLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", courseData);
+    writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
     setState({
       ...state,
       chosenTag: value,
@@ -67,11 +67,11 @@ export function handleChange(
   if (type === "courseId") {
     if (
       Object.keys(localStorage).includes(
-        realCourses[value].courseId + "-"+state.start.getTime()+"-filters"
+        realCourses[value].courseId + "-"+state.start+"-filters"
       )
     ) {
       courseData = JSON.parse(
-        localStorage.getItem(realCourses[value].courseId + "-"+state.start.getTime()+"-filters")
+        localStorage.getItem(realCourses[value].courseId + "-"+state.start+"-filters")
       );
     }
     var courseInfo = JSON.parse(sessionStorage.getItem(cookies.get('analytics_conductor_course_id')+'-info'));
@@ -89,7 +89,7 @@ export function handleChange(
       ? new Date(realCourses[value].endDate)
       : null;
     localStorage.setItem(
-      realCourses[value].courseId + "-"+state.start.getTime()+"-filters",
+      realCourses[value].courseId + "-"+state.start+"-filters",
       JSON.stringify(courseData)
     );
     setState({
@@ -221,15 +221,15 @@ export function handleChange(
     });
   }
   if (type === "path") {
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start.getTime()+"-filters")) {
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-filters")) {
       courseData = JSON.parse(
-        localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters")
+        localStorage.getItem(state.courseId + "-"+state.start+"-filters")
       );
     }
     courseData["dataPath"] = value;
     courseData["chosenPaths"] = value;
     localStorage.setItem(
-      state.courseId + "-"+state.start.getTime()+"-filters",
+      state.courseId + "-"+state.start+"-filters",
       JSON.stringify(courseData)
     );
     setState({

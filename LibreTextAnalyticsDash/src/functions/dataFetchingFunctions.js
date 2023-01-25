@@ -138,14 +138,18 @@ export async function handleClick(
 
     setState(tempState);
     var courseData = {};
-    console.log(state.courseId, state.start.getTime())
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start.getTime()+"-table")) {
-      courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-table"));
+    console.log(state.courseId, state.start)
+    console.log(Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-table"))
+    if (Object.keys(localStorage).length > 0) {
+      console.log(Object.keys(localStorage)[0], Object.keys(localStorage)[0] === state.courseId + "-"+state.start+"-table")
+    }
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-table")) {
+      courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-table"));
     }
     var dropdownData = {};
-    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start.getTime()+"-dropdown")) {
+    if (Object.keys(localStorage).includes(state.courseId + "-"+state.start+"-dropdown")) {
       dropdownData = JSON.parse(
-        localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-dropdown")
+        localStorage.getItem(state.courseId + "-"+state.start+"-dropdown")
       );
     }
     var tagData = Object.keys(dropdownData).includes("tagData")
@@ -223,13 +227,13 @@ export async function handleClick(
         getMetaTags(tempState, setState);
       }
       if (type === "filterReset") {
-        localStorage.setItem(state.courseId + "-"+state.start.getTime()+"-filters", JSON.stringify({}));
+        localStorage.setItem(state.courseId + "-"+state.start+"-filters", JSON.stringify({}));
       }
     } else {
-      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-table", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-chart", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-dropdown", tempState);
-      getDataFromLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-table", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-chart", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-dropdown", tempState);
+      getDataFromLocalStorage(state.courseId + "-"+state.start+"-filters", tempState);
       tempState["rosterFilterApplied"] = tempState.rosterFile ? true : false;
       setState({
         ...tempState,
@@ -304,7 +308,7 @@ export function getIndividualData(state, setState, pathsWithAttributes, disable,
   setState({
     ...temp,
   });
-  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-chart"));
+  var courseData = JSON.parse(localStorage.getItem(state.courseId + "-"+state.start+"-chart"));
   var tempState = JSON.parse(JSON.stringify(state));
   if (!Object.keys(courseData).includes(individual)) {
     var requests = [];

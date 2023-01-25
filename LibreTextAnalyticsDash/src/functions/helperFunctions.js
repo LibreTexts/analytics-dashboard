@@ -121,11 +121,11 @@ export function clearDates(state, setState) {
     disable: false,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters")
+    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
   );
   courseData["start"] = state.startDate;
   courseData["end"] = state.endDate;
-  writeToLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", courseData);
+  writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
 }
 
 //clears the chosen metatag
@@ -136,10 +136,10 @@ export function clearTags(state, setState) {
     disable: false,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters")
+    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
   );
   courseData["chosenTag"] = null;
-  writeToLocalStorage(state.courseId + "-"+state.start.getTime()+"-filters", courseData);
+  writeToLocalStorage(state.courseId + "-"+state.start+"-filters", courseData);
 }
 
 //closes and opens the course structure dropdown
@@ -173,14 +173,14 @@ export function filterReset(state, setState) {
     chosenTag: null,
   });
   var courseData = JSON.parse(
-    localStorage.getItem(state.courseId + "-"+state.start.getTime()+"-filters")
+    localStorage.getItem(state.courseId + "-"+state.start+"-filters")
   );
   courseData["chosenPaths"] = null;
   courseData["dataPath"] = null;
   // courseData["start"] = null;
   // courseData["end"] = null;
   courseData["chosenTag"] = null;
-  localStorage.setItem(state.courseId + "-"+state.start.getTime()+"-filters", JSON.stringify(courseData));
+  localStorage.setItem(state.courseId + "-"+state.start+"-filters", JSON.stringify(courseData));
 }
 
 export function setCourseFromConductor(state, setState, courseId, adaptCourseID, realCourses, queryVariables) {
@@ -200,8 +200,8 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
     cookies.get("analytics_conductor_course_id") + "-info"
   ))
   console.log(courseInfo)
-  if (Object.keys(localStorage).includes(courseId + "-"+courseInfo.start.getTime()+"-filters")) {
-    courseData = JSON.parse(localStorage.getItem(courseId + "-"+courseInfo.start.getTime()+"-filters"));
+  if (Object.keys(localStorage).includes(courseId + "-"+courseInfo.start+"-filters")) {
+    courseData = JSON.parse(localStorage.getItem(courseId + "-"+courseInfo.start+"-filters"));
   }
   //for now, send the students in the conductor roster as an array, eventually just use the array of objects given
   var enrollmentData = JSON.parse(
@@ -226,7 +226,7 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
       ? new Date(realCourses[value].endDate)
       : null;
   localStorage.setItem(
-    realCourses[value].courseId + "-"+courseInfo.start.getTime()+"-filters",
+    realCourses[value].courseId + "-"+courseInfo.start+"-filters",
     JSON.stringify(courseData)
   );
   var tempState = {
