@@ -196,6 +196,10 @@ export function setCourseFromConductor(state, setState, courseId, adaptCourseID,
     )
   );
   var courseData = {};
+  console.log(sessionStorage.getItem(
+    cookies.get("analytics_conductor_course_id") + "-info"
+  ))
+  console.log(courseInfo)
   if (Object.keys(localStorage).includes(courseId + "-"+courseInfo.start.getTime()+"-filters")) {
     courseData = JSON.parse(localStorage.getItem(courseId + "-"+courseInfo.start.getTime()+"-filters"));
   }
