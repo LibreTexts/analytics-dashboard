@@ -129,7 +129,7 @@ function App() {
       "LT Hours on Site": true,
     },
     gridHeight: "small",
-    homepage: "/api",
+    homepage: "/analytics/api",
     showNonEnrolledStudents: false,
     ltCourse: false,
     adaptCourse: false,
@@ -150,7 +150,7 @@ function App() {
     noDataAvailable: false,
     gradesFromGradebook: false,
     loadingProgress: 0,
-    environment: "production",
+    environment: "development",
     reload: false,
     notInCommons: false,
   });

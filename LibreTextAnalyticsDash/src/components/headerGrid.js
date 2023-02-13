@@ -93,7 +93,7 @@ export default function HeaderGrid({
               initPage={initPage}
               height={
                 initPage
-                  ? "200px"
+                  ? "500px"
                   : state.environment === "production"
                   ? "50px"
                   : "150px"

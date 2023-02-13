@@ -19,8 +19,8 @@ const randomString = require('randomstring');
 const hashKey = process.env.studentHash;
 const userPassword = process.env.userPassword;
 
-const ENVIRONMENT = "production"; //development or production -- test server vs production server, test server temporarily out of use
-const COMMONS = "production"; //testing or production -- staging.commons (test site) or real commons site
+const ENVIRONMENT = "development"; //development or production -- test server vs production server, test server temporarily out of use
+const COMMONS = "testing"; //testing or production -- staging.commons (test site) or real commons site
 //currently configured for commons to be used with the production server
 const CONDUCTOR_API_URL = COMMONS === "testing" ? 'https://staging.commons.libretexts.org/api/v1' : 'https://commons.libretexts.org/api/v1';
 const OAUTH_ACCESS_TOKEN_URL = COMMONS === "testing" ? 'https://staging.commons.libretexts.org/api/v1/oauth2.0/accessToken' : 'https://commons.libretexts.org/api/v1/oauth2.0/accessToken';
