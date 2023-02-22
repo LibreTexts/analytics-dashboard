@@ -51,7 +51,7 @@ function spliceDateFilter(index, params, data, isAdapt=false, isGradebook=false)
         "newDate": {'$dateFromString': {'dateString': timestamp}}
       }
     }
-    if (isAdapt) {
+    if (isAdapt || isGradebook) {
       addFields = {
         '$addFields': {
             'newDate': {
