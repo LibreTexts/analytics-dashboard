@@ -1,3 +1,4 @@
+const axios = require("axios");
 /**
  * Retrieve some information about the user from Conductor API to make sure auth is working.
  */
