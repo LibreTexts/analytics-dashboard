@@ -230,7 +230,9 @@ export function getAllPagesConfig(state, setState, type) {
     groupBy: group,
     path: state.dataPath,
     tagFilter: state.chosenTag,
-    adaptCourseID: state.adaptCourseID
+    adaptCourseID: state.adaptCourseID,
+    startDate: state.start,
+    endDate: state.end
   };
   var config = getAxiosCall("/timelineData", data, state);
   return config;

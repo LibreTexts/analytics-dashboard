@@ -42,29 +42,25 @@ export default function CourseDropdown({
           fill
         >
           <Box direction="row">
-          {state.environment === "development" && (
-            <Box direction="column">
-            <SelectWithApply
-              selectOptions={Object.keys(queryVariables.realCourses)}
-              value={state.courseName}
-              dropdownFunction={handleChange}
-              clickFunction={handleClick}
-              queryVariables={queryVariables}
-              state={state}
-              setState={setState}
-              type="courseId"
-              disable={state.disableCourse}
-              width="300px"
-              dropSize="medium"
-              a11yTitle="Select a course"
-              initPage={initPage}
-            />
-            <TextInput value={textbookValue} onChange={event => setTextbookValue(event.target.value)}/>
-            <TextInput value={value} onChange={event => setValue(event.target.value)}/>
-            <TextInput value={timeValue} onChange={event => setTimeValue(event.target.value)}/>
-            <Button onClick={() => setState((s) => ({...s, courseId: textbookValue, adaptCourseID: value, cutoffDate: timeValue, adaptCourse: value ? true : false, ltCourse: textbookValue ? true : false}))} />
-            </Box>
-          )}
+            {state.environment === "development" && (
+              <Box direction="column">
+              <SelectWithApply
+                selectOptions={Object.keys(queryVariables.realCourses)}
+                value={state.courseName}
+                dropdownFunction={handleChange}
+                clickFunction={handleClick}
+                queryVariables={queryVariables}
+                state={state}
+                setState={setState}
+                type="courseId"
+                disable={state.disableCourse}
+                width="300px"
+                dropSize="medium"
+                a11yTitle="Select a course"
+                initPage={initPage}
+              />
+              </Box>
+            )}
             {!initPage && state.environment === "development" && (
               <Button
                 label="Reload Course"

@@ -2,18 +2,9 @@ const addFilters =  require("../helper/addFilters.js");
 //find the data for the bar chart on the student tab
 //look at an attribute and find the number of students per x axis element
 
-function adaptStudentChartQuery(params, dbInfo, adaptCodes, environment) {
-  //find the adapt code for the lt course id
-  var codeFound = adaptCodes.find(o => o.course === params.courseId)
-  var course = codeFound;
-  if (!codeFound) {
-    course = params.courseId
-  } else {
-    course = codeFound.code
-  }
-  if (environment === "production") {
-    course = params.adaptCourseID
-  }
+function adaptStudentChartQuery(params, dbInfo, environment) {
+
+  var course = params.adaptCourseID ? params.adaptCourseID : params.courseId;
 
   var group = '$'+params.groupBy
   //look at the adapt collection
@@ -32,10 +23,26 @@ function adaptStudentChartQuery(params, dbInfo, adaptCodes, environment) {
       //format the date
       {
         '$addFields': {
-          "newDate": {'$dateFromString': {'dateString': '$submission_time'}},
-          'date': {'$dateTrunc': {
-              'date': { '$toDate': '$submission_time'},
-              'unit': 'day'
+          "newDate": {
+            $cond: {
+              if: {"$ne": ["$submission_time", ""]},
+              then: {'$dateFromString': {'dateString': '$submission_time'}},
+              else: {'$dateFromString': {'dateString': '$review_time_end'}}
+            }
+          },
+          'date': {
+            $cond: {
+              if: {"$ne": ["$submission_time", ""]},
+              then: {'$dateTrunc': {
+                  'date': { '$toDate': '$submission_time'},
+                  'unit': 'day'
+                }
+              },
+              else: {'$dateTrunc': {
+                  'date': { '$toDate': '$review_time_end'},
+                  'unit': 'day'
+                }
+              }
             }
           }
         }

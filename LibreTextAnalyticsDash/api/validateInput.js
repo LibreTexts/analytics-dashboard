@@ -8,7 +8,7 @@ function checkInvalid(s, regEx){
 
 function validateInput(endpoint, params) {
     // Brackets indicate code injection?
-    var invalidChars= /^[{}]/;
+    var invalidChars= /^[({})]/;
 
     if (params.courseId &&
         checkInvalid(params.courseId, invalidChars)

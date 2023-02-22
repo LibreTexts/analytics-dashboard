@@ -2,17 +2,10 @@ const addFilters =  require("../helper/addFilters.js");
 const helperFunctions = require("../helper/helperFunctions.js");
 //query to find views per date for an individual page
 
-function individualAssignmentSubmissionsQuery(params, adaptCodes, dbInfo, environment) {
-  var codeFound = adaptCodes.find(o => o.course === params.courseId)
-  var course = codeFound;
-  if (!codeFound) {
-    course = params.courseId
-  } else {
-    course = codeFound.code
-  }
-  if (environment === "production") {
-    course = params.adaptCourseID
-  }
+function individualAssignmentSubmissionsQuery(params, dbInfo, environment) {
+
+  var course = params.adaptCourseID ? params.adaptCourseID : params.courseId;
+
   var student = params.individual;
   if (student.includes("@")) {
     student = helperFunctions.encryptStudent(params.individual);
@@ -37,10 +30,21 @@ function individualAssignmentSubmissionsQuery(params, adaptCodes, dbInfo, enviro
       //format date and bin by day, week, or month as shown in frontend filter
       {
         "$addFields": {
-          'date': {'$dateTrunc': {
-              'date': { '$toDate': '$submission_time'},
-              'unit': params.unit,
-              'binSize': params.bin
+          'date': {
+            $cond: {
+              if: {"$ne": ["$submission_time", ""]},
+              then: {'$dateTrunc': {
+                    'date': { '$toDate': '$submission_time'},
+                    'unit': params.unit,
+                    'binSize': params.bin
+                  }
+                },
+              else: {'$dateTrunc': {
+                    'date': { '$toDate': '$review_time_end'},
+                    'unit': params.unit,
+                    'binSize': params.bin
+                  }
+                }
             }
           }
         }

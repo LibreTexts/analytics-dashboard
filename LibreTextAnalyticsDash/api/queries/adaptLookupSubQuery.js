@@ -1,6 +1,6 @@
 const addFilters = require("../helper/addFilters.js");
 
-function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
+function adaptLookupSubQuery(params, dbInfo, environment) {
   var adaptLookup = {
     //getting adapt variables
     "$lookup": {
@@ -13,7 +13,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
           '$match': {
             '$expr': {
               '$and': [
-                { '$eq': ["$course_id", environment === "production" ? params.adaptCourseID : codeFound.code] }
+                { '$eq': ["$course_id", params.adaptCourseID] },
               ]
             }
           }
@@ -36,11 +36,23 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
         },
         {
           '$addFields': {
+            'assn_due': {'$dateFromString': {'dateString':'$due'}},
+            'time_submitted': {'$dateFromString': {'dateString':'$day'}},
             'date': {
               '$dateTrunc': {
                 'date': { '$toDate': '$day' },
                 'unit': 'day'
               }
+            }
+          }
+        },
+        {
+          '$addFields': {
+            'hoursBeforeDue': {
+              '$divide': [
+                {'$subtract': ['$assn_due', '$time_submitted']},
+                3600000
+              ]
             }
           }
         },
@@ -55,7 +67,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
             'attempts': {'$sum': 1},
             'page_ids': {
               '$addToSet': '$page_id'
-            }
+            },
+            'hoursBeforeDueArray': { '$push': '$hoursBeforeDue' }
           }
         },
         {
@@ -70,7 +83,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
             'pageArrays': {
               '$addToSet': '$page_ids'
             },
-            'attempts': {'$avg': '$attempts'}
+            'attempts': {'$avg': '$attempts'},
+            'hoursBeforeDueArrays': { '$push': '$hoursBeforeDueArray' }
           }
         },
         {
@@ -88,9 +102,20 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
                 'initialValue': [],
                 'in': { '$setUnion': ["$$value", "$$this"] }
               }
+            },
+            'hoursBeforeDue': {
+              '$reduce': {
+                'input': '$hoursBeforeDueArrays',
+                'initialValue': [],
+                'in': { '$setUnion': ["$$value", "$$this"] }
+              }
             }
           }
         },
+        // should only grab the scores of assignments that have already happened:
+        //  need to have data in the adapt collection before any grades are linked to them
+        //  causes problems for things like Midterms that are taken in person
+        //  might need to run a separate aggregation for the gradebook and connect it later
         {
           '$lookup': {
             "from": dbInfo.gradesColl,
@@ -128,6 +153,9 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
             'pageArrays': {
               '$push': '$pageIds'
             },
+            'hoursBeforeDueArrays': {
+              '$push': '$hoursBeforeDue'
+            },
             'adaptAvgAttempts': {'$avg': '$attempts'},
             'adaptAvgPercentScore': {'$avg': '$scores.assignment_percent'},
             'courseGrade': {'$max': '$scores.overall_course_percent'},
@@ -149,6 +177,13 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
                 'initialValue': [],
                 'in': { '$setUnion': ["$$value", "$$this"] }
               }
+            },
+            'hoursBeforeDue': {
+              '$reduce': {
+                'input': '$hoursBeforeDueArrays',
+                'initialValue': [],
+                'in': { '$setUnion': ["$$value", "$$this"] }
+              }
             }
           }
         },
@@ -157,7 +192,8 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
             'adaptUniqueInteractionDays': {'$size': '$dates'},
             'adaptUniqueAssignments': {'$size': '$uniqueAssignments'},
             'adaptUniqueProblems': {'$size': '$pageIds'},
-            'mostRecentAdaptLoad': {'$max': '$dates'}
+            'mostRecentAdaptLoad': {'$max': '$dates'},
+            'adaptHoursBeforeDue': {'$avg': '$hoursBeforeDue'}
           }
         }
       ]
@@ -174,8 +210,7 @@ function adaptLookupSubQuery(codeFound, params, dbInfo, environment) {
       '$eq': ['$level_name', params.adaptLevelName]
     })
   }
-  addFilters.spliceDateFilter(1, params, adaptLookup["$lookup"], true);
-
+  addFilters.spliceDateFilter(2, params, adaptLookup["$lookup"], true);
   return adaptLookup
 }
 

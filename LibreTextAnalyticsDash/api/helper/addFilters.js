@@ -37,10 +37,13 @@ function splicePathFilter(index, params, data, addPageLookup=false) {
   return index;
 }
 
-function spliceDateFilter(index, params, data, isAdapt=false) {
+function spliceDateFilter(index, params, data, isAdapt=false, isGradebook=false) {
   var timestamp = '$object.timestamp';
   if (isAdapt) {
     timestamp = '$submission_time'
+  }
+  if (isGradebook) {
+    timestamp = '$assignment_due'
   }
   if (params.startDate || params.endDate) {
     var addFields = {
@@ -53,11 +56,11 @@ function spliceDateFilter(index, params, data, isAdapt=false) {
         '$addFields': {
             'newDate': {
               $cond: {
-                if: {"$ne": ["$submission_time", ""]},
+                if: {"$ne": [timestamp, isAdapt ? "" : isGradebook ? "Not Found" : null]},
                 then: {
                   '$dateFromString': {'dateString': timestamp}
                 },
-                else: {'$dateFromString': {'dateString': "$review_time_end"}}
+                else: isAdapt ? {'$dateFromString': {'dateString': "$review_time_end"}} : null
             }
           }
         }

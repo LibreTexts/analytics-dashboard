@@ -99,7 +99,6 @@ export default function GradesPageView({
   if (individualData) {
     tableColumns["Count for Individual Assignment"] = "Individual Count";
   }
-  console.log(dataBins);
 
   return (
     <>

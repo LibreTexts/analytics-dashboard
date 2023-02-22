@@ -1,17 +1,8 @@
 const addFilters =  require("../helper/addFilters.js");
 
-function aggregateAssignmentViewsQuery(params, dbInfo, adaptCodes, environment) {
+function aggregateAssignmentViewsQuery(params, dbInfo, environment) {
     //find the adapt code for the lt course id
-    var codeFound = adaptCodes.find(o => o.course === params.courseId)
-    var course = codeFound;
-    if (!codeFound) {
-      course = params.courseId
-    } else {
-      course = codeFound.code
-    }
-    if (environment === "production") {
-      course = params.adaptCourseID
-    }
+    var course = params.adaptCourseID ? params.adaptCourseID : params.courseId;
 
     var data = {
       "collection": dbInfo.adaptColl,

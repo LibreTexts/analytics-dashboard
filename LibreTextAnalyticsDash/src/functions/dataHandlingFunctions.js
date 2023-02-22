@@ -3,7 +3,7 @@
 
 //creates the data table column values to show or hide
 export function handleStudentData(key, value, tempState, courseData, allData) {
-  percentile(value.filter(student => student.isEnrolled === true || student.isEnrolled === "N/A"));
+  //percentile(value.filter(student => student.isEnrolled === true || student.isEnrolled === "N/A"));
   if (tempState.adaptCourse && tempState.ltCourse) {
     tempState["hasAdapt"] = true;
     courseData["hasAdapt"] = true;
@@ -275,6 +275,6 @@ function percentile(studentData) {
     percent = (count * 100) / (n - 1);
     studentData[i]['percentile'] = Math.floor(percent);
     //doesn't score the overall grade linked to the student's email
-    delete studentData[i].adaptCourseGrade
+    // delete studentData[i].adaptCourseGrade
   }
 }

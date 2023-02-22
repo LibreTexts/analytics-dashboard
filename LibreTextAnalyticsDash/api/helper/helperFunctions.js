@@ -50,44 +50,18 @@ function getRequest(queryString) {
 
 //find a course in the adapt data, find student enrollment
 function findEnrollmentData(
-  adaptCodes,
   enrollmentData,
   course,
   adaptCourse,
-  allCourses,
-  dates,
   environment
 ) {
-  var codeFound = adaptCodes.find((o) => o.course === course);
-  var courseCode = codeFound ? parseInt(codeFound.code) : null;
-
+  // console.log(course, adaptCourse, environment, courseCode)
   var studentEnrollment = [];
-  if ((environment === "development" && codeFound) || (environment === "production" && adaptCourse)) {
-    if (environment === "development" && codeFound) {
-      var studentEnrollment = enrollmentData.find((o) => o._id === courseCode);
-      studentEnrollment.dates = studentEnrollment.dates
-        .map((d) => new Date(d))
-        .sort((a, b) => {
-          return a < b;
-        });
-      var start = new Date(studentEnrollment.dates[0]);
-      var end = studentEnrollment.dates.pop();
-
-      //checking the adapt dates against the dates on the lt data to see if it's the right term
-      if (allCourses && allCourses.length > 0) {
-        var index = Object.keys(allCourses).find(c => allCourses[c]._id === course)
-        var date = new Date(JSON.parse(JSON.stringify(allCourses[index])).date)
-        const diffTime = Math.abs(date - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays > 14) {
-          return [];
-        }
-      }
-    } else if (environment === "production" && adaptCourse) {
-      var studentEnrollment = enrollmentData.find((o) => o._id === parseInt(adaptCourse));
-      if (studentEnrollment === undefined) {
-        return [];
-      }
+  if (environment === "production" && (adaptCourse ? adaptCourse : course)) {
+    var studentEnrollment = enrollmentData.find((o) => o._id === parseInt(adaptCourse ? adaptCourse : course));
+    // console.log(studentEnrollment)
+    if (studentEnrollment === undefined) {
+      return []
     }
     //work here to find dates and check them against actual lt dates
     //change the enrollment dates to Date objects and compare
@@ -97,4 +71,22 @@ function findEnrollmentData(
   }
 }
 
-module.exports = { encryptStudent, decryptStudent, getRequest, findEnrollmentData }
+function calculatePercentile(studentData) {
+  var i, count, percent;
+  var arr = studentData.map(s => s.adaptCourseGrade);
+  var n = arr.length;
+  for (i = 0; i < n; i++) {
+    count = 0;
+    for (var j = 0; j < n; j++) {
+      if (arr[i] > arr[j]) {
+        count++;
+      }
+    }
+    percent = (count * 100) / (n - 1);
+    studentData[i]['percentile'] = Math.floor(percent);
+    //doesn't score the overall grade linked to the student's email
+    // delete studentData[i].adaptCourseGrade
+  }
+}
+
+module.exports = { encryptStudent, decryptStudent, getRequest, findEnrollmentData, calculatePercentile }

@@ -1,13 +1,10 @@
 const addFilters =  require("../helper/addFilters.js");
 //query to find views per date for an individual page
 
-function individualPageViewsQuery(params, adaptCodes, dbInfo) {
-  var codeFound = adaptCodes.find(o => o.course === params.courseId)
-  var course = codeFound;
-  if (!codeFound) {
-    course = params.courseId
-  } else {
-    course = codeFound.code
+function individualPageViewsQuery(params, dbInfo) {
+  var course = params.courseId;
+  if (params.levelName && params.adaptCourseID) {
+    course = params.adaptCourseID;
   }
   //params.individual is for the individual page views chart
   if (params.individual) {
@@ -110,7 +107,13 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
           {
             "$addFields": {
               'date': {'$dateTrunc': {
-                  'date': { '$toDate': '$submission_time'},
+                  'date': {
+                    $cond: {
+                      if: {"$ne": ["$submission_time", ""]},
+                      then: { '$toDate': '$submission_time'},
+                      else: { '$toDate': "$review_time_end"}
+                    }
+                  },
                   'unit': params.unit,
                   'binSize': params.bin
                 }
@@ -151,7 +154,6 @@ function individualPageViewsQuery(params, adaptCodes, dbInfo) {
   } else {
     addFilters.spliceDateFilter(index, params, data, true);
   }
-
   return data;
 }
 

@@ -10,7 +10,8 @@ const allQueries = {
   allAdaptCoursesQuery: require("./allAdaptCoursesQuery.js"),
   allCoursesQuery: require("./allCoursesQuery.js"),
   allStudentsQuery: require("./allStudentsQuery.js"),
-  assignmentCountQuery: require("./assignmentCountQuery"),
+  assignmentCountQuery: require("./assignmentCountQuery").assignmentCountQuery,
+  assignmentCountQuerySpecificCourse: require("./assignmentCountQuery").assignmentCountQuerySpecificCourse,
   averagePageViewsQuery: require("./averagePageViewsQuery.js"),
   chapterChartQuery: require("./chapterChartQuery.js"),
   courseUnitsQuery: require("./courseUnitsQuery.js"),
@@ -28,7 +29,11 @@ const allQueries = {
   allAssignmentGradesQuery: require("./allAssignmentGradesQuery.js"),
   pageLookupQuery: require("./pageLookupQuery.js"),
   individualAssignmentSubmissionsQuery: require("./individualAssignmentSubmissionsQuery.js"),
-  gradesFromAdaptQuery: require("./gradesFromAdapt.js")
+  gradesFromAdaptQuery: require("./gradesFromAdapt.js"),
+  ewsModelDataQuery: require("./ewsModelDataQuery.js"),
+  ewsModelAdaptQuery: require("./ewsModelAdaptQuery.js"),
+  averageGradesFromGradebookQuery: require("./averageGradesFromGradebookQuery.js"),
+  assignmentCountFromGradebookQuery: require("./assignmentCountFromGradebookQuery")
 }
 
 module.exports = allQueries
