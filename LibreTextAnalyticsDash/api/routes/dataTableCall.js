@@ -32,7 +32,7 @@ const dataTableCall = async (
   Promise.all(promises).then(async function (responses) {
     var assignmentCount = responses.length > 0 ? responses[0].data : null;
     var enrollmentData = responses.length > 1 ? responses[1].data['documents'] : null;
-    var averageScores = Object.keys(responses[2]).includes('data') ? responses[2].data['documents'] : [];
+    var averageScores = responses[2] && Object.keys(responses[2]).includes('data') ? responses[2].data['documents'] : [];
     let queryString = queries.dataTableQuery(
       validateInput.validateInput("data", req.body),
       dbInfo,
