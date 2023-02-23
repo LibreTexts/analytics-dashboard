@@ -17,7 +17,7 @@ const realCoursesCall = async (
     let config = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
     let dateConfig = helperFunctions.getRequest(lookupQueries.startEndDateQuery);
     var courseDates = [];
-    axios.all([config, dateConfig])
+    axios.all([axios(config), axios(dateConfig)])
       .then(function (responses) {
         realCourseNames = responses[0].data["documents"];
         courseDates = responses[1] ? responses[1].data["documents"] : [];
