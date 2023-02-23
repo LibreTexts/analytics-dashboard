@@ -57,7 +57,7 @@ function findEnrollmentData(
 ) {
   // console.log(course, adaptCourse, environment, courseCode)
   var studentEnrollment = [];
-  if (environment === "production" && (adaptCourse ? adaptCourse : course)) {
+  if (environment === "production" && enrollmentData && (adaptCourse ? adaptCourse : course)) {
     var studentEnrollment = enrollmentData.find((o) => o._id === parseInt(adaptCourse ? adaptCourse : course));
     // console.log(studentEnrollment)
     if (studentEnrollment === undefined) {
