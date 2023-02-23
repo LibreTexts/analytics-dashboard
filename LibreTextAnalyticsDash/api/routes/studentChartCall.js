@@ -50,7 +50,7 @@ const studentChartCall = async (
       var maxPageCount = responses[0].data["documents"][0].pageCount;
     }
     if (isAdaptXAxis) {
-      var course = params.adaptCourseID ? params.adaptCourseID : params.courseId;
+      var course = req.body.adaptCourseID ? req.body.adaptCourseID : req.body.courseId;
       queryString = queries.adaptStudentChartQuery(
         req.body,
         dbInfo,
