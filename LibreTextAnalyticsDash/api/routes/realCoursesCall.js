@@ -13,11 +13,14 @@ const realCoursesCall = async (
   adaptCodes,
   courseDates
 ) => {
-  var realCourseNames = [];
+    var realCourseNames = [];
     let config = helperFunctions.getRequest(queries.allCoursesQuery(dbInfo));
-    axios(config)
-      .then(function (response) {
-        realCourseNames = response.data["documents"];
+    let dateConfig = helperFunctions.getRequest(lookupQueries.startEndDateQuery);
+    var courseDates = [];
+    axios.all([config, dateConfig])
+      .then(function (responses) {
+        realCourseNames = responses[0].data["documents"];
+        courseDates = responses[1] ? responses[1].data["documents"] : [];
         realCourseNames.forEach((c, index) => {
           //console.log(c)
           var codeFound = adaptCodes.find((o) => o.course === c._id);
