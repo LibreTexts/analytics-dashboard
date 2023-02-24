@@ -1,6 +1,6 @@
 const axios = require('axios');
 const moment = require('moment');
-const helper = require("../helper/helperFunctions.js");
+const helper = require("./helperFunctions.js");
 require("dotenv").config();
 
 const coll = process.env.COLL;

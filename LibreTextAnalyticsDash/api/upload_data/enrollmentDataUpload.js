@@ -1,4 +1,4 @@
-const helper = require("../helper/helperFunctions.js");
+const helper = require("./helperFunctions.js");
 var axios = require("axios");
 const fs = require("fs");
 

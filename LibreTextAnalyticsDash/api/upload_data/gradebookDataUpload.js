@@ -1,4 +1,4 @@
-const helper = require("../helper/helperFunctions.js");
+const helper = require("./helperFunctions.js");
 var axios = require("axios");
 const { parse } = require("fast-csv");
 require("dotenv").config();
@@ -14,40 +14,26 @@ const dataSource = process.env.SRC;
 
 // delay the call to get gradebook data by at least 1 second so it doesn't throw errors
 function delay(config, percentageConfig, time, course, points) {
-  //console.log(moment().format())
-  var gradebookCoursesConfig = axios(getGradebookCoursesConfig());
-  var configs = [axios(config), gradebookCoursesConfig, axios(percentageConfig)];
+  var gradebookCoursesConfig = axios(getGradebookCoursesConfig()).catch((err) => console.log(course+" - gradebook courses error"));
+  // axios.all fails if one of the configs fail
+  // if the scores endpoint fails for a course, it has no gradebook data
+  var configs = [axios(config).catch((err) => console.log(course+" - scores endpoint error")), gradebookCoursesConfig];
   setTimeout(async function() {
     axios.all(configs).then(function (responses) {
       console.log(course, moment().format());
-      configureData(course, responses[0].data, points, responses[1].data['documents'][0].courses.map(c => parseInt(c)), responses[2].data)
+      if (responses[0] !== undefined) {
+        configureData(course, responses[0].data, points, responses[1].data['documents'][0].courses.map(c => parseInt(c)), percentageConfig)
+      }
     }).catch(function (error) {
-      //console.log(error)
+      console.log(error)
     })
   }, time*1000);
-  //return new Promise(resolve => setTimeout(resolve, time));
 }
-
-// function aggregatePercentageData(data) {
-//   var aggregatedData = []
-//   var match = null
-//   data.forEach((elem) => {
-//     if (aggregatedData.length > 0) {
-//       match = aggregatedData.find((d) => d._id === elem.email)
-//       if (match !== null && match !== undefined) {
-//
-//       }
-//     }
-//   })
-// }
 
 // iterates through each course and creates a config to get the gradebook data
 async function getAdaptData(adaptCourses, points) {
   var entries = [];
   for (let i=0; i < adaptCourses.length; i++) {
-  //courses.forEach(course => {
-    // console.log("**************")
-    // console.log(course)
     var config = {
       method: 'GET',
       url: 'https://adapt.libretexts.org/api/analytics/scores/course/'+adaptCourses[i],
@@ -90,6 +76,7 @@ async function getAdaptCourses(courses=null) {
       data: JSON.stringify(queryString)
   };
   if (courses !== null) {
+    courses = courses.map(c => typeof(c) === "number" ? String(c) : c)
     getAdaptLevels(courses)
   } else {
     axios(config).then((response) => {
@@ -195,23 +182,19 @@ function getAxiosFindCall(data) {
 
 // calculate scores and due dates, encrypt the student email and
 //   update the entry if a grade has been added, otherwise insert an entry if it doesn't exist
-async function configureData(course, data, coursePoints, gradebookCourses, assignmentPercentages) {
-  // console.log(data)
+async function configureData(course, data, coursePoints, gradebookCourses, percentageConfig) {
+  var assignmentPercentages = await axios(percentageConfig).then(response => response.data).catch((err) => console.log("No proportion correct data available for "+course))
   course = String(course)
   var headers = data[0];
   var entry = {};
   var entries = [];
-  //var update = gradebookCourses.includes(course) ? true : false;
   console.log(course);
   data.forEach((student, index) => {
     if (index !== 0) {
-      //console.log(student)
       var email = helper.encryptStudent(student[0]);
       var courseGrade = parseFloat(student[student.length-2].replaceAll("%", ""));
       var letterGrade = student[student.length-1];
       var courseData = coursePoints.filter(element => element._id.class === course);
-      // console.log(courseData)
-      //console.log(courseData)
       student.forEach((s, i) => {
         if (i !== 0 && i < student.length-2) {
           var score = parseFloat(s)
@@ -221,8 +204,7 @@ async function configureData(course, data, coursePoints, gradebookCourses, assig
             hasScore = false;
           }
           var points = courseData.find(elem => elem._id.level_name === headers[i])
-          var assignmentPercentData = assignmentPercentages.find(assn => assn.email === student[0] && assn.name === headers[i])
-          // console.log(assignmentPercentData)
+          var assignmentPercentData = assignmentPercentages && assignmentPercentages.length > 0 ? assignmentPercentages.find(assn => assn.email === student[0] && assn.name === headers[i]) : undefined;
           var proportion_correct = null;
           var assignment_id = null;
           hasScore = false;
@@ -231,8 +213,6 @@ async function configureData(course, data, coursePoints, gradebookCourses, assig
             assignment_id = assignmentPercentData.assignment_id;
             hasScore = true;
           }
-          //console.log(headers[i])
-          //console.log(points)
           var points_possible = "Not Found"
           var percent_score = score === 0 ? 0 : "Not Found"
           var due = "Not Found"
@@ -245,10 +225,6 @@ async function configureData(course, data, coursePoints, gradebookCourses, assig
             } else {
               percent_score = parseFloat((percent*100).toFixed(2))
             }
-          }
-          if (proportion_correct !== null) {
-            // console.log(email, headers[i])
-            // console.log(proportion_correct*100 === percent_score)
           }
           //use this for inserting
           entry = {
@@ -291,10 +267,8 @@ async function configureData(course, data, coursePoints, gradebookCourses, assig
               '$upsert': true
             }
           ]
-          // console.log(updateObject[0])
-          // console.log(updateObject[1]['$set'])
           var config = getAxiosFindCall(updateObject)
-          if (gradebookCourses.includes(course)) {
+          if (gradebookCourses.includes(parseInt(course))) {
             entries.push(config)
           } else {
             entries.push(entry)
@@ -308,11 +282,13 @@ async function configureData(course, data, coursePoints, gradebookCourses, assig
     //for inserting
     var config = helper.getAxiosCall(coll, entries)
     helper.writeToMongoDB([config]);
-    console.log("course not in database")
+    console.log("course not in database -- inserting")
   } else {
     //for finding and updating
+    // if (assignmentPercentages !== undefined && assignmentPercentages !== null) {
     helper.writeToMongoDB(entries)
-    console.log("course is in database")
+    console.log("course is in database -- updating")
+    // }
   }
 }
 
