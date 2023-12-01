@@ -184,7 +184,7 @@ function App() {
     queryRef.current = queryVariables;
   });
 
-  var allCourses = sessionStorage.getItem("allCourses");
+  const allCourses = sessionStorage.getItem("allCourses");
   var conductorCourseId = cookies.get("analytics_conductor_course_id");
   var courseInfo = JSON.parse(
     sessionStorage.getItem(conductorCourseId + "-info")
@@ -193,44 +193,40 @@ function App() {
     : { start: null, end: null, textbookID: null, adaptCourseID: null };
   // var courseInfoAttributes = Object.keys(courseInfo);
   //pull the courses in useEffect so it happens right away on the initial page
-  useEffect(() => {
+  useEffect(async () => {
     //grab the courses from session storage
-    var courses = JSON.parse(sessionStorage.getItem("allCourses"));
+    const _allCourses = JSON.parse(sessionStorage.getItem("allCourses"));
     //check to see if there are libretext courses stored,
     //currently an error where libretext courses don't show up right away
     //if the courses aren't in session storage or it didn't grab them all the first time
     //pull the courses from the endpoint on the express node server
-    if (!courses) {
+    if (!_allCourses) {
       //libretext and adapt courses have two different queries because they
       //come from two different mongodb collections and have no direct variable to link them
-      var request1 = axios(state.homepage + "/realcourses");
-      var request2 = axios(state.homepage + "/adaptcourses");
-      axios
-        .all([request1, request2])
-        .then(
-          axios.spread((...responses) => {
-            const responseOne = responses[0].data;
-            const responseTwo = responses[1].data;
-            var courses = responseOne.concat(responseTwo);
-            let x = {};
-            courses.forEach((course) => {
-              x[course.course] = {
-                courseId: course._id,
-                ltCourse: course.ltCourse,
-                adaptCourse: course.adaptCourse,
-                startDate: course.startDate,
-                endDate: course.endDate,
-              };
-            });
-            setRealCourses(x);
-            sessionStorage.setItem("allCourses", JSON.stringify(x));
-          })
-        )
-        .catch((errors) => {
-          console.log(errors);
-        });
+      const request1 = axios.get(state.homepage + "/realcourses");
+      const request2 = axios.get(state.homepage + "/adaptcourses");
+      const res = await Promise.all([request1, request2]).catch((errors) => {
+        console.log(errors);
+      });
+
+      const responseOne = res[0].data;
+      const responseTwo = res[1].data;
+      const concat = responseOne.concat(responseTwo);
+
+      const x = {};
+      concat.forEach((course) => {
+        x[course.course] = {
+          courseId: course._id,
+          ltCourse: course.ltCourse,
+          adaptCourse: course.adaptCourse,
+          startDate: course.startDate,
+          endDate: course.endDate,
+        };
+      });
+      setRealCourses(x);
+      sessionStorage.setItem("allCourses", JSON.stringify(x));
     } else {
-      setRealCourses(JSON.parse(sessionStorage.getItem("allCourses")));
+      setRealCourses(_allCourses);
     }
   }, [allCourses, state.homepage]);
 
@@ -269,7 +265,7 @@ function App() {
               course + "-enrollment",
               JSON.stringify(responseTwo.students)
             );
-            var courses = JSON.parse(sessionStorage.getItem("allCourses"));
+            const _courses = JSON.parse(sessionStorage.getItem("allCourses"));
             var id = null;
             var adaptId = null;
             var hasData = false;
@@ -279,7 +275,7 @@ function App() {
             ) {
               id = courseInfo.textbookID;
               adaptId = courseInfo.adaptCourseID;
-              hasData = Object.values(courses).find(
+              hasData = Object.values(_courses).find(
                 (obj) => obj.courseId === id
               );
             } else if (
@@ -287,7 +283,7 @@ function App() {
               !courseInfoAttributes.includes("adaptCourseID")
             ) {
               id = courseInfo.textbookID;
-              hasData = Object.values(courses).find(
+              hasData = Object.values(_courses).find(
                 (obj) => obj.courseId === id
               );
             } else if (
@@ -295,7 +291,7 @@ function App() {
               courseInfoAttributes.includes("adaptCourseID")
             ) {
               adaptId = courseInfo.adaptCourseID;
-              hasData = Object.values(courses).find(
+              hasData = Object.values(_courses).find(
                 (obj) => obj.courseId === adaptId
               );
             }
@@ -305,7 +301,7 @@ function App() {
                 setState,
                 id,
                 adaptId,
-                courses,
+                _courses,
                 queryRef.current
               );
               //noDataAvailable now being set to false in the above function
