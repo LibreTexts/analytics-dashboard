@@ -182,7 +182,8 @@ function App() {
   useEffect(() => {
     stateRef.current = state;
     queryRef.current = queryVariables;
-  });
+    loadAndParseAllCourses();
+  }, []);
 
   const allCourses = sessionStorage.getItem("allCourses");
   var conductorCourseId = cookies.get("analytics_conductor_course_id");
@@ -191,43 +192,48 @@ function App() {
   )
     ? JSON.parse(sessionStorage.getItem(conductorCourseId + "-info"))
     : { start: null, end: null, textbookID: null, adaptCourseID: null };
+  
+  async function loadAndParseAllCourses() {
+      //grab the courses from session storage
+      const _allCourses = JSON.parse(sessionStorage.getItem("allCourses"));
+      //check to see if there are libretext courses stored,
+      //currently an error where libretext courses don't show up right away
+      //if the courses aren't in session storage or it didn't grab them all the first time
+      //pull the courses from the endpoint on the express node server
+      if (!_allCourses) {
+        //libretext and adapt courses have two different queries because they
+        //come from two different mongodb collections and have no direct variable to link them
+        const request1 = axios.get(state.homepage + "/realcourses");
+        const request2 = axios.get(state.homepage + "/adaptcourses");
+        const res = await Promise.all([request1, request2]).catch((errors) => {
+          console.log(errors);
+        });
+  
+        const responseOne = res[0].data;
+        const responseTwo = res[1].data;
+        const concat = responseOne.concat(responseTwo);
+  
+        const x = {};
+        concat.forEach((course) => {
+          x[course.course] = {
+            courseId: course._id,
+            ltCourse: course.ltCourse,
+            adaptCourse: course.adaptCourse,
+            startDate: course.startDate,
+            endDate: course.endDate,
+          };
+        });
+        setRealCourses(x);
+        sessionStorage.setItem("allCourses", JSON.stringify(x));
+      } else {
+        setRealCourses(_allCourses);
+    }
+  }
+
   // var courseInfoAttributes = Object.keys(courseInfo);
   //pull the courses in useEffect so it happens right away on the initial page
   useEffect(async () => {
-    //grab the courses from session storage
-    const _allCourses = JSON.parse(sessionStorage.getItem("allCourses"));
-    //check to see if there are libretext courses stored,
-    //currently an error where libretext courses don't show up right away
-    //if the courses aren't in session storage or it didn't grab them all the first time
-    //pull the courses from the endpoint on the express node server
-    if (!_allCourses) {
-      //libretext and adapt courses have two different queries because they
-      //come from two different mongodb collections and have no direct variable to link them
-      const request1 = axios.get(state.homepage + "/realcourses");
-      const request2 = axios.get(state.homepage + "/adaptcourses");
-      const res = await Promise.all([request1, request2]).catch((errors) => {
-        console.log(errors);
-      });
-
-      const responseOne = res[0].data;
-      const responseTwo = res[1].data;
-      const concat = responseOne.concat(responseTwo);
-
-      const x = {};
-      concat.forEach((course) => {
-        x[course.course] = {
-          courseId: course._id,
-          ltCourse: course.ltCourse,
-          adaptCourse: course.adaptCourse,
-          startDate: course.startDate,
-          endDate: course.endDate,
-        };
-      });
-      setRealCourses(x);
-      sessionStorage.setItem("allCourses", JSON.stringify(x));
-    } else {
-      setRealCourses(_allCourses);
-    }
+    loadAndParseAllCourses();
   }, [allCourses, state.homepage]);
 
   //need to add start and end dates to the dependency array
