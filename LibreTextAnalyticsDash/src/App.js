@@ -373,6 +373,9 @@ function App() {
         //the HeaderGrid component has the dropdown for the courses
       }
       <Grommet theme={theme} full style={{ overflowX: "hidden" }}>
+        {
+          !loadedAllCourses && <Spinner />
+        }
         {state.environment === "development" &&
           realCourses &&
           !state.studentData &&
