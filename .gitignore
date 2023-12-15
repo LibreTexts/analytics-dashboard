@@ -1,6 +1,7 @@
 /LibreTextAnalyticsDash/node_modules
 
 /LibreTextAnalyticsDash/api/node_modules
+/LibreTextAnalyticsDash/api/ecosystem.config.js
 
 .DS_Store
 

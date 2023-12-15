@@ -163,6 +163,7 @@ function App() {
   const [count, setCount] = useState(0);
   const [progress, setProgress] = useState(0);
   const [loadingStart, setLoadingStart] = useState(null);
+  const [loadedAllCourses, setLoadedAllCourses] = useState(false);
 
   //put into a single object to easily pass it onto other components
   var queryVariables = {
@@ -179,70 +180,80 @@ function App() {
   };
   const queryRef = useRef(queryVariables);
 
-  useEffect(() => {
+  // Empty dependency array, run this on first render only
+  useEffect(async () => {
     stateRef.current = state;
     queryRef.current = queryVariables;
-    loadAndParseAllCourses();
+    await loadAndParseAllCourses();
   }, []);
 
-  const allCourses = sessionStorage.getItem("allCourses");
   var conductorCourseId = cookies.get("analytics_conductor_course_id");
-  var courseInfo = JSON.parse(
+  const courseInfo = JSON.parse(
     sessionStorage.getItem(conductorCourseId + "-info")
   )
     ? JSON.parse(sessionStorage.getItem(conductorCourseId + "-info"))
     : { start: null, end: null, textbookID: null, adaptCourseID: null };
   
   async function loadAndParseAllCourses() {
-      //grab the courses from session storage
-      const _allCourses = JSON.parse(sessionStorage.getItem("allCourses"));
-      //check to see if there are libretext courses stored,
-      //currently an error where libretext courses don't show up right away
-      //if the courses aren't in session storage or it didn't grab them all the first time
-      //pull the courses from the endpoint on the express node server
-      if (!_allCourses) {
-        //libretext and adapt courses have two different queries because they
-        //come from two different mongodb collections and have no direct variable to link them
-        const request1 = axios.get(state.homepage + "/realcourses");
-        const request2 = axios.get(state.homepage + "/adaptcourses");
-        const res = await Promise.all([request1, request2]).catch((errors) => {
-          console.log(errors);
-        });
-  
-        const responseOne = res[0].data;
-        const responseTwo = res[1].data;
-        const concat = responseOne.concat(responseTwo);
-  
-        const x = {};
-        concat.forEach((course) => {
-          x[course.course] = {
-            courseId: course._id,
-            ltCourse: course.ltCourse,
-            adaptCourse: course.adaptCourse,
-            startDate: course.startDate,
-            endDate: course.endDate,
-          };
-        });
-        setRealCourses(x);
-        sessionStorage.setItem("allCourses", JSON.stringify(x));
-      } else {
-        setRealCourses(_allCourses);
+      try {
+        //grab the courses from session storage
+        const _allCourses = JSON.parse(sessionStorage.getItem("allCourses"));
+        //check to see if there are libretext courses stored,
+        //currently an error where libretext courses don't show up right away
+        //if the courses aren't in session storage or it didn't grab them all the first time
+        //pull the courses from the endpoint on the express node server
+        if (!_allCourses || Object.keys(_allCourses).length === 0) {
+          //libretext and adapt courses have two different queries because they
+          //come from two different mongodb collections and have no direct variable to link them
+          const request1 = axios.get(state.homepage + "/realcourses");
+          const request2 = axios.get(state.homepage + "/adaptcourses");
+          const res = await Promise.all([request1, request2]).catch((errors) => {
+            console.log(errors);
+          });
+    
+          const responseOne = res[0].data;
+          const responseTwo = res[1].data;
+          const concat = responseOne.concat(responseTwo);
+    
+          const x = {};
+          concat.forEach((course) => {
+            x[course.course] = {
+              courseId: course._id,
+              ltCourse: course.ltCourse,
+              adaptCourse: course.adaptCourse,
+              startDate: course.startDate,
+              endDate: course.endDate,
+            };
+          });
+          setRealCourses(x);
+          sessionStorage.setItem("allCourses", JSON.stringify(x));
+        } else {
+          setRealCourses(_allCourses);
+      }
+      setLoadedAllCourses(true);
+    } catch (error) {
+      console.error(error);
     }
   }
 
   // var courseInfoAttributes = Object.keys(courseInfo);
   //pull the courses in useEffect so it happens right away on the initial page
-  useEffect(async () => {
-    loadAndParseAllCourses();
-  }, [allCourses, state.homepage]);
+  // useEffect(async () => {
+  //   loadAndParseAllCourses();
+  // }, [allCourses, state.homepage]);
 
   //need to add start and end dates to the dependency array
   useEffect(() => {
+    if(!loadedAllCourses) return;
     if (state.environment === "production") {
       var course = cookies.get("analytics_conductor_course_id");
       var request1 = axios(state.homepage + "/courseinfo");
       var request2 = axios(state.homepage + "/conductorenrollment");
       var courseInfoAttributes = Object.keys(courseInfo);
+
+      if(!courseInfo){
+        throw new Error("courseInfo is null");
+      }
 
       axios
         .all([request1, request2])
@@ -250,6 +261,8 @@ function App() {
           axios.spread((...responses) => {
             const responseOne = responses[0].data;
             const responseTwo = responses[1].data;
+            console.log(responseOne);
+            console.log(responseTwo);
             var dataChanged = false;
             if (
               courseInfo.start !== null &&
@@ -272,6 +285,9 @@ function App() {
               JSON.stringify(responseTwo.students)
             );
             const _courses = JSON.parse(sessionStorage.getItem("allCourses"));
+            if(!_courses){
+              throw new Error("allCourses is null");
+            }
             var id = null;
             var adaptId = null;
             var hasData = false;
@@ -339,6 +355,7 @@ function App() {
         });
     }
   }, [
+    loadedAllCourses,
     conductorCourseId,
     state.environment,
     state.homepage,
